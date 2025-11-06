@@ -1,10 +1,17 @@
-import * as cdk from 'aws-cdk-lib/core';
+import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
+import * as rds from 'aws-cdk-lib/aws-rds';
+import * as lambda from 'aws-cdk-lib/aws-lambda';
+import * as apigwv2 from 'aws-cdk-lib/aws-apigatewayv2';
+import * as integ from 'aws-cdk-lib/aws-apigatewayv2-integrations';
+import * as logs from 'aws-cdk-lib/aws-logs';
 
 export class InfraStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
+
+    const stage = (this.node.tryGetContext('stage') ?? process.env.STAGE ?? 'dev') as string;
 
     const vpc = new ec2.Vpc(this, 'AppVpc', {
       maxAzs: 2,
@@ -15,6 +22,86 @@ export class InfraStack extends cdk.Stack {
       ],
     });
 
+    const s3Gw = vpc.addGatewayEndpoint('S3Gw', { service: ec2.GatewayVpcEndpointAwsService.S3 });
+
+    const dbSg = new ec2.SecurityGroup(this, 'DbSg', { vpc, allowAllOutbound: true });
+
+    const dbUser = new cdk.CfnParameter(this, 'DbUser', { type: 'String' });
+    const dbPassword = new cdk.CfnParameter(this, 'DbPassword', { type: 'String', noEcho: true });
+
+    const db = new rds.DatabaseInstance(this, 'Postgres', {
+      vpc,
+      vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_ISOLATED },
+      securityGroups: [dbSg],
+      engine: rds.DatabaseInstanceEngine.postgres({ version: rds.PostgresEngineVersion.VER_17_6 }),
+      instanceType: ec2.InstanceType.of(ec2.InstanceClass.T4G, ec2.InstanceSize.MICRO),
+      credentials: rds.Credentials.fromPassword(
+        dbUser.valueAsString,
+        cdk.SecretValue.unsafePlainText(dbPassword.valueAsString),
+      ),
+      databaseName: 'garden',
+      allocatedStorage: 20,
+      storageEncrypted: true,
+      multiAz: false,
+      publiclyAccessible: false,
+      deletionProtection: stage === 'prod',
+      backupRetention: cdk.Duration.days(stage === 'prod' ? 7 : 1),
+      cloudwatchLogsExports: ['postgresql'],
+      removalPolicy: stage === 'prod' ? cdk.RemovalPolicy.RETAIN : cdk.RemovalPolicy.DESTROY,
+    });
+
+    const lambdaSg = new ec2.SecurityGroup(this, 'LambdaSg', { vpc, allowAllOutbound: true });
+
+    // todo rube: replace with steve's lambda and connect to db
+    const temp_fn = new lambda.Function(this, 'ApiFn', {
+      runtime: lambda.Runtime.NODEJS_20_X,
+      handler: 'index.handler',
+      code: lambda.Code.fromInline(`
+        'use strict';
+        exports.handler = async (event) => {
+          const path = (event && (event.rawPath || event.path)) || '/';
+          if (path === '/health') {
+            return {
+              statusCode: 200,
+              headers: { 'content-type': 'application/json' },
+              body: JSON.stringify({ ok: true })
+            };
+          }
+          return {
+            statusCode: 200,
+            headers: { 'content-type': 'text/plain' },
+            body: 'Hello from inline Lambda!'
+          };
+        };
+      `),
+      vpc,
+      vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_ISOLATED },
+      securityGroups: [lambdaSg],
+      // prefer a dedicated log group (no deprecation warning)
+      logGroup: new logs.LogGroup(this, 'ApiFnLogs', {
+        retention: logs.RetentionDays.TWO_WEEKS,
+        removalPolicy: cdk.RemovalPolicy.DESTROY,
+      }),
+    });
+
+    const api = new apigwv2.HttpApi(this, 'HttpApi', {
+      corsPreflight: {
+        allowOrigins: ['*'], // todo rube: tighten later to your CF origin
+        allowMethods: [apigwv2.CorsHttpMethod.ANY],
+        allowHeaders: ['*'],
+      },
+    });
+
+    // Proxy all routes to the function
+    api.addRoutes({
+      path: '/{proxy+}',
+      methods: [apigwv2.HttpMethod.ANY],
+      integration: new integ.HttpLambdaIntegration('ApiIntegration', temp_fn),
+    });
+
+    new cdk.CfnOutput(this, 'DbEndpoint', { value: db.instanceEndpoint.hostname });
     new cdk.CfnOutput(this, 'VpcId', { value: vpc.vpcId });
+    new cdk.CfnOutput(this, 'ApiUrl', { value: api.apiEndpoint });
+
   }
 }
