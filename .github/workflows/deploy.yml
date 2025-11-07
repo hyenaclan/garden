@@ -40,7 +40,7 @@ jobs:
 
       - uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.ROLE_ARN }}
+          role-to-assume: ${{ vars.ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
       - run: npm install -g aws-cdk@${{ env.CDK_VERSION }}
@@ -53,7 +53,7 @@ jobs:
           cdk deploy $STACK_NAME-dev \
             --require-approval never \
             -c stage=dev \
-            --parameters DbUser=${{ secrets.DB_USER }} \
+            --parameters DbUser=${{ vars.DB_USER }} \
             --parameters DbPassword=${{ secrets.DB_PASSWORD }}
         working-directory: ${{ env.APP_PATH }}
 
@@ -76,7 +76,7 @@ jobs:
 
       - uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.ROLE_ARN }}
+          role-to-assume: ${{ vars.ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
       - run: npm install -g aws-cdk@${{ env.CDK_VERSION }}
@@ -86,6 +86,6 @@ jobs:
           cdk deploy $STACK_NAME-prod \
             --require-approval never \
             -c stage=prod \
-            --parameters DbUser=${{ secrets.DB_USER }} \
+            --parameters DbUser=${{ vars.DB_USER }} \
             --parameters DbPassword=${{ secrets.DB_PASSWORD }}
         working-directory: ${{ env.APP_PATH }}
