@@ -1,0 +1,91 @@
+name: CDK Deploy
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "Branch to deploy to dev"
+        required: true
+        default: main
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  CDK_VERSION: 2.167.0
+  AWS_REGION: us-east-1
+  STACK_NAME: infra
+  APP_PATH: infra
+
+jobs:
+  deploy-dev:
+    environment: dev
+    runs-on: ubuntu-latest
+    name: Deploy to Dev
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch || github.ref_name }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.11.0
+
+      - run: npm ci
+        working-directory: ${{ env.APP_PATH }}
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - run: npm install -g aws-cdk@${{ env.CDK_VERSION }}
+
+      - run: cdk synth
+        working-directory: ${{ env.APP_PATH }}
+
+      - name: Deploy Dev
+        run: |
+          cdk deploy $STACK_NAME-dev \
+            --require-approval never \
+            -c stage=dev \
+            --parameters DbUser=${{ secrets.DB_USER }} \
+            --parameters DbPassword=${{ secrets.DB_PASSWORD }}
+        working-directory: ${{ env.APP_PATH }}
+
+  deploy-prod:
+    environment: prod
+    runs-on: ubuntu-latest
+    name: Deploy to Prod
+    needs: deploy-dev
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.11.0
+
+      - run: npm ci
+        working-directory: ${{ env.APP_PATH }}
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - run: npm install -g aws-cdk@${{ env.CDK_VERSION }}
+
+      - name: Deploy Prod
+        run: |
+          cdk deploy $STACK_NAME-prod \
+            --require-approval never \
+            -c stage=prod \
+            --parameters DbUser=${{ secrets.DB_USER }} \
+            --parameters DbPassword=${{ secrets.DB_PASSWORD }}
+        working-directory: ${{ env.APP_PATH }}
