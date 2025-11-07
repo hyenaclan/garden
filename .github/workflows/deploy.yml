@@ -43,7 +43,7 @@ jobs:
           role-to-assume: ${{ vars.ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - run: npm install -g aws-cdk@${{ env.CDK_VERSION }}
+      - run: npm install -g aws-cdk
 
       - run: cdk synth
         working-directory: ${{ env.APP_PATH }}
@@ -79,7 +79,7 @@ jobs:
           role-to-assume: ${{ vars.ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - run: npm install -g aws-cdk@${{ env.CDK_VERSION }}
+      - run: npm install -g aws-cdk
 
       - name: Deploy Prod
         run: |
