@@ -11,6 +11,8 @@ import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
 import * as targets from 'aws-cdk-lib/aws-events-targets';
 import * as origins from 'aws-cdk-lib/aws-cloudfront-origins';
+import * as cognito from 'aws-cdk-lib/aws-cognito';
+import * as apigwv2_authorizers from 'aws-cdk-lib/aws-apigatewayv2-authorizers';
 
 export class InfraStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -88,21 +90,6 @@ export class InfraStack extends cdk.Stack {
       }),
     });
 
-    const api = new apigwv2.HttpApi(this, 'HttpApi', {
-      corsPreflight: {
-        allowOrigins: ['*'], // todo rube: tighten later to your CF origin
-        allowMethods: [apigwv2.CorsHttpMethod.ANY],
-        allowHeaders: ['*'],
-      },
-    });
-
-    // Proxy all routes to the function
-    api.addRoutes({
-      path: '/{proxy+}',
-      methods: [apigwv2.HttpMethod.ANY],
-      integration: new integ.HttpLambdaIntegration('ApiIntegration', temp_fn),
-    });
-
     // --- Keep Lambda backend warm via EventBridge rule ---
     new events.Rule(this, 'KeepWarmRule', {
       schedule: events.Schedule.rate(cdk.Duration.minutes(1)),
@@ -136,9 +123,74 @@ export class InfraStack extends cdk.Stack {
       comment: `React site (${stage})`,
     });
     
-    new cdk.CfnOutput(this, 'CloudFrontUrl', {
-      value: `https://${distribution.domainName}`,
+    const userPool = new cognito.UserPool(this, 'UserPool', {
+      userPoolName: `garden-users-${stage}`,
+      selfSignUpEnabled: true,
+      signInAliases: { email: true },
+      autoVerify: { email: true },
+      standardAttributes: { email: { required: true, mutable: true } },
+      passwordPolicy: {
+        minLength: 8,
+        requireLowercase: true,
+        requireUppercase: true,
+        requireDigits: true,
+        requireSymbols: false,
+      },
+      accountRecovery: cognito.AccountRecovery.EMAIL_ONLY,
     });
+
+    const domain = userPool.addDomain('UserPoolDomain', {
+      cognitoDomain: { domainPrefix: `garden-${stage}` },
+    });
+    const httpDomain = `https://${distribution.domainName}`
+    const userPoolClient = new cognito.UserPoolClient(this, 'UserPoolClient', {
+      userPool,
+      userPoolClientName: 'garden-web',
+      generateSecret: false, // public client for PKCE
+      oAuth: {
+        flows: { authorizationCodeGrant: true },
+        scopes: [cognito.OAuthScope.OPENID, cognito.OAuthScope.EMAIL],
+        callbackUrls: [`${httpDomain}/auth/callback`],
+        logoutUrls: [httpDomain],
+      },
+      preventUserExistenceErrors: true,
+      accessTokenValidity: cdk.Duration.hours(1),
+      idTokenValidity: cdk.Duration.hours(1),
+    });
+
+    const api = new apigwv2.HttpApi(this, 'HttpApi', {
+      corsPreflight: {
+        allowOrigins: ['*'], // todo rube: tighten later to your CF origin
+        allowMethods: [apigwv2.CorsHttpMethod.ANY],
+        allowHeaders: ['*'],
+      },
+    });
+
+    const authorizer = new apigwv2_authorizers.HttpJwtAuthorizer('CognitoAuthorizer', 
+      `https://cognito-idp.${this.region}.amazonaws.com/${userPool.userPoolId}`,
+      {
+        jwtAudience: [userPoolClient.userPoolClientId],
+      }
+    );
+
+    // Proxy all routes to the function
+    api.addRoutes({
+      path: '/{proxy+}',
+      methods: [apigwv2.HttpMethod.ANY],
+      integration: new integ.HttpLambdaIntegration('ApiIntegration', temp_fn),
+    });
+
+    api.addRoutes({
+      path: '/api/{proxy+}',
+      methods: [apigwv2.HttpMethod.ANY],
+      integration: new integ.HttpLambdaIntegration('ApiIntegrationSecure', temp_fn),
+      authorizer,
+    });
+    
+    new cdk.CfnOutput(this, 'CognitoDomain', { value: domain.domainName });
+    new cdk.CfnOutput(this, 'UserPoolId', { value: userPool.userPoolId });
+    new cdk.CfnOutput(this, 'UserPoolClientId', { value: userPoolClient.userPoolClientId });
+    new cdk.CfnOutput(this, 'CloudFrontUrl', { value: httpDomain });
     new cdk.CfnOutput(this, 'DbEndpoint', { value: db.instanceEndpoint.hostname });
     new cdk.CfnOutput(this, 'VpcId', { value: vpc.vpcId });
     new cdk.CfnOutput(this, 'ApiUrl', { value: api.apiEndpoint });
