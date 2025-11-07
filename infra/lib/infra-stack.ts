@@ -6,6 +6,11 @@ import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as apigwv2 from 'aws-cdk-lib/aws-apigatewayv2';
 import * as integ from 'aws-cdk-lib/aws-apigatewayv2-integrations';
 import * as logs from 'aws-cdk-lib/aws-logs';
+import * as events from 'aws-cdk-lib/aws-events';
+import * as s3 from 'aws-cdk-lib/aws-s3';
+import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
+import * as targets from 'aws-cdk-lib/aws-events-targets';
+import * as origins from 'aws-cdk-lib/aws-cloudfront-origins';
 
 export class InfraStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -52,7 +57,7 @@ export class InfraStack extends cdk.Stack {
 
     const lambdaSg = new ec2.SecurityGroup(this, 'LambdaSg', { vpc, allowAllOutbound: true });
 
-    // todo rube: replace with steve's lambda and connect to db
+    // todo rube: replace with steve's api backend and connect to db
     const temp_fn = new lambda.Function(this, 'ApiFn', {
       runtime: lambda.Runtime.NODEJS_20_X,
       handler: 'index.handler',
@@ -77,7 +82,6 @@ export class InfraStack extends cdk.Stack {
       vpc,
       vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_ISOLATED },
       securityGroups: [lambdaSg],
-      // prefer a dedicated log group (no deprecation warning)
       logGroup: new logs.LogGroup(this, 'ApiFnLogs', {
         retention: logs.RetentionDays.TWO_WEEKS,
         removalPolicy: cdk.RemovalPolicy.DESTROY,
@@ -99,6 +103,42 @@ export class InfraStack extends cdk.Stack {
       integration: new integ.HttpLambdaIntegration('ApiIntegration', temp_fn),
     });
 
+    // --- Keep Lambda backend warm via EventBridge rule ---
+    new events.Rule(this, 'KeepWarmRule', {
+      schedule: events.Schedule.rate(cdk.Duration.minutes(1)),
+      targets: [
+        new targets.LambdaFunction(temp_fn, {
+          event: events.RuleTargetInput.fromObject({
+            rawPath: '/health',
+          }),
+        }),
+      ],
+    });
+
+    // --- Static React app hosting ---
+    const siteBucket = new s3.Bucket(this, 'SiteBucket', {
+      websiteIndexDocument: 'index.html',
+      publicReadAccess: false,
+      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
+    });
+
+    const originAccess = new cloudfront.OriginAccessIdentity(this, 'OAI');
+    siteBucket.grantRead(originAccess);
+
+    const distribution = new cloudfront.Distribution(this, 'SiteDistribution', {
+      defaultBehavior: {
+        origin: origins.S3BucketOrigin.withOriginAccessIdentity(siteBucket, {originAccessIdentity:originAccess}),
+        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+      },
+      defaultRootObject: 'index.html',
+      comment: `React site (${stage})`,
+    });
+    
+    new cdk.CfnOutput(this, 'CloudFrontUrl', {
+      value: `https://${distribution.domainName}`,
+    });
     new cdk.CfnOutput(this, 'DbEndpoint', { value: db.instanceEndpoint.hostname });
     new cdk.CfnOutput(this, 'VpcId', { value: vpc.vpcId });
     new cdk.CfnOutput(this, 'ApiUrl', { value: api.apiEndpoint });
