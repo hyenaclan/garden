@@ -18,8 +18,5 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src"],
-  "references": [
-    { "path": "../../packages/types" }
-  ]
+  "include": ["src"]
 }
