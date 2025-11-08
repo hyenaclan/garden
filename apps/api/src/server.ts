@@ -1,6 +1,5 @@
 // apps/api/src/server.ts
 import express, { Request, Response } from 'express';
-import { HelloApiResponse } from '@garden/types';
 
 const app = express();
 const port = 3001; // Dedicated port for the API
@@ -9,7 +8,7 @@ const port = 3001; // Dedicated port for the API
 app.use(express.json());
 
 // Define the root route with explicit TypeScript types for Request and Response
-app.get('/api/hello', (req: Request, res: Response<HelloApiResponse>) => {
+app.get('/api/hello', (req: Request, res: Response) => {
   res.json({ 
     message: 'Hello from the Garden API',
     timestamp: new Date().toISOString(),

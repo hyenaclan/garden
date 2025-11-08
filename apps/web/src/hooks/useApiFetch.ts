@@ -1,5 +1,11 @@
 import { useState, useCallback } from 'react';
-import { HelloApiResponse } from '@garden/types';
+
+// Define the type locally to remove dependency on @garden/types
+interface HelloApiResponse {
+  message: string;
+  timestamp: number;
+  status: 'ok' | 'error';
+}
 
 // Define the shape of the data returned by the hook
 interface ApiFetchResult {
