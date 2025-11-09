@@ -187,6 +187,8 @@ export class InfraStack extends cdk.Stack {
       authorizer,
     });
     
+    new cdk.CfnOutput(this, 'SiteDistributionId', { value: distribution.distributionId });
+    new cdk.CfnOutput(this, 'SiteBucketName', { value: siteBucket.bucketName });
     new cdk.CfnOutput(this, 'CognitoDomain', { value: domain.domainName });
     new cdk.CfnOutput(this, 'UserPoolId', { value: userPool.userPoolId });
     new cdk.CfnOutput(this, 'UserPoolClientId', { value: userPoolClient.userPoolClientId });
