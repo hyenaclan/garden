@@ -15,10 +15,9 @@ permissions:
   id-token: write
 
 env:
-  CDK_VERSION: 2.167.0
   AWS_REGION: us-east-1
   STACK_NAME: infra
-  APP_PATH: infra
+  NODE_VERSION: 22.11.0
 
 jobs:
   deploy-dev:
@@ -27,35 +26,66 @@ jobs:
     name: Deploy to Dev
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout source
+        uses: actions/checkout@v4
         with:
           ref: ${{ github.event.inputs.branch || github.ref_name }}
 
-      - uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: 24.11.0
+          node-version: ${{ env.NODE_VERSION }}
 
-      - run: npm ci
-        working-directory: ${{ env.APP_PATH }}
-
-      - uses: aws-actions/configure-aws-credentials@v4
+      - name: Install all workspaces
+        run: npm ci
+      
+      - name: Install infra deps
+        working-directory: infra
+        run: npm ci
+    
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ vars.ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - run: npm install -g aws-cdk
+      - name: Install AWS CDK CLI
+        run: npm install -g aws-cdk@latest
 
-      - run: cdk synth
-        working-directory: ${{ env.APP_PATH }}
-
-      - name: Deploy Dev
+      - name: Deploy Infrastructure (Dev)
+        working-directory: infra
         run: |
           cdk deploy $STACK_NAME-dev \
             --require-approval never \
             -c stage=dev \
             --parameters DbUser=${{ vars.DB_USER }} \
             --parameters DbPassword=${{ secrets.DB_PASSWORD }}
-        working-directory: ${{ env.APP_PATH }}
+
+      - name: Inject build metadata
+        run: |
+          echo "VITE_BUILD_ID=${{ github.run_number }}" >> apps/web/.env
+          echo "VITE_COMMIT_SHA=${{ github.sha }}" >> apps/web/.env
+
+      - name: Build frontend
+        run: npm run build --workspace apps/web
+
+      - name: Upload frontend to S3
+        run: |
+          BUCKET=$(aws cloudformation describe-stacks \
+            --stack-name $STACK_NAME-dev \
+            --query "Stacks[0].Outputs[?OutputKey=='SiteBucketName'].OutputValue" \
+            --output text)
+          echo "Deploying to $BUCKET"
+          aws s3 sync apps/web/dist s3://$BUCKET --delete
+
+      - name: Invalidate CloudFront cache
+        run: |
+          DIST_ID=$(aws cloudformation describe-stacks \
+            --stack-name $STACK_NAME-dev \
+            --query "Stacks[0].Outputs[?OutputKey=='SiteDistributionId'].OutputValue" \
+            --output text)
+          echo "Invalidating distribution $DIST_ID"
+          aws cloudfront create-invalidation --distribution-id $DIST_ID --paths "/*"
 
   deploy-prod:
     environment: prod
@@ -65,27 +95,61 @@ jobs:
     if: github.ref == 'refs/heads/main'
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout source
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: 24.11.0
+          node-version: ${{ env.NODE_VERSION }}
 
-      - run: npm ci
-        working-directory: ${{ env.APP_PATH }}
+      - name: Install all workspaces
+        run: npm ci
 
-      - uses: aws-actions/configure-aws-credentials@v4
+      - name: Install infra deps
+        working-directory: infra
+        run: npm ci
+        
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ vars.ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - run: npm install -g aws-cdk
+      - name: Install AWS CDK CLI
+        run: npm install -g aws-cdk@latest
 
-      - name: Deploy Prod
+      - name: Deploy Infrastructure (Prod)
+        working-directory: infra
         run: |
           cdk deploy $STACK_NAME-prod \
             --require-approval never \
             -c stage=prod \
             --parameters DbUser=${{ vars.DB_USER }} \
             --parameters DbPassword=${{ secrets.DB_PASSWORD }}
-        working-directory: ${{ env.APP_PATH }}
+
+      - name: Inject build metadata
+        run: |
+          echo "VITE_BUILD_ID=${{ github.run_number }}" >> apps/web/.env
+          echo "VITE_COMMIT_SHA=${{ github.sha }}" >> apps/web/.env
+
+      - name: Build frontend
+        run: npm run build --workspace apps/web
+
+      - name: Upload frontend to S3
+        run: |
+          BUCKET=$(aws cloudformation describe-stacks \
+            --stack-name $STACK_NAME-prod \
+            --query "Stacks[0].Outputs[?OutputKey=='SiteBucketName'].OutputValue" \
+            --output text)
+          echo "Deploying to $BUCKET"
+          aws s3 sync apps/web/dist s3://$BUCKET --delete
+
+      - name: Invalidate CloudFront cache
+        run: |
+          DIST_ID=$(aws cloudformation describe-stacks \
+            --stack-name $STACK_NAME-prod \
+            --query "Stacks[0].Outputs[?OutputKey=='SiteDistributionId'].OutputValue" \
+            --output text)
+          echo "Invalidating distribution $DIST_ID"
+          aws cloudfront create-invalidation --distribution-id $DIST_ID --paths "/*"
