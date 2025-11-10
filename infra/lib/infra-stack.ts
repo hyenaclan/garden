@@ -13,6 +13,8 @@ import * as targets from 'aws-cdk-lib/aws-events-targets';
 import * as origins from 'aws-cdk-lib/aws-cloudfront-origins';
 import * as cognito from 'aws-cdk-lib/aws-cognito';
 import * as apigwv2_authorizers from 'aws-cdk-lib/aws-apigatewayv2-authorizers';
+import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
+import * as path from 'path';
 
 export class InfraStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -59,42 +61,28 @@ export class InfraStack extends cdk.Stack {
 
     const lambdaSg = new ec2.SecurityGroup(this, 'LambdaSg', { vpc, allowAllOutbound: true });
 
-    // todo rube: replace with steve's api backend and connect to db
-    const temp_fn = new lambda.Function(this, 'ApiFn', {
-      runtime: lambda.Runtime.NODEJS_20_X,
-      handler: 'index.handler',
-      code: lambda.Code.fromInline(`
-        'use strict';
-        exports.handler = async (event) => {
-          const path = (event && (event.rawPath || event.path)) || '/';
-          if (path === '/health') {
-            return {
-              statusCode: 200,
-              headers: { 'content-type': 'application/json' },
-              body: JSON.stringify({ ok: true })
-            };
-          }
-          return {
-            statusCode: 200,
-            headers: { 'content-type': 'text/plain' },
-            body: 'Hello from inline Lambda!'
-          };
-        };
-      `),
+    const apiFn = new NodejsFunction(this, 'GardenApiFn', {
+      entry: path.join(__dirname, '..', '..', 'apps', 'api', 'src', 'lambda.ts'),
+      handler: 'handler',
+      runtime: lambda.Runtime.NODEJS_LATEST,
       vpc,
       vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_ISOLATED },
       securityGroups: [lambdaSg],
-      logGroup: new logs.LogGroup(this, 'ApiFnLogs', {
+      logGroup: new logs.LogGroup(this, 'GardenApiFnLogs', {
         retention: logs.RetentionDays.TWO_WEEKS,
         removalPolicy: cdk.RemovalPolicy.DESTROY,
       }),
+      bundling: {
+        minify: true,
+        externalModules: [],
+      },
     });
 
     // --- Keep Lambda backend warm via EventBridge rule ---
     new events.Rule(this, 'KeepWarmRule', {
       schedule: events.Schedule.rate(cdk.Duration.minutes(1)),
       targets: [
-        new targets.LambdaFunction(temp_fn, {
+        new targets.LambdaFunction(apiFn, {
           event: events.RuleTargetInput.fromObject({
             rawPath: '/health',
           }),
@@ -177,13 +165,13 @@ export class InfraStack extends cdk.Stack {
     api.addRoutes({
       path: '/{proxy+}',
       methods: [apigwv2.HttpMethod.ANY],
-      integration: new integ.HttpLambdaIntegration('ApiIntegration', temp_fn),
+      integration: new integ.HttpLambdaIntegration('ApiIntegration', apiFn),
     });
 
     api.addRoutes({
       path: '/api/{proxy+}',
       methods: [apigwv2.HttpMethod.ANY],
-      integration: new integ.HttpLambdaIntegration('ApiIntegrationSecure', temp_fn),
+      integration: new integ.HttpLambdaIntegration('ApiIntegrationSecure', apiFn),
       authorizer,
     });
     
