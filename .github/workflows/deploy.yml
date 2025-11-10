@@ -61,6 +61,11 @@ jobs:
             --parameters DbUser=${{ vars.DB_USER }} \
             --parameters DbPassword=${{ secrets.DB_PASSWORD }}
 
+      - name: Inject build metadata
+        run: |
+          echo "VITE_BUILD_ID=${{ github.run_number }}" >> apps/web/.env
+          echo "VITE_COMMIT_SHA=${{ github.sha }}" >> apps/web/.env
+
       - name: Build frontend
         run: npm run build --workspace apps/web
 
@@ -122,6 +127,11 @@ jobs:
             -c stage=prod \
             --parameters DbUser=${{ vars.DB_USER }} \
             --parameters DbPassword=${{ secrets.DB_PASSWORD }}
+
+      - name: Inject build metadata
+        run: |
+          echo "VITE_BUILD_ID=${{ github.run_number }}" >> apps/web/.env
+          echo "VITE_COMMIT_SHA=${{ github.sha }}" >> apps/web/.env
 
       - name: Build frontend
         run: npm run build --workspace apps/web

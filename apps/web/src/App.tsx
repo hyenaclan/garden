@@ -10,6 +10,9 @@ function App() {
   // Use state to hold the API response message
   const { apiResponse, isLoading, fetchData } = useApiFetch();
 
+  const buildId = import.meta.env.VITE_BUILD_ID;
+  const commitSha = import.meta.env.VITE_COMMIT_SHA?.slice(0, 7);
+
   return (
     <>
       <div>
@@ -28,7 +31,6 @@ function App() {
         <p>
           Edit <code>src/App.tsx</code> and save to test HMR
         </p>
-        <p>Rubes was here!</p>
       </div>
       <p className="read-the-docs">
         Click on the Vite and React logos to learn more
@@ -40,6 +42,9 @@ function App() {
           {apiResponse || 'Click button to fetch data'} 
         </p>
       </p>
+      <footer className="text-xs text-gray-500 mt-4">
+        Build #{buildId} ({commitSha})
+      </footer>
     </>
   );
 }
