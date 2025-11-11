@@ -13,10 +13,21 @@ module.exports = {
   rootDir: '.',
   
   // Glob patterns to match test files
-  testMatch: ['<rootDir>/src/**/*.test.ts'],
+  testMatch: [
+    '<rootDir>/src/**/*.test.ts',
+    '<rootDir>/src/**/*.spec.ts'
+  ],
   
   // Module file extensions to resolve
   moduleFileExtensions: ['ts', 'js', 'json', 'node'],
+
+  // Coverage configuration
+  collectCoverageFrom: [
+    'src/**/*.ts',
+    '!src/**/*.test.ts',
+    '!src/**/*.spec.ts',
+    '!src/**/*.d.ts'
+  ],
 
   // Specify the compiler to use
   globals: {
@@ -25,4 +36,13 @@ module.exports = {
       tsconfig: '<rootDir>/tsconfig.json', 
     },
   },
+
+  // Test timeout (useful for async tests)
+  testTimeout: 10000,
+
+  // Clear mocks between tests
+  clearMocks: true,
+
+  // Verbose output
+  verbose: true
 };

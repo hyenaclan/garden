@@ -1,25 +1,128 @@
-import request from 'supertest';
-// NOTE: We must import the app object directly, not call app.listen()
-// We assume your express server instance is exported from server.ts.
-// Since it's not currently exported, we will need to change server.ts next.
-import app from './server'; 
+import { init } from './server';
+import { FastifyInstance } from 'fastify';
 
-describe('GET /api/hello', () => {
-  it('should return a 200 OK status and a JSON body with the expected structure', async () => {
-    // 1. Use Supertest to execute a request against the Express app instance
-    const response = await request(app)
-      .get('/api/hello')
-      .expect('Content-Type', /json/) // Supertest assertion for header
-      .expect(200); // Supertest assertion for status code
+describe('Fastify Server', () => {
+  let app: FastifyInstance;
 
-    // 2. Use Jest assertions to verify the response body data
-    expect(response.body).toHaveProperty('message');
-    expect(typeof response.body.message).toBe('string');
-    
-    expect(response.body).toHaveProperty('status');
-    expect(response.body.status).toBe('ok');
+  // Initialize the app before all tests
+  beforeAll(async () => {
+    app = init();
+    await app.ready();
+  });
 
-    expect(response.body).toHaveProperty('timestamp');
-    expect(typeof response.body.timestamp).toBe('string');
+  // Clean up after all tests
+  afterAll(async () => {
+    await app.close();
+  });
+
+  describe('GET /health', () => {
+    it('should return 200 OK with { ok: true }', async () => {
+      const response = await app.inject({
+        method: 'GET',
+        url: '/health'
+      });
+
+      expect(response.statusCode).toBe(200);
+      expect(response.json()).toEqual({ ok: true });
+    });
+  });
+
+  describe('GET /temp-api/health', () => {
+    it('should return 200 OK status', async () => {
+      const response = await app.inject({
+        method: 'GET',
+        url: '/temp-api/health'
+      });
+
+      expect(response.statusCode).toBe(200);
+    });
+
+    it('should return a JSON response with correct structure', async () => {
+      const response = await app.inject({
+        method: 'GET',
+        url: '/temp-api/health'
+      });
+
+      const body = response.json();
+      
+      expect(body).toHaveProperty('message');
+      expect(body).toHaveProperty('status');
+      expect(body).toHaveProperty('timestamp');
+    });
+
+    it('should have status "ok"', async () => {
+      const response = await app.inject({
+        method: 'GET',
+        url: '/temp-api/health'
+      });
+
+      const body = response.json();
+      expect(body.status).toBe('ok');
+    });
+
+    it('should have a valid message', async () => {
+      const response = await app.inject({
+        method: 'GET',
+        url: '/temp-api/health'
+      });
+
+      const body = response.json();
+      expect(typeof body.message).toBe('string');
+      expect(body.message).toBe('Hello from the Garden API');
+    });
+
+    it('should have a valid ISO timestamp', async () => {
+      const response = await app.inject({
+        method: 'GET',
+        url: '/temp-api/health'
+      });
+
+      const body = response.json();
+      expect(typeof body.timestamp).toBe('string');
+      
+      // Verify it's a valid ISO date string
+      const date = new Date(body.timestamp);
+      expect(date.toISOString()).toBe(body.timestamp);
+    });
+
+    it('should have CORS headers', async () => {
+      const response = await app.inject({
+        method: 'GET',
+        url: '/temp-api/health',
+        headers: {
+          origin: 'http://localhost:5173'
+        }
+      });
+
+      expect(response.headers).toHaveProperty('access-control-allow-origin');
+    });
+  });
+
+  describe('GET /nonexistent', () => {
+    it('should return 404 for non-existent routes', async () => {
+      const response = await app.inject({
+        method: 'GET',
+        url: '/nonexistent'
+      });
+
+      expect(response.statusCode).toBe(404);
+    });
+  });
+
+  describe('CORS preflight', () => {
+    it('should handle OPTIONS requests', async () => {
+      const response = await app.inject({
+        method: 'OPTIONS',
+        url: '/temp-api/health',
+        headers: {
+          origin: 'http://localhost:5173',
+          'access-control-request-method': 'GET'
+        }
+      });
+
+      expect(response.statusCode).toBe(204);
+      expect(response.headers).toHaveProperty('access-control-allow-origin');
+      expect(response.headers).toHaveProperty('access-control-allow-methods');
+    });
   });
 });
