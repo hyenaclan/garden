@@ -26,7 +26,6 @@ export const useApiFetch = (): ApiFetchResult => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  // CRITICAL FIX: Construct the full API URL using the Vite environment variable
   const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api/hello`;
 
   const fetchData = useCallback(async () => {

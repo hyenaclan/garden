@@ -38,11 +38,15 @@ jobs:
 
       - name: Install all workspaces
         run: npm ci
-      
+
+      - name: Run API tests
+        working-directory: apps/api
+        run: npm test
+
       - name: Install infra deps
         working-directory: infra
         run: npm ci
-    
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
