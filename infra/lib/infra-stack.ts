@@ -15,6 +15,7 @@ import * as cognito from 'aws-cdk-lib/aws-cognito';
 import * as apigwv2_authorizers from 'aws-cdk-lib/aws-apigatewayv2-authorizers';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import * as path from 'path';
+import * as fs from 'fs';
 
 export class InfraStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -68,6 +69,12 @@ export class InfraStack extends cdk.Stack {
       vpc,
       vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_ISOLATED },
       securityGroups: [lambdaSg],
+      environment: {
+        DB_HOST: db.instanceEndpoint.hostname,
+        DB_USER: dbUser.valueAsString,
+        DB_PASS: dbPassword.valueAsString,
+        DB_NAME: 'garden',
+      },
       logGroup: new logs.LogGroup(this, 'GardenApiFnLogs', {
         retention: logs.RetentionDays.TWO_WEEKS,
         removalPolicy: cdk.RemovalPolicy.DESTROY,
@@ -77,6 +84,8 @@ export class InfraStack extends cdk.Stack {
         externalModules: [],
       },
     });
+
+    db.connections.allowDefaultPortFrom(apiFn);
 
     // --- Keep Lambda backend warm via EventBridge rule ---
     new events.Rule(this, 'KeepWarmRule', {
@@ -89,6 +98,43 @@ export class InfraStack extends cdk.Stack {
         }),
       ],
     });
+
+    const migrateFn = new NodejsFunction(this, 'GardenDBMigrateFn', {
+      entry: path.join(__dirname, '..', '..', 'apps', 'api', 'src', 'migrate.ts'),
+      handler: 'handler',
+      runtime: lambda.Runtime.NODEJS_LATEST,
+      vpc,
+      vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_ISOLATED },
+      securityGroups: [lambdaSg],
+      environment: {
+        DB_HOST: db.instanceEndpoint.hostname,
+        DB_USER: dbUser.valueAsString,
+        DB_PASS: dbPassword.valueAsString,
+        DB_NAME: 'garden',
+      },
+      bundling: {
+        minify: true,
+        commandHooks: {
+          afterBundling(inputDir: string, outputDir: string): string[] {
+            console.log('Bundling migrateFn...');
+            console.log('inputDir:', inputDir);
+            console.log('outputDir:', outputDir);
+            console.log('cwd:', process.cwd());
+
+            const drizzleSrc = path.join(inputDir, '..', 'apps', 'api', 'drizzle')
+            console.log('Resolved drizzleSrc:', drizzleSrc);
+
+            return [
+              `if [ ! -d "${drizzleSrc}" ]; then echo "❌ Missing ${drizzleSrc}"; exit 1; fi`,
+              `cp -r ${drizzleSrc} ${outputDir}/drizzle`,
+            ];
+          },
+          beforeBundling(): string[] { return []; },
+          beforeInstall(): string[] { return []; },
+        },
+      },
+    });
+    db.connections.allowDefaultPortFrom(migrateFn);
 
     // --- Static React app hosting ---
     const siteBucket = new s3.Bucket(this, 'SiteBucket', {
@@ -175,6 +221,8 @@ export class InfraStack extends cdk.Stack {
       authorizer,
     });
     
+    new cdk.CfnOutput(this, 'GardenApiFnName', { value: apiFn.functionName });
+    new cdk.CfnOutput(this, 'MigrateFnName', { value: migrateFn.functionName });
     new cdk.CfnOutput(this, 'SiteDistributionId', { value: distribution.distributionId });
     new cdk.CfnOutput(this, 'SiteBucketName', { value: siteBucket.bucketName });
     new cdk.CfnOutput(this, 'CognitoDomain', { value: domain.domainName });
