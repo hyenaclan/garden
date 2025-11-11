@@ -17,7 +17,7 @@ permissions:
 env:
   AWS_REGION: us-east-1
   STACK_NAME: infra
-  NODE_VERSION: 22.12.0
+  NODE_VERSION: 22.11.0
 
 jobs:
   deploy-dev:
