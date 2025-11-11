@@ -1,10 +1,10 @@
 import { useState, useCallback } from 'react';
 
-// Define the structure expected from the API for clarity
+// Define the type locally to remove dependency on @garden/types
 interface HelloApiResponse {
-    message: string;
-    timestamp: string; 
-    status: 'ok' | 'error';
+  message: string;
+  timestamp: number;
+  status: 'ok' | 'error';
 }
 
 // Define the shape of the data returned by the hook
@@ -18,15 +18,12 @@ interface ApiFetchResult {
 /**
  * Custom React hook for fetching data from the /api/hello endpoint.
  * This abstracts away the fetch logic, loading, and error states.
- * It uses the VITE_API_BASE_URL environment variable for cross-origin requests.
  * @returns {ApiFetchResult} An object containing the response, status, and fetch function.
  */
 export const useApiFetch = (): ApiFetchResult => {
   const [apiResponse, setApiResponse] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
-  const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api/hello`;
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
@@ -57,7 +54,7 @@ export const useApiFetch = (): ApiFetchResult => {
     } finally {
       setIsLoading(false);
     }
-  }, [API_URL]); 
+  }, []); // Empty dependency array means this function is created once
 
   return { apiResponse, isLoading, error, fetchData };
 };
