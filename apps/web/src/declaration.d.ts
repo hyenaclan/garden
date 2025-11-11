@@ -21,6 +21,7 @@ declare module '*.jpg' {
 interface ImportMetaEnv {
   readonly VITE_BUILD_ID: string;
   readonly VITE_COMMIT_SHA: string;
+  readonly VITE_API_BASE_URL: string;
 }
 
 interface ImportMeta {

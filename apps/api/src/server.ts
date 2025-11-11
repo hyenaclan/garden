@@ -1,21 +1,28 @@
-// apps/api/src/server.ts
-import express, { Request, Response } from 'express';
+import Fastify from 'fastify';
 
-const app = express();
-const port = 3001; // Dedicated port for the API
+export function init() {
+  const app = Fastify({ logger: true })
 
-// Middleware to parse incoming JSON requests
-app.use(express.json());
-
-// Define the root route with explicit TypeScript types for Request and Response
-app.get('/api/hello', (req: Request, res: Response) => {
-  res.json({ 
+  app.get('/temp-api/health', async () => ({
     message: 'Hello from the Garden API',
     timestamp: new Date().toISOString(),
-    status: 'ok' 
-  });
-});
+    status: 'ok',
+  }))
 
-app.listen(port, () => {
-  console.log(`[API] Server running at http://localhost:${port}`);
-});
+  app.get('/health', async () => ({ ok: true }))
+
+  return app
+}
+
+// if run locally (e.g. npm run dev)
+if (require.main === module) {
+  const app = init()
+  const port = 3001
+  app.listen({ port }, (err, address) => {
+    if (err) {
+      app.log.error(err)
+      process.exit(1)
+    }
+    app.log.info(`[API] Server running at ${address}`)
+  })
+}

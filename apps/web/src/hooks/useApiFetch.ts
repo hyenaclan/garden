@@ -31,7 +31,8 @@ export const useApiFetch = (): ApiFetchResult => {
     setApiResponse('Fetching data...'); // Temporary loading message
     
     try {
-      const response = await fetch('/api/hello');
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '';
+      const response = await fetch(`${API_BASE_URL}/temp-api/health`);
       
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);

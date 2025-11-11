@@ -14,13 +14,12 @@
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
-    "@types/express": "^5.0.5",
     "@types/node": "^24.10.0",
     "nodemon": "^3.1.10",
     "ts-node": "^10.9.2"
   },
   "dependencies": {
-    "@garden/types": "^1.0.0",
-    "express": "^5.1.0"
+    "@fastify/aws-lambda": "^6.1.1",
+    "fastify": "^5.6.2"
   }
 }
