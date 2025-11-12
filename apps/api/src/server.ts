@@ -1,7 +1,14 @@
 import Fastify from 'fastify';
+import cors from '@fastify/cors';
 
 export function init() {
   const app = Fastify({ logger: true })
+
+  // Register CORS plugin
+  app.register(cors, {
+    origin: true, // Allow all origins in development, or specify your frontend URL
+    credentials: true
+  })
 
   app.get('/temp-api/health', async () => ({
     message: 'Hello from the Garden API',
