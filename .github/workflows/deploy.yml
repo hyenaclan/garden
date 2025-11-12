@@ -64,12 +64,27 @@ jobs:
             -c stage=dev \
             --parameters DbUser=${{ vars.DB_USER }} \
             --parameters DbPassword=${{ secrets.DB_PASSWORD }}
+      
+      - name: Run DB migrations (Dev)
+        run: |
+          MIGRATE_FN=$(aws cloudformation describe-stacks \
+            --stack-name $STACK_NAME-dev \
+            --query "Stacks[0].Outputs[?OutputKey=='MigrateFnName'].OutputValue" \
+            --output text)
+          aws lambda invoke --function-name "$MIGRATE_FN" response.json --log-type Tail > result.json
+          cat response.json
+          FUNCTION_ERROR=$(jq -r '.FunctionError // empty' result.json)
+          if [ -n "$FUNCTION_ERROR" ]; then
+            echo "❌ Migration Lambda failed"
+            exit 1
+          fi
 
       - name: Inject build metadata
         run: |
           echo "VITE_BUILD_ID=${{ github.run_number }}" >> apps/web/.env
           echo "VITE_COMMIT_SHA=${{ github.sha }}" >> apps/web/.env
           echo "VITE_API_BASE_URL=https://e75x4uq227.execute-api.us-east-1.amazonaws.com" >> apps/web/.env
+          echo "DATABASE_URL=postgresql://${{ vars.DB_USER }}:${{ secrets.DB_PASSWORD }}@${{ vars.DB_HOST }}:5432/garden" >> apps/api/.env
 
       - name: Install web build dependencies
         run: npm install @rollup/rollup-linux-x64-gnu --workspace apps/web --no-save
@@ -135,12 +150,27 @@ jobs:
             -c stage=prod \
             --parameters DbUser=${{ vars.DB_USER }} \
             --parameters DbPassword=${{ secrets.DB_PASSWORD }}
+      
+      - name: Run DB migrations (Prod)
+        run: |
+          MIGRATE_FN=$(aws cloudformation describe-stacks \
+            --stack-name $STACK_NAME-dev \
+            --query "Stacks[0].Outputs[?OutputKey=='MigrateFnName'].OutputValue" \
+            --output text)
+          aws lambda invoke --function-name "$MIGRATE_FN" response.json
+          cat response.json
+          FUNCTION_ERROR=$(jq -r '.FunctionError // empty' result.json)
+          if [ -n "$FUNCTION_ERROR" ]; then
+            echo "❌ Migration Lambda failed"
+            exit 1
+          fi
 
       - name: Inject build metadata
         run: |
           echo "VITE_BUILD_ID=${{ github.run_number }}" >> apps/web/.env
           echo "VITE_COMMIT_SHA=${{ github.sha }}" >> apps/web/.env
           echo "VITE_API_BASE_URL=https://2ugomkefji.execute-api.us-east-1.amazonaws.com" >> apps/web/.env
+          echo "DATABASE_URL=postgresql://${{ vars.DB_USER }}:${{ secrets.DB_PASSWORD }}@${{ vars.DB_HOST }}:5432/garden" >> apps/api/.env
 
       - name: Install web build dependencies
         run: npm install @rollup/rollup-linux-x64-gnu --workspace apps/web --no-save
