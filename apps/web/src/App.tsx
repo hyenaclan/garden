@@ -2,7 +2,7 @@ import { useState } from "react";
 import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
 import "./App.scss";
-import { useApiFetch } from "./hooks/useApiFetch";
+import { useApiFetch, useUserProfile } from "./hooks/useApiFetch";
 import { AuthProvider, useAuth } from "react-oidc-context";
 import { cognitoAuthConfig } from "./auth/cognito-config";
 
@@ -10,6 +10,7 @@ function App() {
   const [count, setCount] = useState(0);
   // Use state to hold the API response message
   const { apiResponse, isLoading, fetchData } = useApiFetch();
+  const { userProfile, isUserLoading, fetchUserData } = useUserProfile();
 
   const buildId = import.meta.env.VITE_BUILD_ID;
   const commitSha = import.meta.env.VITE_COMMIT_SHA?.slice(0, 7);
@@ -66,6 +67,18 @@ function App() {
           {apiResponse || "Click button to fetch data"}
         </p>
       </p>
+
+      {auth.isAuthenticated && (
+        <p>
+          <button onClick={fetchUserData} disabled={isUserLoading}>
+            Fetch User Profile
+          </button>
+          <h3 className="mt-4 font-bold">API Output:</h3>
+          <p className="bg-white p-2 border border-gray-300 rounded text-sm break-all min-h-[2.5rem]">
+            user profile: <pre>{JSON.stringify(userProfile, null, 2)}</pre>
+          </p>
+        </p>
+      )}
       <footer className="text-xs text-gray-500 mt-4">
         Build #{buildId} ({commitSha})
       </footer>

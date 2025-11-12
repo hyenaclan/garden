@@ -3,12 +3,14 @@ import cors from '@fastify/cors';
 import { getDb } from './db';
 import { sql } from 'drizzle-orm';
 import { gardeners } from './schema';
+import { verifyAuth } from "./middleware/auth-middleware";
+
 
 export function init() {
-  const app = Fastify({ logger: true })
+  const app = Fastify({ logger: true });
 
   app.register(cors, {
-    origin: true,
+    origin: ["http://localhost:5173", "http://localhost:3000"], // Allow Vite and alternative dev ports
     credentials: true
   })
 
@@ -31,18 +33,18 @@ export function init() {
         }
       }
     }, async () => {
-    const db = getDb()
-    const [{ count }] = await db.select({ count: sql<number>`count(*)` }).from(gardeners)
+      const db = getDb()
+      const [{ count }] = await db.select({ count: sql<number>`count(*)` }).from(gardeners)
 
-    return {
-      message: 'Hello from the Garden API',
-      timestamp: new Date().toISOString(),
-      status: 'ok',
-      user_count: Number(count),
-    }
-  })
+      return {
+        message: 'Hello from the Garden API',
+        timestamp: new Date().toISOString(),
+        status: 'ok',
+        user_count: Number(count),
+      }
+    })
 
-    instance.get('/health', {
+    instance.get("/health", {
       schema: {
         tags: ['health'],
         description: 'Simple health check endpoint',
@@ -55,10 +57,17 @@ export function init() {
           }
         }
       }
-    }, async () => ({ ok: true }))
+    }, async () => ({ ok: true }));
+
+    // Protected route example - requires valid Cognito JWT
+    app.get("/api/user/profile", { preHandler: verifyAuth }, async (request) => ({
+      message: "This is a protected route",
+      user: request.user, // User info from JWT
+      timestamp: new Date().toISOString(),
+    }));
   })
 
-  return app
+  return app;
 }
 
 // if run locally (e.g. npm run dev)
