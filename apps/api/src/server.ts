@@ -1,5 +1,7 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
+import swagger from '@fastify/swagger';
+import swaggerUi from '@fastify/swagger-ui';
 
 export function init() {
   const app = Fastify({ logger: true })
@@ -10,13 +12,81 @@ export function init() {
     credentials: true
   })
 
-  app.get('/temp-api/health', async () => ({
-    message: 'Hello from the Garden API',
-    timestamp: new Date().toISOString(),
-    status: 'ok',
-  }))
+  // Register Swagger
+  app.register(swagger, {
+    openapi: {
+      info: {
+        title: 'Garden API',
+        description: 'API documentation for the Garden application',
+        version: '1.0.0'
+      },
+      servers: [
+        {
+          url: 'http://localhost:3001',
+          description: 'Development server'
+        },
+        {
+          url: 'https://e75x4uq227.execute-api.us-east-1.amazonaws.com',
+          description: 'Dev environment'
+        }
+      ],
+      tags: [
+        { name: 'health', description: 'Health check endpoints' }
+      ]
+    },
+    transform: ({ schema, url }) => {
+      return { schema, url }
+    }
+  })
 
-  app.get('/health', async () => ({ ok: true }))
+  // Register routes
+  app.register(async (instance) => {
+    instance.get('/temp-api/health', {
+      schema: {
+        tags: ['health'],
+        description: 'Health check endpoint with detailed information',
+        response: {
+          200: {
+            type: 'object',
+            properties: {
+              message: { type: 'string' },
+              timestamp: { type: 'string', format: 'date-time' },
+              status: { type: 'string', enum: ['ok', 'error'] }
+            }
+          }
+        }
+      }
+    }, async () => ({
+      message: 'Hello from the Garden API',
+      timestamp: new Date().toISOString(),
+      status: 'ok',
+    }))
+
+    instance.get('/health', {
+      schema: {
+        tags: ['health'],
+        description: 'Simple health check endpoint',
+        response: {
+          200: {
+            type: 'object',
+            properties: {
+              ok: { type: 'boolean' }
+            }
+          }
+        }
+      }
+    }, async () => ({ ok: true }))
+  })
+
+  // Register Swagger UI (must be after routes)
+  app.register(swaggerUi, {
+    routePrefix: '/docs',
+    uiConfig: {
+      docExpansion: 'list',
+      deepLinking: false
+    },
+    staticCSP: true
+  })
 
   return app
 }
