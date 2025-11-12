@@ -86,9 +86,6 @@ jobs:
           echo "VITE_API_BASE_URL=https://e75x4uq227.execute-api.us-east-1.amazonaws.com" >> apps/web/.env
           echo "DATABASE_URL=postgresql://${{ vars.DB_USER }}:${{ secrets.DB_PASSWORD }}@${{ vars.DB_HOST }}:5432/garden" >> apps/api/.env
 
-      - name: Install web build dependencies
-        run: npm install @rollup/rollup-linux-x64-gnu --workspace apps/web --no-save
-
       - name: Build frontend
         run: npm run build --workspace apps/web
 
@@ -174,9 +171,6 @@ jobs:
 
       - name: Install web build dependencies
         run: npm install @rollup/rollup-linux-x64-gnu --workspace apps/web --no-save
-
-      - name: Build frontend
-        run: npm run build --workspace apps/web
 
       - name: Upload frontend to S3
         run: |
