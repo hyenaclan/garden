@@ -71,6 +71,9 @@ jobs:
           echo "VITE_COMMIT_SHA=${{ github.sha }}" >> apps/web/.env
           echo "VITE_API_BASE_URL=https://e75x4uq227.execute-api.us-east-1.amazonaws.com" >> apps/web/.env
 
+      - name: Install web build dependencies
+        run: npm install @rollup/rollup-linux-x64-gnu --workspace apps/web --no-save
+
       - name: Build frontend
         run: npm run build --workspace apps/web
 
@@ -138,6 +141,9 @@ jobs:
           echo "VITE_BUILD_ID=${{ github.run_number }}" >> apps/web/.env
           echo "VITE_COMMIT_SHA=${{ github.sha }}" >> apps/web/.env
           echo "VITE_API_BASE_URL=https://2ugomkefji.execute-api.us-east-1.amazonaws.com" >> apps/web/.env
+
+      - name: Install web build dependencies
+        run: npm install @rollup/rollup-linux-x64-gnu --workspace apps/web --no-save
 
       - name: Build frontend
         run: npm run build --workspace apps/web
