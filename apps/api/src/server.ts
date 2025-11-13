@@ -1,9 +1,7 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
-import swagger from '@fastify/swagger';
-import swaggerUi from '@fastify/swagger-ui';
 
-export function init() {
+export function init(options?: { enableSwagger?: boolean }) {
   const app = Fastify({ logger: true })
 
   // Register CORS plugin
@@ -12,32 +10,35 @@ export function init() {
     credentials: true
   })
 
-  // Register Swagger
-  app.register(swagger, {
-    openapi: {
-      info: {
-        title: 'Garden API',
-        description: 'API documentation for the Garden application',
-        version: '1.0.0'
-      },
-      servers: [
-        {
-          url: 'http://localhost:3001',
-          description: 'Development server'
+  // Register Swagger if enabled (for OpenAPI generation)
+  if (options?.enableSwagger) {
+    const swagger = require('@fastify/swagger');
+    app.register(swagger, {
+      openapi: {
+        info: {
+          title: 'Garden API',
+          description: 'API documentation for the Garden application',
+          version: '1.0.0'
         },
-        {
-          url: 'https://e75x4uq227.execute-api.us-east-1.amazonaws.com',
-          description: 'Dev environment'
-        }
-      ],
-      tags: [
-        { name: 'health', description: 'Health check endpoints' }
-      ]
-    },
-    transform: ({ schema, url }) => {
-      return { schema, url }
-    }
-  })
+        servers: [
+          {
+            url: 'http://localhost:3001',
+            description: 'Development server'
+          },
+          {
+            url: 'https://e75x4uq227.execute-api.us-east-1.amazonaws.com',
+            description: 'Dev environment'
+          }
+        ],
+        tags: [
+          { name: 'health', description: 'Health check endpoints' }
+        ]
+      },
+      transform: ({ schema, url }: { schema: any; url: string }) => {
+        return { schema, url };
+      }
+    });
+  }
 
   // Register routes
   app.register(async (instance) => {
@@ -78,7 +79,17 @@ export function init() {
     }, async () => ({ ok: true }))
   })
 
-  // Register Swagger UI (must be after routes)
+  return app
+}
+
+// if run locally (e.g. npm run dev)
+if (require.main === module) {
+  // Initialize with Swagger enabled for development
+  const app = init({ enableSwagger: true })
+
+  // Register Swagger UI only in development mode
+  const swaggerUi = require('@fastify/swagger-ui')
+
   app.register(swaggerUi, {
     routePrefix: '/docs',
     uiConfig: {
@@ -88,12 +99,6 @@ export function init() {
     staticCSP: true
   })
 
-  return app
-}
-
-// if run locally (e.g. npm run dev)
-if (require.main === module) {
-  const app = init()
   const port = 3001
   app.listen({ port }, (err, address) => {
     if (err) {

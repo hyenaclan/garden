@@ -12,13 +12,16 @@
     "test:coverage": "jest --coverage",
     "test:verbose": "jest --verbose",
     "drizzle:gen": "drizzle-kit generate",
-    "drizzle:migrate": "drizzle-kit migrate"
+    "drizzle:migrate": "drizzle-kit migrate",
+    "generate-openapi": "ts-node src/generate-openapi.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
+    "@fastify/swagger": "^9.6.1",
+    "@fastify/swagger-ui": "^5.2.3",
     "@types/jest": "^29.5.12",
     "@types/node": "^24.10.0",
     "@types/pg": "^8.15.6",
@@ -32,8 +35,6 @@
   "dependencies": {
     "@fastify/aws-lambda": "^6.1.1",
     "@fastify/cors": "^10.0.1",
-    "@fastify/swagger": "^9.6.1",
-    "@fastify/swagger-ui": "^5.2.3",
     "drizzle-orm": "^0.44.7",
     "fastify": "^5.6.2",
     "pg": "^8.16.3"

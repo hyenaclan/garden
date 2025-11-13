@@ -86,6 +86,10 @@ jobs:
           echo "VITE_API_BASE_URL=https://e75x4uq227.execute-api.us-east-1.amazonaws.com" >> apps/web/.env
           echo "DATABASE_URL=postgresql://${{ vars.DB_USER }}:${{ secrets.DB_PASSWORD }}@${{ vars.DB_HOST }}:5432/garden" >> apps/api/.env
 
+      - name: Generate OpenAPI spec
+        working-directory: apps/api
+        run: npm run generate-openapi
+
       - name: Install web build dependencies
         run: npm install @rollup/rollup-linux-x64-gnu --workspace apps/web --no-save
 
