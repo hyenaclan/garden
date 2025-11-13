@@ -25,10 +25,10 @@ export function init(options?: { enableSwagger?: boolean }) {
             url: 'http://localhost:3001',
             description: 'Development server'
           },
-          {
-            url: 'https://e75x4uq227.execute-api.us-east-1.amazonaws.com',
+          ...(process.env.DEV_API_URL ? [{
+            url: process.env.DEV_API_URL,
             description: 'Dev environment'
-          }
+          }] : [])
         ],
         tags: [
           { name: 'health', description: 'Health check endpoints' }

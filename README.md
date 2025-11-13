@@ -23,9 +23,12 @@ docker run --name local-postgres \
 ~~~
 
 ### 3. .env file for local dev
-Create a .env file in apps/api folder. It should have all the required ENV vars for the api to run. 
-Place the following env var in the file.
-```DATABASE_URL=postgres://postgres:postgres@localhost:5432/garden```
+Create a .env file in apps/api folder. It should have all the required ENV vars for the api to run.
+Place the following env vars in the file:
+```
+DATABASE_URL=postgres://postgres:postgres@localhost:5432/garden
+DEV_API_URL=<your-dev-api-gateway-url>
+```
 
 ### 4. Use Drizzle to view database (you can also use your preferred db viewer like Beekeeper)
 ```npx drizzle-kit studio```

@@ -1,6 +1,10 @@
 import { writeFileSync } from 'fs';
 import { join } from 'path';
+import { config } from 'dotenv';
 import { init } from './server';
+
+// Load environment variables
+config();
 
 async function generateOpenApiSpec() {
   // Initialize app with Swagger enabled
