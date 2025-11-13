@@ -26,7 +26,10 @@ docker run --name local-postgres \
 Create a .env file in apps/api folder. It should have all the required ENV vars for the api to run.
 Place the following env vars in the file:
 ```
-DATABASE_URL=postgres://postgres:postgres@localhost:5432/garden
+DB_HOST=localhost
+DB_USER=postgres
+DB_PASS=postgres
+DB_NAME=garden
 DEV_API_URL=<your-dev-api-gateway-url>
 ```
 
@@ -37,22 +40,6 @@ DEV_API_URL=<your-dev-api-gateway-url>
 
 ## Log into AWS CLI as Dev Profile
 ```aws sso login --profile dev```
-
-# Environments - DEV
-
-## cloudfront url
-```https://d2oi41qf2bcxlf.cloudfront.net/```
-
-## lambda health url
-```curl "https://e75x4uq227.execute-api.us-east-1.amazonaws.com/health"```
-
-# Environments - PROD
-
-## cloudfront url
-```https://d1xlxjcnv43v88.cloudfront.net/```
-
-## lambda health url
-```curl "https://2ugomkefji.execute-api.us-east-1.amazonaws.com/health"```
 
 # db migrations (must be run in apps/api directory)
 

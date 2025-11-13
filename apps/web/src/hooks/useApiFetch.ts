@@ -5,6 +5,7 @@ interface HelloApiResponse {
   message: string;
   timestamp: number;
   status: 'ok' | 'error';
+  user_count: number;
 }
 
 // Define the shape of the data returned by the hook
@@ -40,7 +41,7 @@ export const useApiFetch = (): ApiFetchResult => {
       
       const data: HelloApiResponse = await response.json(); 
       
-      const message = `API Message: "${data.message}" | Status: ${data.status} | Timestamp: ${data.timestamp}`;
+      const message = `API Message: "${data.message}" | Status: ${data.status} | Timestamp: ${data.timestamp} | Gardeners #: ${data.user_count}`;
       setApiResponse(message);
 
       console.log('API Data:', data);

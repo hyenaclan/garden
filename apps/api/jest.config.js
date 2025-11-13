@@ -14,8 +14,7 @@ module.exports = {
   
   // Glob patterns to match test files
   testMatch: [
-    '<rootDir>/src/**/*.test.ts',
-    '<rootDir>/src/**/*.spec.ts'
+    '<rootDir>/tests/**/*.test.ts',
   ],
   
   // Module file extensions to resolve
@@ -29,12 +28,10 @@ module.exports = {
     '!src/**/*.d.ts'
   ],
 
-  // Specify the compiler to use
-  globals: {
-    'ts-jest': {
-      // Use the API's tsconfig.json file for compilation
-      tsconfig: '<rootDir>/tsconfig.json', 
-    },
+    transform: {
+    '^.+\\.tsx?$': ['ts-jest', {
+      tsconfig: 'tsconfig.json',
+    }],
   },
 
   // Test timeout (useful for async tests)

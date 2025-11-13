@@ -1,12 +1,14 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
+import { getDb } from './db';
+import { sql } from 'drizzle-orm';
+import { gardeners } from './schema';
 
 export function init(options?: { enableSwagger?: boolean }) {
   const app = Fastify({ logger: true })
 
-  // Register CORS plugin
   app.register(cors, {
-    origin: true, // Allow all origins in development, or specify your frontend URL
+    origin: true,
     credentials: true
   })
 
@@ -52,16 +54,23 @@ export function init(options?: { enableSwagger?: boolean }) {
             properties: {
               message: { type: 'string' },
               timestamp: { type: 'string', format: 'date-time' },
-              status: { type: 'string', enum: ['ok', 'error'] }
+              status: { type: 'string', enum: ['ok', 'error'] },
+              user_count: { type: 'number' }
             }
           }
         }
       }
-    }, async () => ({
+    }, async () => {
+    const db = getDb()
+    const [{ count }] = await db.select({ count: sql<number>`count(*)` }).from(gardeners)
+
+    return {
       message: 'Hello from the Garden API',
       timestamp: new Date().toISOString(),
       status: 'ok',
-    }))
+      user_count: Number(count),
+    }
+  })
 
     instance.get('/health', {
       schema: {

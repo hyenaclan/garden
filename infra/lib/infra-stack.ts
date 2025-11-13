@@ -15,7 +15,6 @@ import * as cognito from 'aws-cdk-lib/aws-cognito';
 import * as apigwv2_authorizers from 'aws-cdk-lib/aws-apigatewayv2-authorizers';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import * as path from 'path';
-import * as fs from 'fs';
 
 export class InfraStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -83,6 +82,7 @@ export class InfraStack extends cdk.Stack {
         minify: true,
         externalModules: [],
       },
+      timeout: cdk.Duration.seconds(10)
     });
 
     db.connections.allowDefaultPortFrom(apiFn);
@@ -112,6 +112,7 @@ export class InfraStack extends cdk.Stack {
         DB_PASS: dbPassword.valueAsString,
         DB_NAME: 'garden',
       },
+      timeout: cdk.Duration.seconds(29),
       bundling: {
         minify: true,
         commandHooks: {
