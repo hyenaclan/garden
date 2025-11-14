@@ -1,44 +1,16 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
+import { getDb } from './db';
+import { sql } from 'drizzle-orm';
+import { gardeners } from './schema';
 
-export function init(options?: { enableSwagger?: boolean }) {
+export function init() {
   const app = Fastify({ logger: true })
 
-  // Register CORS plugin
   app.register(cors, {
-    origin: true, // Allow all origins in development, or specify your frontend URL
+    origin: true,
     credentials: true
   })
-
-  // Register Swagger if enabled (for OpenAPI generation)
-  if (options?.enableSwagger) {
-    const swagger = require('@fastify/swagger');
-    app.register(swagger, {
-      openapi: {
-        info: {
-          title: 'Garden API',
-          description: 'API documentation for the Garden application',
-          version: '1.0.0'
-        },
-        servers: [
-          {
-            url: 'http://localhost:3001',
-            description: 'Development server'
-          },
-          ...(process.env.DEV_API_URL ? [{
-            url: process.env.DEV_API_URL,
-            description: 'Dev environment'
-          }] : [])
-        ],
-        tags: [
-          { name: 'health', description: 'Health check endpoints' }
-        ]
-      },
-      transform: ({ schema, url }: { schema: any; url: string }) => {
-        return { schema, url };
-      }
-    });
-  }
 
   // Register routes
   app.register(async (instance) => {
@@ -52,16 +24,23 @@ export function init(options?: { enableSwagger?: boolean }) {
             properties: {
               message: { type: 'string' },
               timestamp: { type: 'string', format: 'date-time' },
-              status: { type: 'string', enum: ['ok', 'error'] }
+              status: { type: 'string', enum: ['ok', 'error'] },
+              user_count: { type: 'number' }
             }
           }
         }
       }
-    }, async () => ({
+    }, async () => {
+    const db = getDb()
+    const [{ count }] = await db.select({ count: sql<number>`count(*)` }).from(gardeners)
+
+    return {
       message: 'Hello from the Garden API',
       timestamp: new Date().toISOString(),
       status: 'ok',
-    }))
+      user_count: Number(count),
+    }
+  })
 
     instance.get('/health', {
       schema: {
@@ -84,11 +63,38 @@ export function init(options?: { enableSwagger?: boolean }) {
 
 // if run locally (e.g. npm run dev)
 if (require.main === module) {
-  // Initialize with Swagger enabled for development
-  const app = init({ enableSwagger: true })
+  
+  const app = init()
 
-  // Register Swagger UI only in development mode
+  // Register Swagger for OpenAPI generation
+  const swagger = require('@fastify/swagger');
   const swaggerUi = require('@fastify/swagger-ui')
+
+  app.register(swagger, {
+    openapi: {
+      info: {
+        title: 'Garden API',
+        description: 'API documentation for the Garden application',
+        version: '1.0.0'
+      },
+      servers: [
+        {
+          url: 'http://localhost:3001',
+          description: 'Development server'
+        },
+        ...(process.env.DEV_API_URL ? [{
+          url: process.env.DEV_API_URL,
+          description: 'Dev environment'
+        }] : [])
+      ],
+      tags: [
+        { name: 'health', description: 'Health check endpoints' }
+      ]
+    },
+    transform: ({ schema, url }: { schema: any; url: string }) => {
+      return { schema, url };
+    }
+  });
 
   app.register(swaggerUi, {
     routePrefix: '/docs',
