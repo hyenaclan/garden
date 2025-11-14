@@ -3,7 +3,8 @@ import cors from '@fastify/cors';
 import { getDb } from './db';
 import { sql } from 'drizzle-orm';
 import { gardeners } from './schema';
-import { verifyAuth } from "./middleware/auth-middleware";
+import { verifyAuth } from "./auth/auth-middleware";
+import { logout } from "./auth/auth-utils";
 
 
 export function init() {
@@ -60,12 +61,35 @@ export function init() {
     }, async () => ({ ok: true }));
 
     // Protected route example - requires valid Cognito JWT
-    app.get("/api/user/profile", { preHandler: verifyAuth }, async (request) => ({
-      message: "This is a protected route",
-      user: request.user, // User info from JWT
-      timestamp: new Date().toISOString(),
-    }));
-  })
+    app.get(
+      "/api/user/profile",
+      { preHandler: verifyAuth },
+      async (request) => ({
+        message: "This is a protected route",
+        user: request.user, // User info from JWT
+        timestamp: new Date().toISOString(),
+      })
+    );
+
+    app.post(
+      "/api/logout",
+      { preHandler: verifyAuth },
+      async (request, reply) => {
+        try {
+          const authHeader = request.headers.authorization;
+          // Get the access token from the Authorization header
+          if (!authHeader || !authHeader.startsWith("Bearer ")) {
+            return reply.code(400).send({ error: "Missing token" });
+          }
+          await logout(authHeader);
+          return { message: "Logged out successfully" };
+        } catch (error) {
+          request.log.error(error, "Logout failed");
+          return reply.code(500).send({ error: "Logout failed" });
+        }
+      }
+    );
+  });
 
   return app;
 }
