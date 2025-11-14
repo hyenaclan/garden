@@ -73,6 +73,7 @@ export class InfraStack extends cdk.Stack {
         DB_USER: dbUser.valueAsString,
         DB_PASS: dbPassword.valueAsString,
         DB_NAME: 'garden',
+        DB_PORT: '5432'
       },
       logGroup: new logs.LogGroup(this, 'GardenApiFnLogs', {
         retention: logs.RetentionDays.TWO_WEEKS,
@@ -111,6 +112,7 @@ export class InfraStack extends cdk.Stack {
         DB_USER: dbUser.valueAsString,
         DB_PASS: dbPassword.valueAsString,
         DB_NAME: 'garden',
+        DB_PORT: '5432'
       },
       timeout: cdk.Duration.seconds(29),
       bundling: {

@@ -30,6 +30,7 @@ DB_HOST=localhost
 DB_USER=postgres
 DB_PASS=postgres
 DB_NAME=garden
+DB_PORT=5432
 DEV_API_URL=<your-dev-api-gateway-url>
 ```
 

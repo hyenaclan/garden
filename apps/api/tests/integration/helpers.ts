@@ -8,6 +8,7 @@ export async function setupTestDb() {
     process.env.DB_USER = 'postgres';
     process.env.DB_PASS = 'postgres';
     process.env.DB_NAME = 'garden';
+    process.env.DB_PORT = '5432'
     await runMigrations();
     return {
       teardown: async () => {
@@ -25,12 +26,12 @@ export async function setupTestDb() {
     .withExposedPorts(5432)
     .start();
 
-  const port = container.getMappedPort(5432);
   process.env.DB_HOST = 'localhost';
   process.env.DB_USER = 'postgres';
   process.env.DB_PASS = 'postgres';
   process.env.DB_NAME = 'garden';
-
+  process.env.DB_PORT = container.getMappedPort(5432).toString();
+  
   await runMigrations();
 
   return {

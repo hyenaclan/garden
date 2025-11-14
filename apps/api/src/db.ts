@@ -7,12 +7,17 @@ let cachedPool: Pool;
 
 export const getDb = () => {
   if (!cachedDb) {
-    const { DB_USER, DB_PASS, DB_HOST, DB_NAME } = process.env;
+    const { DB_USER, DB_PASS, DB_HOST, DB_NAME, DB_PORT } = process.env;
+    
+    if (!DB_USER || !DB_PASS || !DB_HOST || !DB_NAME || !DB_PORT) {
+      throw new Error('Missing required database environment variables');
+    }
+
     const isLocal =
       DB_HOST === 'localhost' ||
       process.env.CI === 'true';
 
-    const connectionString = `postgresql://${DB_USER}:${encodeURIComponent(DB_PASS!)}@${DB_HOST}:5432/${DB_NAME}`;
+    const connectionString = `postgresql://${DB_USER}:${encodeURIComponent(DB_PASS!)}@${DB_HOST}:${DB_PORT}/${DB_NAME}`;
     cachedPool = new Pool({ 
         connectionString, 
         ssl: isLocal ? false : { rejectUnauthorized: false },
@@ -26,8 +31,7 @@ export const getDb = () => {
 export const closeDb = async () => {
   if (cachedPool) {
     await cachedPool.end();
-    cachedPool = undefined as any;
   }
-
-  cachedDb = undefined as any;
+  cachedPool = null!;
+  cachedDb = null!;
 };
