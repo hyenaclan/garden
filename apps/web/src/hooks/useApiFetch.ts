@@ -1,5 +1,4 @@
 import { useState, useCallback } from "react";
-import { useAuth } from "react-oidc-context";
 
 // Define the type locally to remove dependency on @garden/types
 interface HelloApiResponse {
@@ -60,59 +59,3 @@ export const useApiFetch = (): ApiFetchResult => {
 
   return { apiResponse, isLoading, error, fetchData };
 };
-
-interface UserProfileResult {
-  userProfile: any;
-  isUserLoading: boolean;
-  userError: string | null;
-  fetchUserData: () => Promise<void>;
-}
-
-// export const useUserProfile = (): UserProfileResult => {
-//   const [userProfile, setUserProfile] = useState("");
-//   const [isUserLoading, setIsUserLoading] = useState(false);
-//   const [userError, setUserError] = useState<string | null>(null);
-//   const auth = useAuth(); // Get auth context from react-oidc-context
-
-//   const fetchUserData = useCallback(async () => {
-//     setIsUserLoading(true);
-//     setUserError(null);
-//     setUserProfile("Fetching data..."); // Temporary loading message
-
-//     try {
-//       const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
-
-//       // Get access token from react-oidc-context
-//       const token = auth.user?.access_token;
-
-//       const headers: Record<string, string> = {
-//         "Content-Type": "application/json",
-//       };
-//       if (token) headers["Authorization"] = `Bearer ${token}`;
-
-//       const response = await fetch(`${API_BASE_URL}/api/user/profile`, {
-//         headers,
-//       });
-
-//       if (!response.ok) {
-//         throw new Error(`HTTP error! Status: ${response.status}`);
-//       }
-
-//       const data: any = await response.json();
-//       setUserProfile(data);
-
-//       console.log("API Data:", data);
-//     } catch (err) {
-//       // Ensure error is treated as a string for display
-//       const errorMessage =
-//         err instanceof Error ? err.message : "An unknown error occurred.";
-//       setUserError(errorMessage);
-//       setUserProfile(`Error fetching data: ${errorMessage}`);
-//       console.error("Fetch error:", err);
-//     } finally {
-//       setIsUserLoading(false);
-//     }
-//   }, [auth.user?.access_token]); // Add auth dependency
-
-//   return { userProfile, isUserLoading, userError, fetchUserData };
-// };
