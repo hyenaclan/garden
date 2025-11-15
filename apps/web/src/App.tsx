@@ -2,41 +2,20 @@ import { useState } from "react";
 import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
 import "./App.scss";
-import { useApiFetch, useUserProfile } from "./hooks/useApiFetch";
-import { AuthProvider, useAuth } from "react-oidc-context";
-import { cognitoAuthConfig } from "./auth/cognito-config";
+import { useApiFetch } from "./hooks/useApiFetch";
+import Auth from "./components/Auth";
 
 function App() {
   const [count, setCount] = useState(0);
   // Use state to hold the API response message
   const { apiResponse, isLoading, fetchData } = useApiFetch();
-  const { userProfile, isUserLoading, fetchUserData } = useUserProfile();
 
   const buildId = import.meta.env.VITE_BUILD_ID;
   const commitSha = import.meta.env.VITE_COMMIT_SHA?.slice(0, 7);
 
-  const auth = useAuth();
-
   return (
     <>
-      {/* Auth poc */}
-      {auth.isLoading && <p>Loading authentication...</p>}
-      {auth.error && <p>Authentication Error: {auth.error?.message}</p>}
-      {auth.isAuthenticated && (
-        <div>
-          <pre> Hello: {auth.user?.profile.email} </pre>
-          <pre> ID Token: {auth.user?.id_token} </pre>
-          <pre> Access Token: {auth.user?.access_token} </pre>
-          <pre> Refresh Token: {auth.user?.refresh_token} </pre>
-
-          <button onClick={() => auth.removeUser()}>Sign out</button>
-        </div>
-      )}
-      {!auth.isAuthenticated && (
-        <button disabled={auth.isLoading} onClick={() => auth.signinRedirect()}>
-          Sign in
-        </button>
-      )}
+      <Auth />
 
       <div>
         <a href="https://vite.dev" target="_blank">
@@ -68,17 +47,6 @@ function App() {
         </p>
       </p>
 
-      {auth.isAuthenticated && (
-        <p>
-          <button onClick={fetchUserData} disabled={isUserLoading}>
-            Fetch User Profile
-          </button>
-          <h3 className="mt-4 font-bold">API Output:</h3>
-          <p className="bg-white p-2 border border-gray-300 rounded text-sm break-all min-h-[2.5rem]">
-            user profile: <pre>{JSON.stringify(userProfile, null, 2)}</pre>
-          </p>
-        </p>
-      )}
       <footer className="text-xs text-gray-500 mt-4">
         Build #{buildId} ({commitSha})
       </footer>
