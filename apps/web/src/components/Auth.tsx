@@ -1,6 +1,6 @@
 import { useAuth } from "react-oidc-context";
 import { useState } from "react";
-import { signOutRedirect } from "../auth/cognito-config";
+import { signOutRedirect } from "../auth/cognito";
 import { wrap } from "module";
 
 export default function Auth() {
