@@ -1,4 +1,4 @@
-import { FastifyInstance } from "fastify";
+import Fastify, { FastifyInstance } from "fastify";
 import { init } from "../../src/server";
 import { setupTestDb } from "./helpers";
 
@@ -9,7 +9,8 @@ describe("Server Integration Tests", () => {
   beforeAll(async () => {
     db = await setupTestDb();
 
-    app = init();
+    app = Fastify({ logger: true });
+    init(app);
     await app.ready();
   });
 
