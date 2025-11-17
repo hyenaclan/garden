@@ -17,7 +17,7 @@ export default defineConfig([
       },
       parser: tsparser,
       parserOptions: {
-        ecmaVersion: 2025,
+        ecmaVersion: 'latest',
         sourceType: 'commonjs',
       },
     },
