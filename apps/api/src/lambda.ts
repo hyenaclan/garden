@@ -1,5 +1,5 @@
-import awsLambdaFastify from '@fastify/aws-lambda';
-import { init } from './server';
+import awsLambdaFastify from "@fastify/aws-lambda";
+import { init } from "./server";
 
 const app = init();
 const proxy = awsLambdaFastify(app);

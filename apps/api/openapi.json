@@ -36,6 +36,9 @@
                         "ok",
                         "error"
                       ]
+                    },
+                    "user_count": {
+                      "type": "number"
                     }
                   }
                 }

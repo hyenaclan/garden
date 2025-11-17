@@ -8,6 +8,14 @@ npm test || exit 1
 echo "🎨 Running linter..."
 npm run lint || exit 1
 
+# Check formatting
+echo "💅 Checking formatting..."
+npm run format -- --check || exit 1
+
+# Run build
+echo "🔨 Running build..."
+npm run build || exit 1
+
 # Generate OpenAPI spec (optional - only if script exists)
 if npm run | grep -q "^ *generate-openapi$"; then
   echo "📄 Generating OpenAPI spec..."
