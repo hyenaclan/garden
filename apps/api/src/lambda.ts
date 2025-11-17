@@ -1,7 +1,9 @@
 import awsLambdaFastify from "@fastify/aws-lambda";
+import Fastify from "fastify";
 import { init } from "./server";
 
-const app = init();
+const app = Fastify({ logger: true });
+init(app);
 const proxy = awsLambdaFastify(app);
 
 export const handler = async (event: any, context: any) => {

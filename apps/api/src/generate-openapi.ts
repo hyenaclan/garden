@@ -1,14 +1,18 @@
 import { writeFileSync } from "fs";
 import { join } from "path";
 import { config } from "dotenv";
+import Fastify from "fastify";
 import { init } from "./server";
+import { registerSwagger } from "./swagger";
 
 // Load environment variables
 config();
 
 async function generateOpenApiSpec() {
   // Initialize app with Swagger enabled
-  const app = init({ enableSwagger: true });
+  const app = Fastify({ logger: true });
+  registerSwagger(app);
+  init(app);
 
   // Ready the app to finalize all routes
   await app.ready();

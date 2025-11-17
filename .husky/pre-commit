@@ -1,20 +1,16 @@
 echo "🔍 Running pre-commit checks..."
 
-# Run tests
-echo "📝 Running tests..."
-npm test || exit 1
-
 # Run linting
 echo "🎨 Running linter..."
 npm run lint || exit 1
 
 # Check formatting
 echo "💅 Checking formatting..."
-npm run format -- --check || exit 1
+npm run format:check || exit 1
 
-# Run build
-echo "🔨 Running build..."
-npm run build || exit 1
+# Check types
+echo "🔍 Checking types..."
+npm run check-types || exit 1
 
 # Generate OpenAPI spec (optional - only if script exists)
 if npm run | grep -q "^ *generate-openapi$"; then

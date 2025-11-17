@@ -1,59 +1,14 @@
-import Fastify from "fastify";
+import Fastify, { FastifyInstance } from "fastify";
 import cors from "@fastify/cors";
 import { getDb } from "./db";
 import { sql } from "drizzle-orm";
 import { gardeners } from "./schema";
 
-export function init(options?: { enableSwagger?: boolean }) {
-  const app = Fastify({ logger: true });
-
+export function init(app: FastifyInstance) {
   app.register(cors, {
     origin: true,
     credentials: true,
   });
-
-  // Register Swagger if requested
-  if (options?.enableSwagger) {
-    const swagger = require("@fastify/swagger");
-    const swaggerUi = require("@fastify/swagger-ui");
-
-    app.register(swagger, {
-      openapi: {
-        info: {
-          title: "Garden API",
-          description: "API documentation for the Garden application",
-          version: "1.0.0",
-        },
-        servers: [
-          {
-            url: "http://localhost:3001",
-            description: "Development server",
-          },
-          ...(process.env.DEV_API_URL
-            ? [
-                {
-                  url: process.env.DEV_API_URL,
-                  description: "Dev environment",
-                },
-              ]
-            : []),
-        ],
-        tags: [{ name: "health", description: "Health check endpoints" }],
-      },
-      transform: ({ schema, url }: { schema: any; url: string }) => {
-        return { schema, url };
-      },
-    });
-
-    app.register(swaggerUi, {
-      routePrefix: "/docs",
-      uiConfig: {
-        docExpansion: "list",
-        deepLinking: false,
-      },
-      staticCSP: true,
-    });
-  }
 
   // Register routes
   app.register(async (instance) => {
@@ -116,7 +71,11 @@ export function init(options?: { enableSwagger?: boolean }) {
 
 // if run locally (e.g. npm run dev)
 if (require.main === module) {
-  const app = init({ enableSwagger: true });
+  const { registerSwagger } = require("./swagger");
+  const app = Fastify({ logger: true });
+
+  registerSwagger(app);
+  init(app);
 
   const port = 3001;
   app.listen({ port }, (err, address) => {
