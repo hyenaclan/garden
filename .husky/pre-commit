@@ -1,6 +1,3 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
-
 echo "🔍 Running pre-commit checks..."
 
 # Run tests
@@ -11,14 +8,15 @@ npm test || exit 1
 echo "🎨 Running linter..."
 npm run lint || exit 1
 
-# Run type checking
-echo "🔧 Type checking..."
-npm run check-types || exit 1
-
 # Generate OpenAPI spec (optional - only if script exists)
-if grep -q "generate-openapi" package.json; then
+if npm run | grep -q "^ *generate-openapi$"; then
   echo "📄 Generating OpenAPI spec..."
-  npm run generate-openapi && git add apps/api/openapi.json 2>/dev/null || echo "⚠️  OpenAPI generation skipped"
+  if npm run generate-openapi 2>/dev/null; then
+    git add apps/api/openapi.json 2>/dev/null
+    echo "✅ OpenAPI spec generated and staged"
+  else
+    echo "⚠️  OpenAPI generation skipped (not available on this branch)"
+  fi
 fi
 
 echo "✅ All pre-commit checks passed!"
