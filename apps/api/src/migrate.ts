@@ -1,5 +1,5 @@
-import { getDb, closeDb } from './db';
-import { migrate } from 'drizzle-orm/node-postgres/migrator';
+import { getDb, closeDb } from "./db";
+import { migrate } from "drizzle-orm/node-postgres/migrator";
 
 // Drizzle migration metadata row structure
 export type MigrationRow = {
@@ -19,7 +19,7 @@ async function getAppliedMigrations(client: any): Promise<MigrationRow[]> {
     return result.rows as MigrationRow[];
   } catch (err: any) {
     // Table doesn't exist → first-run
-    if (err.code === '42P01') return [];
+    if (err.code === "42P01") return [];
     throw err;
   }
 }
@@ -32,14 +32,16 @@ export const handler = async () => {
   try {
     // Ensure schema + permissions
     await client.query(`GRANT CREATE ON DATABASE ${DB_NAME} TO ${DB_USER}`);
-    await client.query(`CREATE SCHEMA IF NOT EXISTS drizzle AUTHORIZATION ${DB_USER}`);
+    await client.query(
+      `CREATE SCHEMA IF NOT EXISTS drizzle AUTHORIZATION ${DB_USER}`,
+    );
 
     // Before state
     const before = await getAppliedMigrations(client);
-    console.log('Previously applied migrations:', before);
+    console.log("Previously applied migrations:", before);
 
-    console.log('Running new migrations...');
-    await migrate(db, { migrationsFolder: './drizzle' });
+    console.log("Running new migrations...");
+    await migrate(db, { migrationsFolder: "./drizzle" });
 
     // After state
     const after = await getAppliedMigrations(client);
@@ -48,19 +50,19 @@ export const handler = async () => {
     const beforeHashes = new Set(before.map((m: MigrationRow) => m.hash));
     const delta = after.filter((m: MigrationRow) => !beforeHashes.has(m.hash));
 
-    console.log('Newly applied migrations:', delta);
+    console.log("Newly applied migrations:", delta);
 
     return {
       statusCode: 200,
       body: JSON.stringify({
-        message: 'Migrations complete',
+        message: "Migrations complete",
         appliedBefore: before,
         appliedAfter: after,
         delta,
       }),
     };
   } catch (err) {
-    console.error('Migration failed:', err);
+    console.error("Migration failed:", err);
     throw err;
   } finally {
     await closeDb();

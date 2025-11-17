@@ -1,0 +1,26 @@
+echo "🔍 Running pre-commit checks..."
+
+# Run linting
+echo "🎨 Running linter..."
+npm run lint || exit 1
+
+# Check formatting
+echo "💅 Checking formatting..."
+npm run format:check || exit 1
+
+# Check types
+echo "🔍 Checking types..."
+npm run check-types || exit 1
+
+# Generate OpenAPI spec (optional - only if script exists)
+if npm run | grep -q "^ *generate-openapi$"; then
+  echo "📄 Generating OpenAPI spec..."
+  if npm run generate-openapi 2>/dev/null; then
+    git add apps/api/openapi.json 2>/dev/null
+    echo "✅ OpenAPI spec generated and staged"
+  else
+    echo "⚠️  OpenAPI generation skipped (not available on this branch)"
+  fi
+fi
+
+echo "✅ All pre-commit checks passed!"
