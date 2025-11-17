@@ -2,22 +2,22 @@ import js from '@eslint/js';
 import globals from 'globals';
 import tseslint from '@typescript-eslint/eslint-plugin';
 import tsparser from '@typescript-eslint/parser';
+import { defineConfig, globalIgnores } from 'eslint/config';
 
-export default [
+export default defineConfig([
+  globalIgnores(['dist', 'node_modules', 'coverage']),
   {
-    ignores: ['dist/**', 'node_modules/**', 'coverage/**'],
-  },
-  {
-    files: ['**/*.ts', '**/*.js'],
+    files: ['**/*.{ts,js}'],
+    extends: [js.configs.recommended],
     languageOptions: {
-      ecmaVersion: 2020,
+      ecmaVersion: 2025,
       globals: {
         ...globals.node,
         ...globals.jest,
       },
       parser: tsparser,
       parserOptions: {
-        ecmaVersion: 'latest',
+        ecmaVersion: 2025,
         sourceType: 'commonjs',
       },
     },
@@ -25,7 +25,6 @@ export default [
       '@typescript-eslint': tseslint,
     },
     rules: {
-      ...js.configs.recommended.rules,
       ...tseslint.configs.recommended.rules,
       '@typescript-eslint/no-unused-vars': [
         'error',
@@ -35,4 +34,4 @@ export default [
       '@typescript-eslint/no-require-imports': 'off',
     },
   },
-];
+]);
