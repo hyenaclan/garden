@@ -157,6 +157,21 @@ export class InfraStack extends cdk.Stack {
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
       },
       defaultRootObject: 'index.html',
+      // Handle SPA routing - return index.html for 403/404 errors
+      errorResponses: [
+        {
+          httpStatus: 403,
+          responseHttpStatus: 200,
+          responsePagePath: '/index.html',
+          ttl: cdk.Duration.minutes(5),
+        },
+        {
+          httpStatus: 404,
+          responseHttpStatus: 200,
+          responsePagePath: '/index.html',
+          ttl: cdk.Duration.minutes(5),
+        },
+      ],
       comment: `React site (${stage})`,
     });
     
@@ -204,7 +219,7 @@ export class InfraStack extends cdk.Stack {
     });
 
     const authorizer = new apigwv2_authorizers.HttpJwtAuthorizer('CognitoAuthorizer', 
-      `https://cognito-idp.${this.region}.amazonaws.com/${userPool.userPoolId}`,
+      `https://cognito-idp.${cdk.Stack.of(this).region}.amazonaws.com/${userPool.userPoolId}`,
       {
         jwtAudience: [userPoolClient.userPoolClientId],
       }
