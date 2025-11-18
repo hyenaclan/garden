@@ -265,7 +265,11 @@ export class InfraStack extends cdk.Stack {
 
     const api = new apigwv2.HttpApi(this, "HttpApi", {
       corsPreflight: {
-        allowOrigins: ["*"],
+        allowOrigins: [
+          `https://${distribution.distributionDomainName}`,
+          "http://localhost:5173",
+          "http://localhost:3000",
+        ],
         allowMethods: [apigwv2.CorsHttpMethod.ANY],
         allowHeaders: ["*"],
         allowCredentials: true,
