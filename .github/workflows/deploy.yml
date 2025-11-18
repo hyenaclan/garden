@@ -181,7 +181,7 @@ jobs:
 
       - name: Inject build metadata
         run: |
-          AWS_REGION=us-east-1
+          AWS_REGION="us-east-1"
           COGNITO_DOMAIN=$(aws cloudformation describe-stacks \
             --stack-name $STACK_NAME-prod \
             --query "Stacks[0].Outputs[?OutputKey=='CognitoDomain'].OutputValue" \
@@ -195,19 +195,25 @@ jobs:
             --query "Stacks[0].Outputs[?OutputKey=='UserPoolClientId'].OutputValue" \
             --output text)
 
+          echo "Setting AWS_REGION to: $AWS_REGION"
+          echo "COGNITO_DOMAIN: $COGNITO_DOMAIN"
+
           # api env vars
-          echo "AWS_REGION=$AWS_REGION" >> apps/api/.env
-          echo "AWS_COGNITO_JWKS_URI=https://cognito-idp.$AWS_REGION.amazonaws.com/$COGNITO_USER_POOL_ID/.well-known/jwks.json" >> apps/api/.env
-          echo "AWS_COGNITO_USER_POOL_URL=https://cognito-idp.$AWS_REGION.amazonaws.com/$COGNITO_USER_POOL_ID" >> apps/api/.env
+          echo "AWS_REGION=${AWS_REGION}" >> apps/api/.env
+          echo "AWS_COGNITO_JWKS_URI=https://cognito-idp.${AWS_REGION}.amazonaws.com/${COGNITO_USER_POOL_ID}/.well-known/jwks.json" >> apps/api/.env
+          echo "AWS_COGNITO_USER_POOL_URL=https://cognito-idp.${AWS_REGION}.amazonaws.com/${COGNITO_USER_POOL_ID}" >> apps/api/.env
 
           # Web env vars
           echo "VITE_BUILD_ID=${{ github.run_number }}" >> apps/web/.env
           echo "VITE_COMMIT_SHA=${{ github.sha }}" >> apps/web/.env
           echo "VITE_API_BASE_URL=https://2ugomkefji.execute-api.us-east-1.amazonaws.com" >> apps/web/.env
-          echo "VITE_AWS_REGION=$AWS_REGION" >> apps/web/.env
-          echo "VITE_COGNITO_USER_POOL_CLIENT_ID=$COGNITO_USER_POOL_CLIENT_ID" >> apps/web/.env
-          echo "VITE_COGNITO_DOMAIN=$COGNITO_DOMAIN" >> apps/web/.env
-          echo "VITE_COGNITO_USER_POOL_ID=$COGNITO_USER_POOL_ID" >> apps/web/.env
+          echo "VITE_AWS_REGION=${AWS_REGION}" >> apps/web/.env
+          echo "VITE_COGNITO_USER_POOL_CLIENT_ID=${COGNITO_USER_POOL_CLIENT_ID}" >> apps/web/.env
+          echo "VITE_COGNITO_DOMAIN=${COGNITO_DOMAIN}" >> apps/web/.env
+          echo "VITE_COGNITO_USER_POOL_ID=${COGNITO_USER_POOL_ID}" >> apps/web/.env
+
+          echo "Contents of apps/web/.env:"
+          cat apps/web/.env
 
       - name: Install web build dependencies
         run: npm install @rollup/rollup-linux-x64-gnu --workspace apps/web --no-save
