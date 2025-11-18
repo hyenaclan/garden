@@ -96,9 +96,34 @@ jobs:
 
       - name: Inject build metadata
         run: |
+          COGNITO_DOMAIN=$(aws cloudformation describe-stacks \
+            --stack-name $STACK_NAME-prod \
+            --query "Stacks[0].Outputs[?OutputKey=='CognitoDomain'].OutputValue" \
+            --output text)
+          COGNITO_USER_POOL_ID=$(aws cloudformation describe-stacks \
+            --stack-name $STACK_NAME-prod \
+            --query "Stacks[0].Outputs[?OutputKey=='UserPoolId'].OutputValue" \
+            --output text)
+          COGNITO_USER_POOL_CLIENT_ID=$(aws cloudformation describe-stacks \
+            --stack-name $STACK_NAME-prod \
+            --query "Stacks[0].Outputs[?OutputKey=='UserPoolClientId'].OutputValue" \
+            --output text)
+
+          echo "COGNITO_DOMAIN: $COGNITO_DOMAIN"
+
+          # api env vars
+          echo "AWS_REGION=${{ env.AWS_REGION }}" >> apps/api/.env
+          echo "AWS_COGNITO_JWKS_URI=https://cognito-idp.${{ env.AWS_REGION }}.amazonaws.com/${COGNITO_USER_POOL_ID}/.well-known/jwks.json" >> apps/api/.env
+          echo "AWS_COGNITO_USER_POOL_URL=https://cognito-idp.${{ env.AWS_REGION }}.amazonaws.com/${COGNITO_USER_POOL_ID}" >> apps/api/.env
+
+          # Web env vars
           echo "VITE_BUILD_ID=${{ github.run_number }}" >> apps/web/.env
           echo "VITE_COMMIT_SHA=${{ github.sha }}" >> apps/web/.env
-          echo "VITE_API_BASE_URL=https://e75x4uq227.execute-api.us-east-1.amazonaws.com" >> apps/web/.env
+          echo "VITE_API_BASE_URL=https://e75x4uq227.execute-api.${{ env.AWS_REGION }}.amazonaws.com" >> apps/web/.env
+          echo "VITE_AWS_REGION=${{ env.AWS_REGION }}" >> apps/web/.env
+          echo "VITE_COGNITO_USER_POOL_CLIENT_ID=${COGNITO_USER_POOL_CLIENT_ID}" >> apps/web/.env
+          echo "VITE_COGNITO_DOMAIN=${COGNITO_DOMAIN}" >> apps/web/.env
+          echo "VITE_COGNITO_USER_POOL_ID=${COGNITO_USER_POOL_ID}" >> apps/web/.env
 
       - name: Install web build dependencies
         run: npm install @rollup/rollup-linux-x64-gnu --workspace apps/web --no-save
@@ -209,9 +234,6 @@ jobs:
           echo "VITE_COGNITO_USER_POOL_CLIENT_ID=${COGNITO_USER_POOL_CLIENT_ID}" >> apps/web/.env
           echo "VITE_COGNITO_DOMAIN=${COGNITO_DOMAIN}" >> apps/web/.env
           echo "VITE_COGNITO_USER_POOL_ID=${COGNITO_USER_POOL_ID}" >> apps/web/.env
-
-          echo "Contents of apps/web/.env:"
-          cat apps/web/.env
 
       - name: Install web build dependencies
         run: npm install @rollup/rollup-linux-x64-gnu --workspace apps/web --no-save
