@@ -9,7 +9,7 @@ export function init() {
   const app = Fastify({ logger: true });
 
   app.register(cors, {
-    origin: ["http://localhost:5173", "http://localhost:3000"], // Allow Vite and alternative dev ports
+    origin: true, // Allow all origins (API Gateway already has CORS configured)
     credentials: true,
   });
 
