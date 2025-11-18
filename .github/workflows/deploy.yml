@@ -179,7 +179,6 @@ jobs:
             exit 1
           fi
 
-      # TODO: Are we doing this twice? See Inject build metadata step above
       - name: Inject build metadata
         run: |
           AWS_REGION=us-east-1
