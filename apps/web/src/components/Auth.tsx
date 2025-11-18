@@ -1,10 +1,11 @@
 import { useAuth } from "react-oidc-context";
 import { useState } from "react";
 import { signOutRedirect } from "../auth/cognito";
-import { wrap } from "module";
+import { useAuthenticatedFetch } from "../hooks/useAuthenticatedFetch";
 
 export default function Auth() {
   const auth = useAuth();
+  const authenticatedFetch = useAuthenticatedFetch();
   const [userProfile, setUserProfile] = useState<any>(null);
   const [userLoading, setUserLoading] = useState(false);
 
@@ -13,19 +14,16 @@ export default function Auth() {
     try {
       setUserLoading(true);
       const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
-      const token = auth.user?.access_token;
-      const headers: Record<string, string> = {
-        "Content-Type": "application/json",
-      };
-      if (token) headers["Authorization"] = `Bearer ${token}`;
-      const response = await fetch(`${API_BASE_URL}/api/user/profile`, {
-        headers,
-      });
+      // Use authenticatedFetch which handles token refresh automatically
+      const response = await authenticatedFetch(
+        `${API_BASE_URL}/api/user/profile`
+      );
       const data = await response.json();
       setUserProfile(data);
     } catch (error) {
-      setUserLoading(false);
       console.error("Error fetching user profile:", error);
+    } finally {
+      setUserLoading(false);
     }
   };
 

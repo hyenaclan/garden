@@ -14,6 +14,10 @@ export const cognitoConfig = {
   response_type: "code",
   scope: "email openid",
   metadataUrl: `https://cognito-idp.${awsRegion}.amazonaws.com/${cognitoUserPoolId}/.well-known/openid-configuration`,
+  // Automatically refresh tokens when they're about to expire
+  automaticSilentRenew: true,
+  // Refresh token 60 seconds before expiry
+  accessTokenExpiringNotificationTimeInSeconds: 60,
 };
 
 export const signOutRedirect = () => {
