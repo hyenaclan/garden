@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Menu, X, House, Users, User } from 'lucide-react';
 
 type NavItem = 'home' | 'cults' | 'profile';
@@ -6,41 +6,55 @@ type NavItem = 'home' | 'cults' | 'profile';
 export default function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
   const [activeItem, setActiveItem] = useState<NavItem>('home');
+  const [underlineStyle, setUnderlineStyle] = useState({ left: 0, width: 0 });
+  const navRefs = useRef<Record<NavItem, HTMLButtonElement | null>>({
+    home: null,
+    cults: null,
+    profile: null,
+  });
+
+  const navItems = [
+    { id: 'home' as NavItem, label: 'Home', icon: House },
+    { id: 'cults' as NavItem, label: 'Cult', icon: Users },
+    { id: 'profile' as NavItem, label: 'Profile', icon: User },
+  ];
+
+  const baseNavClass = 'relative text-sm font-normal h-full flex items-center gap-2 transition-colors hover:text-garden-primary-light cursor-pointer';
+  const baseNavMobileClass = 'px-6 py-4 text-left text-sm border-b border-gray-100 hover:bg-gray-50 transition-colors flex items-center gap-3 cursor-pointer';
+
+  useEffect(() => {
+    const activeButton = navRefs.current[activeItem];
+    if (activeButton) {
+      setUnderlineStyle({
+        left: activeButton.offsetLeft,
+        width: activeButton.offsetWidth,
+      });
+    }
+  }, [activeItem]);
 
   return (
     <>
       {/* Desktop Navigation */}
-      <nav className="hidden md:flex gap-10 h-full items-center">
-        <button
-          className={`relative text-sm font-normal h-full flex items-center gap-2 transition-colors hover:opacity-80 cursor-pointer ${activeItem === 'home' ? 'text-garden-primary' : 'text-gray-500'}`}
-          onClick={() => setActiveItem('home')}
-        >
-          <House className="w-4 h-4" />
-          Home
-          {activeItem === 'home' && (
-            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-garden-primary" />
-          )}
-        </button>
-        <button
-          className={`relative text-sm font-normal h-full flex items-center gap-2 transition-colors hover:opacity-80 cursor-pointer ${activeItem === 'cults' ? 'text-garden-primary' : 'text-gray-500'}`}
-          onClick={() => setActiveItem('cults')}
-        >
-          <Users className="w-4 h-4" />
-          Cults
-          {activeItem === 'cults' && (
-            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-garden-primary" />
-          )}
-        </button>
-        <button
-          className={`relative text-sm font-normal h-full flex items-center gap-2 transition-colors hover:opacity-80 cursor-pointer ${activeItem === 'profile' ? 'text-garden-primary' : 'text-gray-500'}`}
-          onClick={() => setActiveItem('profile')}
-        >
-          <User className="w-4 h-4" />
-          Profile
-          {activeItem === 'profile' && (
-            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-garden-primary" />
-          )}
-        </button>
+      <nav className="hidden md:flex gap-10 h-full items-center relative">
+        {navItems.map(({ id, label, icon: Icon }) => (
+          <button
+            key={id}
+            ref={(el) => { navRefs.current[id] = el; }}
+            className={`${baseNavClass} ${activeItem === id ? 'text-garden-primary' : 'text-gray-500'}`}
+            onClick={() => setActiveItem(id)}
+          >
+            <Icon className="w-4 h-4" />
+            {label}
+          </button>
+        ))}
+        {/* Animated underline */}
+        <span
+          className="absolute bottom-0 h-0.5 bg-garden-primary transition-all duration-300 ease-in-out"
+          style={{
+            left: `${underlineStyle.left}px`,
+            width: `${underlineStyle.width}px`,
+          }}
+        />
       </nav>
 
       {/* Mobile Hamburger Button */}
@@ -88,36 +102,19 @@ export default function Navigation() {
             </div>
 
             <nav className="flex flex-col">
-              <button
-                className={`px-6 py-4 text-left text-sm border-b border-gray-100 hover:bg-gray-50 transition-colors flex items-center gap-3 cursor-pointer ${activeItem === 'home' ? 'text-garden-primary font-medium' : 'text-gray-500 font-normal'}`}
-                onClick={() => {
-                  setActiveItem('home');
-                  setIsOpen(false);
-                }}
-              >
-                <House className="w-4 h-4" />
-                Home
-              </button>
-              <button
-                className={`px-6 py-4 text-left text-sm border-b border-gray-100 hover:bg-gray-50 transition-colors flex items-center gap-3 cursor-pointer ${activeItem === 'cults' ? 'text-garden-primary font-medium' : 'text-gray-500 font-normal'}`}
-                onClick={() => {
-                  setActiveItem('cults');
-                  setIsOpen(false);
-                }}
-              >
-                <Users className="w-4 h-4" />
-                Cults
-              </button>
-              <button
-                className={`px-6 py-4 text-left text-sm border-b border-gray-100 hover:bg-gray-50 transition-colors flex items-center gap-3 cursor-pointer ${activeItem === 'profile' ? 'text-garden-primary font-medium' : 'text-gray-500 font-normal'}`}
-                onClick={() => {
-                  setActiveItem('profile');
-                  setIsOpen(false);
-                }}
-              >
-                <User className="w-4 h-4" />
-                Profile
-              </button>
+              {navItems.map(({ id, label, icon: Icon }) => (
+                <button
+                  key={id}
+                  className={`${baseNavMobileClass} ${activeItem === id ? 'text-garden-primary font-medium' : 'text-gray-500 font-normal'}`}
+                  onClick={() => {
+                    setActiveItem(id);
+                    setIsOpen(false);
+                  }}
+                >
+                  <Icon className="w-4 h-4" />
+                  {label}
+                </button>
+              ))}
           </nav>
         </div>
       </>

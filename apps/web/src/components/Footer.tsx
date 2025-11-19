@@ -3,7 +3,7 @@ export default function Footer() {
   const commitSha = import.meta.env.VITE_COMMIT_SHA?.slice(0, 7);
 
   return (
-    <footer className="text-center text-xs text-gray-400 py-10 border-t border-gray-200 mt-16">
+    <footer className="text-center text-xs text-gray-400 py-6 border-t border-gray-200">
       Build #{buildId} ({commitSha})
     </footer>
   );

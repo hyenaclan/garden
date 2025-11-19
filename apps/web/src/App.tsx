@@ -8,8 +8,10 @@ function App() {
       <Header />
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-6 lg:px-8 py-10">
-        <Home />
+      <main className="bg-emerald-50 pb-16">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8 py-10">
+          <Home />
+        </div>
       </main>
 
       <Footer />

@@ -1,26 +1,25 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Sprout } from 'lucide-react';
 
 export default function Seedbox() {
   return (
-    <section className="space-y-6">
-      <h2 className="text-xl font-semibold text-garden-primary-darkest">Seedbox</h2>
-
+    <section>
       <Card className="bg-white border-gray-200 shadow-sm">
         <CardContent className="p-8">
-          <div className="space-y-6">
-            <p className="leading-relaxed text-center max-w-3xl mx-auto text-gray-500">
-              Your personal seed collection and planning tool. Keep track of your seeds,
-              plan your planting schedule, and discover new varieties to grow in your garden.
-              The seedbox helps you organize seed packets, track planting dates, and manage
-              your inventory throughout the growing season.
-            </p>
-
-            <div className="flex justify-center">
-              <Button size="lg" variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50 px-8 text-base font-medium">
-                Go to Seedbox
-              </Button>
+          <div className="flex items-center justify-between">
+            <div className="flex items-start gap-4">
+              <Sprout className="w-8 h-8 text-garden-primary flex-shrink-0 mt-1" />
+              <div>
+                <h2 className="text-xl font-semibold text-garden-primary-darkest mb-2">Seedbox</h2>
+                <p className="text-garden-primary">
+                  Manage your seed inventory, planting schedules, and variety information
+                </p>
+              </div>
             </div>
+            <Button className="bg-garden-primary hover:bg-garden-primary-dark text-white px-6 flex-shrink-0">
+              Go to Seedbox
+            </Button>
           </div>
         </CardContent>
       </Card>
