@@ -12,52 +12,40 @@ export default function Navigation() {
       {/* Desktop Navigation */}
       <nav className="hidden md:flex gap-10 h-full items-center">
         <button
-          className="relative text-sm font-normal h-full flex items-center gap-2 transition-colors hover:opacity-80"
-          style={{ color: activeItem === 'home' ? 'var(--garden-primary)' : '#6b7280' }}
+          className={`relative text-sm font-normal h-full flex items-center gap-2 transition-colors hover:opacity-80 cursor-pointer ${activeItem === 'home' ? 'text-garden-primary' : 'text-gray-500'}`}
           onClick={() => setActiveItem('home')}
         >
           <House className="w-4 h-4" />
           Home
           {activeItem === 'home' && (
-            <span
-              className="absolute bottom-0 left-0 right-0 h-0.5"
-              style={{ backgroundColor: 'var(--garden-primary)' }}
-            />
+            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-garden-primary" />
           )}
         </button>
         <button
-          className="relative text-sm font-normal h-full flex items-center gap-2 transition-colors hover:opacity-80"
-          style={{ color: activeItem === 'cults' ? 'var(--garden-primary)' : '#6b7280' }}
+          className={`relative text-sm font-normal h-full flex items-center gap-2 transition-colors hover:opacity-80 cursor-pointer ${activeItem === 'cults' ? 'text-garden-primary' : 'text-gray-500'}`}
           onClick={() => setActiveItem('cults')}
         >
           <Users className="w-4 h-4" />
           Cults
           {activeItem === 'cults' && (
-            <span
-              className="absolute bottom-0 left-0 right-0 h-0.5"
-              style={{ backgroundColor: 'var(--garden-primary)' }}
-            />
+            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-garden-primary" />
           )}
         </button>
         <button
-          className="relative text-sm font-normal h-full flex items-center gap-2 transition-colors hover:opacity-80"
-          style={{ color: activeItem === 'profile' ? 'var(--garden-primary)' : '#6b7280' }}
+          className={`relative text-sm font-normal h-full flex items-center gap-2 transition-colors hover:opacity-80 cursor-pointer ${activeItem === 'profile' ? 'text-garden-primary' : 'text-gray-500'}`}
           onClick={() => setActiveItem('profile')}
         >
           <User className="w-4 h-4" />
           Profile
           {activeItem === 'profile' && (
-            <span
-              className="absolute bottom-0 left-0 right-0 h-0.5"
-              style={{ backgroundColor: 'var(--garden-primary)' }}
-            />
+            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-garden-primary" />
           )}
         </button>
       </nav>
 
       {/* Mobile Hamburger Button */}
       <button
-        className="md:hidden p-2 hover:bg-gray-100 rounded-md transition-colors"
+        className="md:hidden p-2 hover:bg-gray-100 rounded-md transition-colors cursor-pointer"
         onClick={() => setIsOpen(!isOpen)}
         aria-label="Toggle menu"
       >
@@ -92,7 +80,7 @@ export default function Navigation() {
             <div className="flex justify-end p-4 border-b border-gray-100">
               <button
                 onClick={() => setIsOpen(false)}
-                className="p-2 hover:bg-gray-100 rounded-md transition-colors"
+                className="p-2 hover:bg-gray-100 rounded-md transition-colors cursor-pointer"
                 aria-label="Close menu"
               >
                 <X className="w-6 h-6 text-gray-500" />
@@ -101,11 +89,7 @@ export default function Navigation() {
 
             <nav className="flex flex-col">
               <button
-                className="px-6 py-4 text-left text-sm border-b border-gray-100 hover:bg-gray-50 transition-colors flex items-center gap-3"
-                style={{
-                  color: activeItem === 'home' ? 'var(--garden-primary)' : '#6b7280',
-                  fontWeight: activeItem === 'home' ? 500 : 400
-                }}
+                className={`px-6 py-4 text-left text-sm border-b border-gray-100 hover:bg-gray-50 transition-colors flex items-center gap-3 cursor-pointer ${activeItem === 'home' ? 'text-garden-primary font-medium' : 'text-gray-500 font-normal'}`}
                 onClick={() => {
                   setActiveItem('home');
                   setIsOpen(false);
@@ -115,11 +99,7 @@ export default function Navigation() {
                 Home
               </button>
               <button
-                className="px-6 py-4 text-left text-sm border-b border-gray-100 hover:bg-gray-50 transition-colors flex items-center gap-3"
-                style={{
-                  color: activeItem === 'cults' ? 'var(--garden-primary)' : '#6b7280',
-                  fontWeight: activeItem === 'cults' ? 500 : 400
-                }}
+                className={`px-6 py-4 text-left text-sm border-b border-gray-100 hover:bg-gray-50 transition-colors flex items-center gap-3 cursor-pointer ${activeItem === 'cults' ? 'text-garden-primary font-medium' : 'text-gray-500 font-normal'}`}
                 onClick={() => {
                   setActiveItem('cults');
                   setIsOpen(false);
@@ -129,11 +109,7 @@ export default function Navigation() {
                 Cults
               </button>
               <button
-                className="px-6 py-4 text-left text-sm border-b border-gray-100 hover:bg-gray-50 transition-colors flex items-center gap-3"
-                style={{
-                  color: activeItem === 'profile' ? 'var(--garden-primary)' : '#6b7280',
-                  fontWeight: activeItem === 'profile' ? 500 : 400
-                }}
+                className={`px-6 py-4 text-left text-sm border-b border-gray-100 hover:bg-gray-50 transition-colors flex items-center gap-3 cursor-pointer ${activeItem === 'profile' ? 'text-garden-primary font-medium' : 'text-gray-500 font-normal'}`}
                 onClick={() => {
                   setActiveItem('profile');
                   setIsOpen(false);

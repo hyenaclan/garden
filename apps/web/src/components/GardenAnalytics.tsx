@@ -3,7 +3,7 @@ import { StatCard } from '@/components/ui/stat-card';
 export default function GardenAnalytics() {
   return (
     <section className="space-y-6">
-      <h2 className="text-xl font-semibold" style={{ color: '#065f46' }}>Garden Analytics</h2>
+      <h2 className="text-xl font-semibold text-garden-primary-darkest">Garden Analytics</h2>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
         <StatCard

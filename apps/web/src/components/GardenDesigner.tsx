@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 export default function GardenDesigner() {
   return (
     <section className="space-y-6">
-      <h2 className="text-xl font-semibold" style={{ color: '#065f46' }}>Garden Designer</h2>
+      <h2 className="text-xl font-semibold text-garden-primary-darkest">Garden Designer</h2>
 
       <Card className="bg-white border-gray-200 shadow-sm">
         <CardContent className="p-8">
@@ -35,7 +35,7 @@ export default function GardenDesigner() {
 
           {/* Open Designer button */}
           <div className="mt-8 flex justify-center">
-            <Button size="lg" className="px-8 text-base font-medium text-white" style={{ backgroundColor: 'var(--garden-primary)' }}>
+            <Button size="lg" className="px-8 text-base font-medium text-white bg-garden-primary hover:bg-garden-primary-dark">
               Open Designer
             </Button>
           </div>

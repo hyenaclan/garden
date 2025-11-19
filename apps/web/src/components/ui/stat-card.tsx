@@ -18,12 +18,12 @@ export function StatCard({ title, value, unit, change, icon, className }: StatCa
     <Card className={cn('bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow', className)}>
       <CardContent className="p-5">
         <div className="space-y-1">
-          <p className="text-xs font-medium uppercase tracking-wide" style={{ color: '#6b7280' }}>{title}</p>
+          <p className="text-xs font-medium uppercase tracking-wide text-gray-500">{title}</p>
           <div className="flex items-baseline gap-1.5">
-            <p className="text-2xl font-bold" style={{ color: '#065f46' }}>
+            <p className="text-2xl font-bold text-garden-primary-darkest">
               {value}
             </p>
-            {unit && <span className="text-sm font-medium" style={{ color: '#6b7280' }}>{unit}</span>}
+            {unit && <span className="text-sm font-medium text-gray-500">{unit}</span>}
           </div>
           {change && (
             <div className="flex items-center gap-1 pt-1">

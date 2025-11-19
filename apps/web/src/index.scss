@@ -1,5 +1,13 @@
 @import 'tailwindcss';
 
+@theme {
+  --color-garden-primary: oklch(0.587 0.101 169);
+  --color-garden-primary-dark: oklch(0.509 0.101 169);
+  --color-garden-primary-darker: oklch(0.459 0.101 169);
+  --color-garden-primary-darkest: oklch(0.428 0.101 169);
+  --color-garden-primary-light: oklch(0.665 0.101 169);
+}
+
 :root {
   --background: 0 0% 100%;
   --foreground: 120 10% 10%;
@@ -30,11 +38,6 @@
   --ring: 142 38% 37%;
 
   --radius: 0.5rem;
-
-  // Garden theme colors
-  --garden-primary: #10b981;
-  --garden-primary-dark: #059669;
-  --garden-primary-light: #34d399;
 
   // Font settings
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;

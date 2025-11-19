@@ -4,12 +4,12 @@ import { Button } from '@/components/ui/button';
 export default function Seedbox() {
   return (
     <section className="space-y-6">
-      <h2 className="text-xl font-semibold" style={{ color: '#065f46' }}>Seedbox</h2>
+      <h2 className="text-xl font-semibold text-garden-primary-darkest">Seedbox</h2>
 
       <Card className="bg-white border-gray-200 shadow-sm">
         <CardContent className="p-8">
           <div className="space-y-6">
-            <p className="leading-relaxed text-center max-w-3xl mx-auto" style={{ color: '#6b7280' }}>
+            <p className="leading-relaxed text-center max-w-3xl mx-auto text-gray-500">
               Your personal seed collection and planning tool. Keep track of your seeds,
               plan your planting schedule, and discover new varieties to grow in your garden.
               The seedbox helps you organize seed packets, track planting dates, and manage
