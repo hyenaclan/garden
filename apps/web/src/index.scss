@@ -1,11 +1,13 @@
 @import 'tailwindcss';
 
 @theme {
-  --color-garden-primary: oklch(0.587 0.101 169);
-  --color-garden-primary-dark: oklch(0.509 0.101 169);
-  --color-garden-primary-darker: oklch(0.459 0.101 169);
-  --color-garden-primary-darkest: oklch(0.428 0.101 169);
-  --color-garden-primary-light: oklch(0.665 0.101 169);
+  --color-garden-primary: #22c55e;
+  --color-garden-primary-dark: #16a34a;
+  --color-garden-primary-darker: #15803d;
+  --color-garden-primary-darkest: #14532d;
+  --color-garden-primary-light: #4ade80;
+  --color-garden-primary-lighter: #86efac;
+  --color-garden-primary-lightest: #dcfce7;
 }
 
 :root {

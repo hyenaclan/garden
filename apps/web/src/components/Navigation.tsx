@@ -1,17 +1,14 @@
-import { useState, useRef, useEffect } from 'react';
-import { Menu, X, House, Users, User } from 'lucide-react';
+import { useState } from 'react';
+import { Menu, House, Users, User } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Button } from '@/components/ui/button';
 
 type NavItem = 'home' | 'cults' | 'profile';
 
 export default function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
   const [activeItem, setActiveItem] = useState<NavItem>('home');
-  const [underlineStyle, setUnderlineStyle] = useState({ left: 0, width: 0 });
-  const navRefs = useRef<Record<NavItem, HTMLButtonElement | null>>({
-    home: null,
-    cults: null,
-    profile: null,
-  });
 
   const navItems = [
     { id: 'home' as NavItem, label: 'Home', icon: House },
@@ -19,105 +16,54 @@ export default function Navigation() {
     { id: 'profile' as NavItem, label: 'Profile', icon: User },
   ];
 
-  const baseNavClass = 'relative text-sm font-normal h-full flex items-center gap-2 transition-colors hover:text-garden-primary-light cursor-pointer';
-  const baseNavMobileClass = 'px-6 py-4 text-left text-sm border-b border-gray-100 hover:bg-gray-50 transition-colors flex items-center gap-3 cursor-pointer';
-
-  useEffect(() => {
-    const activeButton = navRefs.current[activeItem];
-    if (activeButton) {
-      setUnderlineStyle({
-        left: activeButton.offsetLeft,
-        width: activeButton.offsetWidth,
-      });
-    }
-  }, [activeItem]);
-
   return (
     <>
       {/* Desktop Navigation */}
-      <nav className="hidden md:flex gap-10 h-full items-center relative">
-        {navItems.map(({ id, label, icon: Icon }) => (
-          <button
-            key={id}
-            ref={(el) => { navRefs.current[id] = el; }}
-            className={`${baseNavClass} ${activeItem === id ? 'text-garden-primary' : 'text-gray-500'}`}
-            onClick={() => setActiveItem(id)}
+      <Tabs value={activeItem} onValueChange={(value: string) => setActiveItem(value as NavItem)} className="hidden md:block">
+        <TabsList>
+          {navItems.map(({ id, label, icon: Icon }) => (
+            <TabsTrigger key={id} value={id} className="gap-2">
+              <Icon className="w-4 h-4" />
+              {label}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
+
+      {/* Mobile Navigation */}
+      <Sheet open={isOpen} onOpenChange={setIsOpen}>
+        <SheetTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden"
+            aria-label="Toggle menu"
           >
-            <Icon className="w-4 h-4" />
-            {label}
-          </button>
-        ))}
-        {/* Animated underline */}
-        <span
-          className="absolute bottom-0 h-0.5 bg-garden-primary transition-all duration-300 ease-in-out"
-          style={{
-            left: `${underlineStyle.left}px`,
-            width: `${underlineStyle.width}px`,
-          }}
-        />
-      </nav>
-
-      {/* Mobile Hamburger Button */}
-      <button
-        className="md:hidden p-2 hover:bg-gray-100 rounded-md transition-colors cursor-pointer"
-        onClick={() => setIsOpen(!isOpen)}
-        aria-label="Toggle menu"
-      >
-        {isOpen ? (
-          <X className="w-6 h-6 text-gray-500" />
-        ) : (
-          <Menu className="w-6 h-6 text-gray-500" />
-        )}
-      </button>
-
-      {/* Mobile Slide-out Sidebar */}
-      <>
-        {/* Semi-transparent Backdrop - click to close */}
-        <div
-          className="fixed inset-0 z-40 md:hidden transition-opacity duration-300"
-          style={{
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-            opacity: isOpen ? 1 : 0,
-            pointerEvents: isOpen ? 'auto' : 'none',
-          }}
-          onClick={() => setIsOpen(false)}
-        />
-
-        {/* Sidebar Panel - Full Height */}
-        <div
-          className="fixed top-0 right-0 h-full w-64 bg-white shadow-2xl z-50 md:hidden border-l border-gray-200 transition-transform duration-300 ease-in-out"
-          style={{
-            transform: isOpen ? 'translateX(0)' : 'translateX(100%)',
-          }}
-        >
-            {/* Close Button */}
-            <div className="flex justify-end p-4 border-b border-gray-100">
-              <button
-                onClick={() => setIsOpen(false)}
-                className="p-2 hover:bg-gray-100 rounded-md transition-colors cursor-pointer"
-                aria-label="Close menu"
+            <Menu className="w-6 h-6" />
+          </Button>
+        </SheetTrigger>
+        <SheetContent side="right" className="w-64 p-0" aria-describedby={undefined}>
+          <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+          <nav className="flex flex-col mt-8">
+            {navItems.map(({ id, label, icon: Icon }) => (
+              <Button
+                key={id}
+                variant="ghost"
+                className={`justify-start px-6 py-3 text-left text-sm border-b border-gray-100 rounded-none h-auto ${
+                  activeItem === id ? 'text-garden-primary font-medium' : 'text-gray-500 font-normal'
+                }`}
+                onClick={() => {
+                  setActiveItem(id);
+                  setIsOpen(false);
+                }}
               >
-                <X className="w-6 h-6 text-gray-500" />
-              </button>
-            </div>
-
-            <nav className="flex flex-col">
-              {navItems.map(({ id, label, icon: Icon }) => (
-                <button
-                  key={id}
-                  className={`${baseNavMobileClass} ${activeItem === id ? 'text-garden-primary font-medium' : 'text-gray-500 font-normal'}`}
-                  onClick={() => {
-                    setActiveItem(id);
-                    setIsOpen(false);
-                  }}
-                >
-                  <Icon className="w-4 h-4" />
-                  {label}
-                </button>
-              ))}
+                <Icon className="w-4 h-4 mr-3" />
+                {label}
+              </Button>
+            ))}
           </nav>
-        </div>
-      </>
+        </SheetContent>
+      </Sheet>
     </>
   );
 }
