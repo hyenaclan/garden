@@ -272,6 +272,10 @@ export class InfraStack extends cdk.Stack {
       "AWS_COGNITO_USER_POOL_URL",
       `https://cognito-idp.${cdk.Stack.of(this).region}.amazonaws.com/${userPool.userPoolId}`
     );
+    apiFn.addEnvironment(
+      "AWS_COGNITO_USER_POOL_CLIENT_ID",
+      userPoolClient.userPoolClientId
+    );
 
     const api = new apigwv2.HttpApi(this, "HttpApi", {
       corsPreflight: {
