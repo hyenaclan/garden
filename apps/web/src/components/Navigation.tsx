@@ -1,69 +1,105 @@
 import { useState } from 'react';
-import { Menu, House, Users, User } from 'lucide-react';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { Button } from '@/components/ui/button';
+import { Tabs, Drawer, ActionIcon, Stack, NavLink, rem, useMatches } from '@mantine/core';
+import { IconMenu2, IconHome, IconUsers, IconUser, IconX } from '@tabler/icons-react';
 
 type NavItem = 'home' | 'cults' | 'profile';
 
 export default function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
   const [activeItem, setActiveItem] = useState<NavItem>('home');
+  const isMobile = useMatches({ base: true, md: false });
 
   const navItems = [
-    { id: 'home' as NavItem, label: 'Home', icon: House },
-    { id: 'cults' as NavItem, label: 'Cult', icon: Users },
-    { id: 'profile' as NavItem, label: 'Profile', icon: User },
+    { id: 'home' as NavItem, label: 'Home', icon: IconHome },
+    { id: 'cults' as NavItem, label: 'Cult', icon: IconUsers },
+    { id: 'profile' as NavItem, label: 'Profile', icon: IconUser },
   ];
 
   return (
     <>
       {/* Desktop Navigation */}
-      <Tabs value={activeItem} onValueChange={(value: string) => setActiveItem(value as NavItem)} className="hidden md:block">
-        <TabsList>
-          {navItems.map(({ id, label, icon: Icon }) => (
-            <TabsTrigger key={id} value={id} className="gap-2">
-              <Icon className="w-4 h-4" />
-              {label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-      </Tabs>
+      {!isMobile && (
+        <Tabs
+          value={activeItem}
+          onChange={(value) => setActiveItem(value as NavItem)}
+          variant="pills"
+          color="green"
+        >
+          <Tabs.List
+            bg="gray.1"
+            p={4}
+            styles={{
+              list: {
+                borderRadius: 'var(--mantine-radius-md)',
+              },
+            }}
+          >
+            {navItems.map(({ id, label, icon: Icon }) => (
+              <Tabs.Tab
+                key={id}
+                value={id}
+                leftSection={<Icon style={{ width: rem(16), height: rem(16) }} />}
+                c={activeItem === id ? 'white' : 'green.6'}
+              >
+                {label}
+              </Tabs.Tab>
+            ))}
+          </Tabs.List>
+        </Tabs>
+      )}
 
       {/* Mobile Navigation */}
-      <Sheet open={isOpen} onOpenChange={setIsOpen}>
-        <SheetTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden"
-            aria-label="Toggle menu"
+      {isMobile && (
+        <>
+          <ActionIcon variant="subtle" onClick={() => setIsOpen(true)} aria-label="Toggle menu">
+            <IconMenu2 size={24} />
+          </ActionIcon>
+          <Drawer
+            opened={isOpen}
+            onClose={() => setIsOpen(false)}
+            position="right"
+            size="256px"
+            padding={0}
+            title={
+              <ActionIcon variant="subtle" onClick={() => setIsOpen(false)} aria-label="Close menu" ml="auto">
+                <IconX size={20} />
+              </ActionIcon>
+            }
+            styles={{
+              title: {
+                width: '100%',
+                display: 'flex',
+                justifyContent: 'flex-end',
+              },
+            }}
           >
-            <Menu className="w-6 h-6" />
-          </Button>
-        </SheetTrigger>
-        <SheetContent side="right" className="w-64 p-0" aria-describedby={undefined}>
-          <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
-          <nav className="flex flex-col mt-8">
-            {navItems.map(({ id, label, icon: Icon }) => (
-              <Button
-                key={id}
-                variant="ghost"
-                className={`justify-start px-6 py-3 text-left text-sm border-b border-gray-100 rounded-none h-auto ${
-                  activeItem === id ? 'text-garden-primary font-medium' : 'text-gray-500 font-normal'
-                }`}
-                onClick={() => {
-                  setActiveItem(id);
-                  setIsOpen(false);
-                }}
-              >
-                <Icon className="w-4 h-4 mr-3" />
-                {label}
-              </Button>
-            ))}
-          </nav>
-        </SheetContent>
-      </Sheet>
+            <Stack gap={0} mt="xl">
+              {navItems.map(({ id, label, icon: Icon }) => (
+                <NavLink
+                  key={id}
+                  label={label}
+                  leftSection={<Icon size={18} />}
+                  active={activeItem === id}
+                  onClick={() => {
+                    setActiveItem(id);
+                    setIsOpen(false);
+                  }}
+                  styles={{
+                    root: {
+                      borderRadius: 0,
+                      borderBottom: '1px solid var(--mantine-color-gray-2)',
+                    },
+                    label: {
+                      fontSize: rem(14),
+                    },
+                  }}
+                  c={activeItem === id ? 'green.4' : 'gray.6'}
+                />
+              ))}
+            </Stack>
+          </Drawer>
+        </>
+      )}
     </>
   );
 }

@@ -1,11 +1,14 @@
+import { Stack, Title, SimpleGrid } from '@mantine/core';
 import { StatCard } from '@/components/ui/stat-card';
 
 export default function GardenAnalytics() {
   return (
-    <section className="space-y-6">
-      <h2 className="text-xl font-semibold text-garden-primary-darkest">Garden Analytics</h2>
+    <Stack gap="lg">
+      <Title order={2} size="h3" c="green.8">
+        Garden Analytics
+      </Title>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
+      <SimpleGrid cols={{ base: 1, sm: 2, lg: 3, xl: 5 }} spacing="lg">
         <StatCard
           title="Total Garden Area"
           value="3,333.3"
@@ -46,7 +49,7 @@ export default function GardenAnalytics() {
             positive: true,
           }}
         />
-      </div>
-    </section>
+      </SimpleGrid>
+    </Stack>
   );
 }

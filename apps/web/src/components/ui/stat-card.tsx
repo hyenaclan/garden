@@ -1,6 +1,5 @@
-import { Card, CardContent } from '@/components/ui/card';
-import { cn } from '@/lib/utils';
-import { TrendingUp, TrendingDown } from 'lucide-react';
+import { Card, Group, Stack, Text, Box } from '@mantine/core';
+import { IconTrendingUp, IconTrendingDown } from '@tabler/icons-react';
 
 interface StatCardProps {
   title: string;
@@ -16,57 +15,80 @@ interface StatCardProps {
   accentColor?: 'blue' | 'green' | 'yellow' | 'teal' | 'purple' | 'pink' | 'orange' | 'red' | 'indigo' | 'cyan';
 }
 
-const accentColorClasses = {
-  blue: 'bg-blue-500',
-  green: 'bg-green-500',
-  yellow: 'bg-yellow-500',
-  teal: 'bg-teal-500',
-  purple: 'bg-purple-500',
-  pink: 'bg-pink-500',
-  orange: 'bg-orange-500',
-  red: 'bg-red-500',
-  indigo: 'bg-indigo-500',
-  cyan: 'bg-cyan-500',
+const accentColors = {
+  blue: '#3b82f6',
+  green: '#22c55e',
+  yellow: '#eab308',
+  teal: '#14b8a6',
+  purple: '#a855f7',
+  pink: '#ec4899',
+  orange: '#f97316',
+  red: '#ef4444',
+  indigo: '#6366f1',
+  cyan: '#06b6d4',
 };
 
 export function StatCard({ title, subtitle, value, unit, change, icon, className, accentColor }: StatCardProps) {
   return (
-    <Card className={cn('bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow', className)}>
-      <CardContent className="p-5">
+    <Card
+      shadow="sm"
+      padding="lg"
+      className={className}
+      styles={{
+        root: {
+          backgroundColor: 'white',
+          transition: 'box-shadow 0.2s',
+          '&:hover': {
+            boxShadow: 'var(--mantine-shadow-md)',
+          },
+        },
+      }}
+    >
+      <Stack gap="xs">
         {accentColor && (
-          <div className={cn('h-1 w-16 rounded-full mb-3', accentColorClasses[accentColor])} />
+          <Box
+            h={4}
+            w={64}
+            style={{
+              borderRadius: 'var(--mantine-radius-md)',
+              backgroundColor: accentColors[accentColor],
+            }}
+          />
         )}
-        <div className="space-y-1">
-          <div>
-            <p className="font-medium text-garden-primary">{title}</p>
-            {subtitle && <p className="text-xs text-gray-500">{subtitle}</p>}
-          </div>
-          <div className="flex items-baseline gap-1.5">
-            <p className="text-2xl font-medium text-garden-primary-darkest">
-              {value}
-            </p>
-            {unit && <span className="text-sm font-medium text-garden-primary">{unit}</span>}
-          </div>
-          {change && (
-            <div className="flex items-center gap-1 pt-1">
-              {change.positive ? (
-                <TrendingUp className="w-3.5 h-3.5 text-garden-primary" />
-              ) : (
-                <TrendingDown className="w-3.5 h-3.5 text-red-600" />
-              )}
-              <span
-                className={cn(
-                  'text-xs font-semibold',
-                  change.positive ? 'text-garden-primary' : 'text-red-600'
-                )}
-              >
-                {change.value}
-              </span>
-            </div>
+        <Stack gap={0}>
+          <Text fw={500} c="green.5">
+            {title}
+          </Text>
+          {subtitle && (
+            <Text size="xs" c="gray.5">
+              {subtitle}
+            </Text>
           )}
-          {icon && <div className="pt-2 text-gray-400">{icon}</div>}
-        </div>
-      </CardContent>
+        </Stack>
+        <Group gap="xs" align="baseline">
+          <Text size="xl" fw={500} c="green.8">
+            {value}
+          </Text>
+          {unit && (
+            <Text size="sm" fw={500} c="green.5">
+              {unit}
+            </Text>
+          )}
+        </Group>
+        {change && (
+          <Group gap={4} mt={4}>
+            {change.positive ? (
+              <IconTrendingUp size={14} color="var(--mantine-color-green-6)" />
+            ) : (
+              <IconTrendingDown size={14} color="var(--mantine-color-red-6)" />
+            )}
+            <Text size="xs" fw={600} c={change.positive ? 'green.6' : 'red.6'}>
+              {change.value}
+            </Text>
+          </Group>
+        )}
+        {icon && <Box pt={8} c="gray.4">{icon}</Box>}
+      </Stack>
     </Card>
   );
 }

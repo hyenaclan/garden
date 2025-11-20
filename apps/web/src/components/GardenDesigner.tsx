@@ -1,36 +1,76 @@
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Stack, Group, Title, Card, Button, Box, Text } from '@mantine/core';
 
 export default function GardenDesigner() {
   return (
-    <section className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-garden-primary-darkest">Garden Designer</h2>
-        <Button className="bg-garden-primary hover:bg-garden-primary-dark text-white px-6">
+    <Stack gap="lg">
+      <Group justify="space-between">
+        <Title order={2} size="h3" c="green.8">
+          Garden Designer
+        </Title>
+        <Button color="green" px="xl">
           Open Designer
         </Button>
-      </div>
+      </Group>
 
-      <Card className="bg-white border-gray-200 shadow-sm">
-        <CardContent className="p-8">
-          {/* Garden plot visualization */}
-          <div className="relative bg-amber-50 rounded-lg p-12 min-h-[450px] border border-amber-100">
-            {/* Compass directions */}
-            <div className="absolute top-6 left-1/2 -translate-x-1/2">
-              <span className="text-sm font-semibold text-gray-600">N</span>
-            </div>
-            <div className="absolute bottom-6 left-1/2 -translate-x-1/2">
-              <span className="text-sm font-semibold text-gray-600">S</span>
-            </div>
-            <div className="absolute left-6 top-1/2 -translate-y-1/2">
-              <span className="text-sm font-semibold text-gray-600">W</span>
-            </div>
-            <div className="absolute right-6 top-1/2 -translate-y-1/2">
-              <span className="text-sm font-semibold text-gray-600">E</span>
-            </div>
-          </div>
-        </CardContent>
+      <Card shadow="sm" padding="xl">
+        {/* Garden plot visualization */}
+        <Box
+          pos="relative"
+          bg="yellow.0"
+          p="xl"
+          bd="1px solid var(--mantine-color-yellow-1)"
+          style={{
+            borderRadius: 'var(--mantine-radius-md)',
+            minHeight: '450px',
+          }}
+        >
+          {/* Compass directions */}
+          <Text
+            fw={600}
+            size="sm"
+            c="gray.6"
+            pos="absolute"
+            top={24}
+            left="50%"
+            style={{ transform: 'translateX(-50%)' }}
+          >
+            N
+          </Text>
+          <Text
+            fw={600}
+            size="sm"
+            c="gray.6"
+            pos="absolute"
+            bottom={24}
+            left="50%"
+            style={{ transform: 'translateX(-50%)' }}
+          >
+            S
+          </Text>
+          <Text
+            fw={600}
+            size="sm"
+            c="gray.6"
+            pos="absolute"
+            left={24}
+            top="50%"
+            style={{ transform: 'translateY(-50%)' }}
+          >
+            W
+          </Text>
+          <Text
+            fw={600}
+            size="sm"
+            c="gray.6"
+            pos="absolute"
+            right={24}
+            top="50%"
+            style={{ transform: 'translateY(-50%)' }}
+          >
+            E
+          </Text>
+        </Box>
       </Card>
-    </section>
+    </Stack>
   );
 }

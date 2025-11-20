@@ -1,17 +1,26 @@
+import { AppShell, Group, Title, Container } from '@mantine/core';
 import Navigation from '@/components/Navigation';
 
 export default function Header() {
   return (
-    <header className="bg-white border-b border-gray-100">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          <h1 className="text-base font-semibold flex items-center gap-2 text-garden-primary-darkest">
-            <span className="text-lg">🌱</span>
-            Garden Manager
-          </h1>
+    <AppShell.Header
+      styles={{
+        header: {
+          borderBottom: '1px solid var(--mantine-color-gray-2)',
+        },
+      }}
+    >
+      <Container size="xl" h="100%">
+        <Group h="100%" justify="space-between">
+          <Group gap="xs">
+            <span style={{ fontSize: '1.125rem' }}>🌱</span>
+            <Title order={1} size="h4" c="green.8">
+              Garden Manager
+            </Title>
+          </Group>
           <Navigation />
-        </div>
-      </div>
-    </header>
+        </Group>
+      </Container>
+    </AppShell.Header>
   );
 }
