@@ -10,7 +10,6 @@ export async function verifyAuth(request: FastifyRequest, reply: FastifyReply) {
     const authHeader = request.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      request.log.warn("Missing or invalid authorization header");
       return reply
         .code(401)
         .send({ error: "Missing or invalid authorization header" });
@@ -25,43 +24,23 @@ export async function verifyAuth(request: FastifyRequest, reply: FastifyReply) {
     const ISSUER = process.env.AWS_COGNITO_USER_POOL_URL;
     const CLIENT_ID = process.env.AWS_COGNITO_USER_POOL_CLIENT_ID;
 
-    request.log.info(
-      {
-        ISSUER,
-        CLIENT_ID,
-        hasIssuer: !!ISSUER,
-        hasClientId: !!CLIENT_ID,
-        allEnvVars: Object.keys(process.env).filter((k) =>
-          k.includes("COGNITO")
-        ),
-      },
-      "Cognito configuration check"
-    );
-
     if (!ISSUER || !CLIENT_ID) {
-      request.log.error("Cognito configuration missing");
       return reply.code(500).send({ error: "Server configuration error" });
     }
 
     // Validate issuer (must be from our Cognito User Pool)
     if (payload.iss !== ISSUER) {
-      request.log.warn(
-        { expected: ISSUER, got: payload.iss },
-        "Invalid issuer"
-      );
       return reply.code(401).send({ error: "Invalid token" });
     }
 
     // Validate expiration
     const now = Math.floor(Date.now() / 1000);
     if (!payload.exp || payload.exp < now) {
-      request.log.warn("Token expired");
       return reply.code(401).send({ error: "Token expired" });
     }
 
     // Validate not before (if present)
     if (payload.nbf && payload.nbf > now) {
-      request.log.warn("Token not yet valid");
       return reply.code(401).send({ error: "Invalid token" });
     }
 
@@ -72,11 +51,9 @@ export async function verifyAuth(request: FastifyRequest, reply: FastifyReply) {
       (payload as any).client_id === CLIENT_ID;
 
     if (!hasValidAudience) {
-      request.log.warn("Invalid audience/client_id");
       return reply.code(401).send({ error: "Invalid token" });
     }
 
-    request.log.info({ sub: payload.sub }, "Token validated");
     request.user = payload;
     return;
   } catch (error) {
