@@ -35,7 +35,6 @@
     "ts-node": "^10.9.2"
   },
   "dependencies": {
-    "@aws-sdk/client-cognito-identity-provider": "^3.931.0",
     "@fastify/aws-lambda": "^6.1.1",
     "@fastify/cors": "^10.0.1",
     "drizzle-orm": "^0.44.7",
