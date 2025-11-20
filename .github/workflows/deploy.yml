@@ -127,6 +127,9 @@ jobs:
           echo "VITE_COGNITO_USER_POOL_ID=${COGNITO_USER_POOL_ID}" >> apps/web/.env
 
           # Debug output
+          echo "Contents of apps/api/.env:"
+          cat apps/api/.env
+
           echo "Contents of apps/web/.env:"
           cat apps/web/.env
 
