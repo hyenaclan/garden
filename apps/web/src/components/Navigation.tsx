@@ -60,11 +60,6 @@ export default function Navigation() {
             position="right"
             size="256px"
             padding={0}
-            title={
-              <ActionIcon variant="subtle" onClick={() => setIsOpen(false)} aria-label="Close menu" ml="auto">
-                <IconX size={20} />
-              </ActionIcon>
-            }
             styles={{
               title: {
                 width: '100%',
