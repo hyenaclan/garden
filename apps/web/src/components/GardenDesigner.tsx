@@ -1,36 +1,59 @@
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, Box, Typography, Button } from '@mui/material';
 
 export default function GardenDesigner() {
   return (
-    <section className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-garden-primary-darkest">Garden Designer</h2>
-        <Button className="bg-garden-primary hover:bg-garden-primary-dark text-white px-6">
+    <Box component="section" sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Typography variant="h5" sx={{ color: 'secondary.main' }}>
+          Garden Designer
+        </Typography>
+        <Button
+          variant="contained"
+          color="primary"
+          sx={{ px: 3 }}
+        >
           Open Designer
         </Button>
-      </div>
+      </Box>
 
-      <Card className="bg-white border-gray-200 shadow-sm">
-        <CardContent className="p-8">
+      <Card>
+        <CardContent sx={{ p: 4 }}>
           {/* Garden plot visualization */}
-          <div className="relative bg-amber-50 rounded-lg p-12 min-h-[450px] border border-amber-100">
+          <Box
+            sx={{
+              position: 'relative',
+              bgcolor: 'warning.light',
+              borderRadius: 1,
+              p: 6,
+              minHeight: 450,
+              border: 1,
+              borderColor: 'warning.main',
+            }}
+          >
             {/* Compass directions */}
-            <div className="absolute top-6 left-1/2 -translate-x-1/2">
-              <span className="text-sm font-semibold text-gray-600">N</span>
-            </div>
-            <div className="absolute bottom-6 left-1/2 -translate-x-1/2">
-              <span className="text-sm font-semibold text-gray-600">S</span>
-            </div>
-            <div className="absolute left-6 top-1/2 -translate-y-1/2">
-              <span className="text-sm font-semibold text-gray-600">W</span>
-            </div>
-            <div className="absolute right-6 top-1/2 -translate-y-1/2">
-              <span className="text-sm font-semibold text-gray-600">E</span>
-            </div>
-          </div>
+            <Box sx={{ position: 'absolute', top: 24, left: '50%', transform: 'translateX(-50%)' }}>
+              <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.secondary' }}>
+                N
+              </Typography>
+            </Box>
+            <Box sx={{ position: 'absolute', bottom: 24, left: '50%', transform: 'translateX(-50%)' }}>
+              <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.secondary' }}>
+                S
+              </Typography>
+            </Box>
+            <Box sx={{ position: 'absolute', left: 24, top: '50%', transform: 'translateY(-50%)' }}>
+              <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.secondary' }}>
+                W
+              </Typography>
+            </Box>
+            <Box sx={{ position: 'absolute', right: 24, top: '50%', transform: 'translateY(-50%)' }}>
+              <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.secondary' }}>
+                E
+              </Typography>
+            </Box>
+          </Box>
         </CardContent>
       </Card>
-    </section>
+    </Box>
   );
 }

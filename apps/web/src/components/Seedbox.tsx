@@ -1,28 +1,36 @@
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Sprout } from 'lucide-react';
+import { Card, CardContent, Box, Typography, Button } from '@mui/material';
+import LocalFloristIcon from '@mui/icons-material/LocalFlorist';
 
 export default function Seedbox() {
   return (
-    <section>
-      <Card className="bg-white border-gray-200 shadow-sm">
-        <CardContent className="p-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-start gap-4">
-              <Sprout className="w-8 h-8 text-garden-primary flex-shrink-0 mt-1" />
-              <div>
-                <h2 className="text-xl font-semibold text-garden-primary-darkest mb-2">Seedbox</h2>
-                <p className="text-garden-primary">
+    <Box component="section">
+      <Card>
+        <CardContent sx={{ p: 4 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+              <LocalFloristIcon sx={{ fontSize: 32, color: 'primary.main', flexShrink: 0, mt: 0.5 }} />
+              <Box>
+                <Typography variant="h5" sx={{ color: 'secondary.main', mb: 1 }}>
+                  Seedbox
+                </Typography>
+                <Typography sx={{ color: 'primary.main' }}>
                   Manage your seed inventory, planting schedules, and variety information
-                </p>
-              </div>
-            </div>
-            <Button className="bg-garden-primary hover:bg-garden-primary-dark text-white px-6 flex-shrink-0">
+                </Typography>
+              </Box>
+            </Box>
+            <Button
+              variant="contained"
+              color="primary"
+              sx={{
+                px: 3,
+                flexShrink: 0
+              }}
+            >
               Go to Seedbox
             </Button>
-          </div>
+          </Box>
         </CardContent>
       </Card>
-    </section>
+    </Box>
   );
 }

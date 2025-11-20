@@ -1,17 +1,28 @@
+import { AppBar, Toolbar, Typography, Container, Box } from '@mui/material';
 import Navigation from '@/components/Navigation';
 
 export default function Header() {
   return (
-    <header className="bg-white border-b border-gray-100">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          <h1 className="text-base font-semibold flex items-center gap-2 text-garden-primary-darkest">
-            <span className="text-lg">🌱</span>
+    <AppBar position="static" elevation={0} sx={{ bgcolor: 'background.paper', borderBottom: 1, borderColor: 'grey.100' }}>
+      <Container maxWidth="xl">
+        <Toolbar disableGutters sx={{ height: 64 }}>
+          <Typography
+            variant="h6"
+            component="h1"
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1,
+              color: 'secondary.main',
+              flexGrow: 1,
+            }}
+          >
+            <Box component="span" sx={{ fontSize: '1.125rem' }}>🌱</Box>
             Garden Manager
-          </h1>
+          </Typography>
           <Navigation />
-        </div>
-      </div>
-    </header>
+        </Toolbar>
+      </Container>
+    </AppBar>
   );
 }

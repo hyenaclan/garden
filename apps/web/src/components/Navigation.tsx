@@ -1,69 +1,135 @@
 import { useState } from 'react';
-import { Menu, House, Users, User } from 'lucide-react';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { Button } from '@/components/ui/button';
+import { Tabs, Tab, Drawer, IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Box, useMediaQuery, useTheme } from '@mui/material';
+import MenuIcon from '@mui/icons-material/Menu';
+import CloseIcon from '@mui/icons-material/Close';
+import HomeIcon from '@mui/icons-material/Home';
+import GroupsIcon from '@mui/icons-material/Groups';
+import PersonIcon from '@mui/icons-material/Person';
 
 type NavItem = 'home' | 'cults' | 'profile';
 
 export default function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
   const [activeItem, setActiveItem] = useState<NavItem>('home');
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const navItems = [
-    { id: 'home' as NavItem, label: 'Home', icon: House },
-    { id: 'cults' as NavItem, label: 'Cult', icon: Users },
-    { id: 'profile' as NavItem, label: 'Profile', icon: User },
+    { id: 'home' as NavItem, label: 'Home', icon: HomeIcon },
+    { id: 'cults' as NavItem, label: 'Cult', icon: GroupsIcon },
+    { id: 'profile' as NavItem, label: 'Profile', icon: PersonIcon },
   ];
+
+  const handleTabChange = (_event: React.SyntheticEvent, newValue: NavItem) => {
+    setActiveItem(newValue);
+  };
 
   return (
     <>
       {/* Desktop Navigation */}
-      <Tabs value={activeItem} onValueChange={(value: string) => setActiveItem(value as NavItem)} className="hidden md:block">
-        <TabsList>
+      {!isMobile && (
+        <Tabs
+          value={activeItem}
+          onChange={handleTabChange}
+          sx={{
+            '& .MuiTab-root': {
+              minHeight: '40px',
+              gap: 1,
+              color: 'primary.main',
+              '&:hover': {
+                backgroundColor: 'primary.lightest',
+              },
+            },
+          }}
+        >
           {navItems.map(({ id, label, icon: Icon }) => (
-            <TabsTrigger key={id} value={id} className="gap-2">
-              <Icon className="w-4 h-4" />
-              {label}
-            </TabsTrigger>
+            <Tab
+              key={id}
+              value={id}
+              label={label}
+              icon={<Icon sx={{ fontSize: 18 }} />}
+              iconPosition="start"
+            />
           ))}
-        </TabsList>
-      </Tabs>
+        </Tabs>
+      )}
 
       {/* Mobile Navigation */}
-      <Sheet open={isOpen} onOpenChange={setIsOpen}>
-        <SheetTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden"
+      {isMobile && (
+        <>
+          <IconButton
+            onClick={() => setIsOpen(true)}
             aria-label="Toggle menu"
+            sx={{ color: 'text.primary' }}
           >
-            <Menu className="w-6 h-6" />
-          </Button>
-        </SheetTrigger>
-        <SheetContent side="right" className="w-64 p-0" aria-describedby={undefined}>
-          <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
-          <nav className="flex flex-col mt-8">
-            {navItems.map(({ id, label, icon: Icon }) => (
-              <Button
-                key={id}
-                variant="ghost"
-                className={`justify-start px-6 py-3 text-left text-sm border-b border-gray-100 rounded-none h-auto ${
-                  activeItem === id ? 'text-garden-primary font-medium' : 'text-gray-500 font-normal'
-                }`}
-                onClick={() => {
-                  setActiveItem(id);
-                  setIsOpen(false);
-                }}
+            <MenuIcon />
+          </IconButton>
+          <Drawer
+            anchor="right"
+            open={isOpen}
+            onClose={() => setIsOpen(false)}
+            PaperProps={{
+              sx: {
+                width: 256,
+                backgroundColor: 'white',
+              },
+            }}
+          >
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', p: 2 }}>
+              <IconButton
+                onClick={() => setIsOpen(false)}
+                aria-label="Close menu"
+                sx={{ color: 'grey.600' }}
               >
-                <Icon className="w-4 h-4 mr-3" />
-                {label}
-              </Button>
-            ))}
-          </nav>
-        </SheetContent>
-      </Sheet>
+                <CloseIcon />
+              </IconButton>
+            </Box>
+            <Box>
+              <List sx={{ p: 0 }}>
+                {navItems.map(({ id, label, icon: Icon }) => (
+                  <ListItem key={id} disablePadding>
+                    <ListItemButton
+                      selected={activeItem === id}
+                      onClick={() => {
+                        setActiveItem(id);
+                        setIsOpen(false);
+                      }}
+                      sx={{
+                        px: 3,
+                        py: 1.5,
+                        borderBottom: '1px solid',
+                        borderColor: 'grey.100',
+                        borderRadius: 0,
+                        '&.Mui-selected': {
+                          backgroundColor: 'transparent',
+                          color: 'primary.main',
+                          fontWeight: 500,
+                          '&:hover': {
+                            backgroundColor: 'primary.lightest',
+                          },
+                        },
+                        '&:not(.Mui-selected)': {
+                          color: 'grey.500',
+                        },
+                      }}
+                    >
+                      <ListItemIcon sx={{ minWidth: 36, color: 'inherit' }}>
+                        <Icon sx={{ fontSize: 18 }} />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={label}
+                        primaryTypographyProps={{
+                          fontSize: '0.875rem',
+                        }}
+                      />
+                    </ListItemButton>
+                  </ListItem>
+                ))}
+              </List>
+            </Box>
+          </Drawer>
+        </>
+      )}
     </>
   );
 }

@@ -1,6 +1,6 @@
-import { Card, CardContent } from '@/components/ui/card';
-import { cn } from '@/lib/utils';
-import { TrendingUp, TrendingDown } from 'lucide-react';
+import { Card, CardContent, Box, Typography } from '@mui/material';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 
 interface StatCardProps {
   title: string;
@@ -12,60 +12,86 @@ interface StatCardProps {
     positive?: boolean;
   };
   icon?: React.ReactNode;
-  className?: string;
   accentColor?: 'blue' | 'green' | 'yellow' | 'teal' | 'purple' | 'pink' | 'orange' | 'red' | 'indigo' | 'cyan';
 }
 
-const accentColorClasses = {
-  blue: 'bg-blue-500',
-  green: 'bg-green-500',
-  yellow: 'bg-yellow-500',
-  teal: 'bg-teal-500',
-  purple: 'bg-purple-500',
-  pink: 'bg-pink-500',
-  orange: 'bg-orange-500',
-  red: 'bg-red-500',
-  indigo: 'bg-indigo-500',
-  cyan: 'bg-cyan-500',
+const accentColors = {
+  blue: '#3b82f6',
+  green: '#22c55e',
+  yellow: '#eab308',
+  teal: '#14b8a6',
+  purple: '#a855f7',
+  pink: '#ec4899',
+  orange: '#f97316',
+  red: '#ef4444',
+  indigo: '#6366f1',
+  cyan: '#06b6d4',
 };
 
-export function StatCard({ title, subtitle, value, unit, change, icon, className, accentColor }: StatCardProps) {
+export function StatCard({ title, subtitle, value, unit, change, icon, accentColor }: StatCardProps) {
   return (
-    <Card className={cn('bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow', className)}>
-      <CardContent className="p-5">
+    <Card
+      sx={{
+        bgcolor: 'background.paper',
+        transition: 'box-shadow 0.2s',
+        '&:hover': {
+          boxShadow: 3,
+        },
+      }}
+    >
+      <CardContent sx={{ p: 2.5 }}>
         {accentColor && (
-          <div className={cn('h-1 w-16 rounded-full mb-3', accentColorClasses[accentColor])} />
+          <Box
+            sx={{
+              height: 4,
+              width: 64,
+              borderRadius: 999,
+              bgcolor: accentColors[accentColor],
+              mb: 1.5,
+            }}
+          />
         )}
-        <div className="space-y-1">
-          <div>
-            <p className="font-medium text-garden-primary">{title}</p>
-            {subtitle && <p className="text-xs text-gray-500">{subtitle}</p>}
-          </div>
-          <div className="flex items-baseline gap-1.5">
-            <p className="text-2xl font-medium text-garden-primary-darkest">
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+          <Box>
+            <Typography sx={{ fontWeight: 500, color: 'primary.main' }}>{title}</Typography>
+            {subtitle && (
+              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                {subtitle}
+              </Typography>
+            )}
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.75 }}>
+            <Typography variant="h4" sx={{ fontWeight: 500, color: 'secondary.main' }}>
               {value}
-            </p>
-            {unit && <span className="text-sm font-medium text-garden-primary">{unit}</span>}
-          </div>
+            </Typography>
+            {unit && (
+              <Typography variant="body2" sx={{ fontWeight: 500, color: 'primary.main' }}>
+                {unit}
+              </Typography>
+            )}
+          </Box>
           {change && (
-            <div className="flex items-center gap-1 pt-1">
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, pt: 0.5 }}>
               {change.positive ? (
-                <TrendingUp className="w-3.5 h-3.5 text-garden-primary" />
+                <TrendingUpIcon sx={{ fontSize: 14, color: 'success.main' }} />
               ) : (
-                <TrendingDown className="w-3.5 h-3.5 text-red-600" />
+                <TrendingDownIcon sx={{ fontSize: 14, color: 'error.main' }} />
               )}
-              <span
-                className={cn(
-                  'text-xs font-semibold',
-                  change.positive ? 'text-garden-primary' : 'text-red-600'
-                )}
+              <Typography
+                variant="caption"
+                sx={{
+                  fontWeight: 600,
+                  color: change.positive ? 'success.main' : 'error.main',
+                }}
               >
                 {change.value}
-              </span>
-            </div>
+              </Typography>
+            </Box>
           )}
-          {icon && <div className="pt-2 text-gray-400">{icon}</div>}
-        </div>
+          {icon && (
+            <Box sx={{ pt: 1, color: 'grey.400' }}>{icon}</Box>
+          )}
+        </Box>
       </CardContent>
     </Card>
   );

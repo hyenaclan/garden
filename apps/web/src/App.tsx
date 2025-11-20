@@ -1,21 +1,27 @@
+import { ThemeProvider } from '@mui/material/styles';
+import { CssBaseline, Box, Container } from '@mui/material';
+import { theme } from '@/theme';
 import Header from '@/components/Header';
 import Home from '@/components/Home';
 import Footer from '@/components/Footer';
 
 function App() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+        <Header />
 
-      {/* Main Content */}
-      <main className="bg-emerald-50 pb-16">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8 py-10">
-          <Home />
-        </div>
-      </main>
+        {/* Main Content */}
+        <Box component="main" sx={{ bgcolor: 'primary.lightest', pb: 8 }}>
+          <Container maxWidth="xl" sx={{ py: 5 }}>
+            <Home />
+          </Container>
+        </Box>
 
-      <Footer />
-    </div>
+        <Footer />
+      </Box>
+    </ThemeProvider>
   );
 }
 

@@ -1,11 +1,23 @@
+import { Box, Typography } from '@mui/material';
 import { StatCard } from '@/components/ui/stat-card';
 
 export default function GardenAnalytics() {
   return (
-    <section className="space-y-6">
-      <h2 className="text-xl font-semibold text-garden-primary-darkest">Garden Analytics</h2>
+    <Box component="section">
+      <Typography variant="h5" sx={{ color: 'secondary.main', mb: 3 }}>
+        Garden Analytics
+      </Typography>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
+      <Box sx={{
+        display: 'grid',
+        gridTemplateColumns: {
+          xs: '1fr',
+          sm: 'repeat(2, 1fr)',
+          lg: 'repeat(3, 1fr)',
+          xl: 'repeat(5, 1fr)'
+        },
+        gap: 2.5
+      }}>
         <StatCard
           title="Total Garden Area"
           value="3,333.3"
@@ -46,7 +58,7 @@ export default function GardenAnalytics() {
             positive: true,
           }}
         />
-      </div>
-    </section>
+      </Box>
+    </Box>
   );
 }
