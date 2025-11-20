@@ -222,12 +222,6 @@ export class InfraStack extends cdk.Stack {
       comment: `React site (${stage})`,
     });
 
-    // Add CloudFront domain to API Lambda environment for CORS
-    apiFn.addEnvironment(
-      "ALLOWED_ORIGIN",
-      `https://${distribution.distributionDomainName}`
-    );
-
     const userPool = new cognito.UserPool(this, "UserPool", {
       userPoolName: `garden-users-${stage}`,
       selfSignUpEnabled: true,
@@ -264,10 +258,6 @@ export class InfraStack extends cdk.Stack {
     });
 
     // Add Cognito configuration to Lambda for token verification
-    apiFn.addEnvironment(
-      "AWS_COGNITO_JWKS_URI",
-      `https://cognito-idp.${cdk.Stack.of(this).region}.amazonaws.com/${userPool.userPoolId}/.well-known/jwks.json`
-    );
     apiFn.addEnvironment(
       "AWS_COGNITO_USER_POOL_URL",
       `https://cognito-idp.${cdk.Stack.of(this).region}.amazonaws.com/${userPool.userPoolId}`
