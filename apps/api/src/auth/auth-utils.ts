@@ -25,6 +25,19 @@ export async function verifyAuth(request: FastifyRequest, reply: FastifyReply) {
     const ISSUER = process.env.AWS_COGNITO_USER_POOL_URL;
     const CLIENT_ID = process.env.AWS_COGNITO_USER_POOL_CLIENT_ID;
 
+    request.log.info(
+      {
+        ISSUER,
+        CLIENT_ID,
+        hasIssuer: !!ISSUER,
+        hasClientId: !!CLIENT_ID,
+        allEnvVars: Object.keys(process.env).filter((k) =>
+          k.includes("COGNITO")
+        ),
+      },
+      "Cognito configuration check"
+    );
+
     if (!ISSUER || !CLIENT_ID) {
       request.log.error("Cognito configuration missing");
       return reply.code(500).send({ error: "Server configuration error" });
