@@ -9,6 +9,7 @@ export async function verifyAuth(request: FastifyRequest, reply: FastifyReply) {
     const authHeader = request.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      request.log.warn("Missing or invalid authorization header");
       return reply
         .code(401)
         .send({ error: "Missing or invalid authorization header" });
@@ -16,9 +17,14 @@ export async function verifyAuth(request: FastifyRequest, reply: FastifyReply) {
 
     const token = authHeader.substring(7); // Remove 'Bearer ' prefix
     const JWKS_URI = process.env.AWS_COGNITO_JWKS_URI || "";
+    const ISSUER = process.env.AWS_COGNITO_USER_POOL_URL || "";
 
-    if (!JWKS_URI) {
-      request.log.error("AWS_COGNITO_JWKS_URI not configured");
+    request.log.info({ JWKS_URI, ISSUER }, "Auth configuration");
+
+    if (!JWKS_URI || !ISSUER) {
+      request.log.error(
+        "AWS_COGNITO_JWKS_URI or AWS_COGNITO_USER_POOL_URL not configured"
+      );
       return reply.code(500).send({ error: "Server configuration error" });
     }
 
@@ -28,14 +34,21 @@ export async function verifyAuth(request: FastifyRequest, reply: FastifyReply) {
 
     // Verify the JWT token using Cognito's public keys
     const { payload } = await jwtVerify(token, JWKS, {
-      issuer: process.env.AWS_COGNITO_USER_POOL_URL,
+      issuer: ISSUER,
     });
 
+    request.log.info({ sub: payload.sub }, "Token verified successfully");
     // Attach user info to request
     request.user = payload;
     return;
   } catch (error) {
-    request.log.error(error, "JWT verification failed");
+    request.log.error(
+      {
+        error,
+        message: error instanceof Error ? error.message : "Unknown error",
+      },
+      "JWT verification failed"
+    );
     return reply.code(401).send({ error: "Invalid or expired token" });
   }
 }
