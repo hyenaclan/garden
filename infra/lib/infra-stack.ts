@@ -291,7 +291,7 @@ export class InfraStack extends cdk.Stack {
       "CognitoAuthorizer",
       `https://cognito-idp.${cdk.Stack.of(this).region}.amazonaws.com/${userPool.userPoolId}`,
       {
-        jwtAudience: [userPoolClient.userPoolClientId],
+        identitySource: ["$request.header.Authorization"],
       }
     );
 
