@@ -263,6 +263,16 @@ export class InfraStack extends cdk.Stack {
       idTokenValidity: cdk.Duration.hours(1),
     });
 
+    // Add Cognito configuration to Lambda for token verification
+    apiFn.addEnvironment(
+      "AWS_COGNITO_JWKS_URI",
+      `https://cognito-idp.${cdk.Stack.of(this).region}.amazonaws.com/${userPool.userPoolId}/.well-known/jwks.json`
+    );
+    apiFn.addEnvironment(
+      "AWS_COGNITO_USER_POOL_URL",
+      `https://cognito-idp.${cdk.Stack.of(this).region}.amazonaws.com/${userPool.userPoolId}`
+    );
+
     const api = new apigwv2.HttpApi(this, "HttpApi", {
       corsPreflight: {
         allowOrigins: [
@@ -292,6 +302,7 @@ export class InfraStack extends cdk.Stack {
       integration: new integ.HttpLambdaIntegration("ApiIntegration", apiFn),
     });
 
+    // Protected routes - now handled by Lambda auth middleware
     api.addRoutes({
       path: "/api/{proxy+}",
       methods: [apigwv2.HttpMethod.ANY],
@@ -299,7 +310,6 @@ export class InfraStack extends cdk.Stack {
         "ApiIntegrationSecure",
         apiFn
       ),
-      authorizer,
     });
 
     new cdk.CfnOutput(this, "GardenApiFnName", { value: apiFn.functionName });
