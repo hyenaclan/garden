@@ -230,6 +230,7 @@ jobs:
           echo "AWS_REGION=${{ env.AWS_REGION }}" >> apps/api/.env
           echo "AWS_COGNITO_JWKS_URI=https://cognito-idp.${{ env.AWS_REGION }}.amazonaws.com/${COGNITO_USER_POOL_ID}/.well-known/jwks.json" >> apps/api/.env
           echo "AWS_COGNITO_USER_POOL_URL=https://cognito-idp.${{ env.AWS_REGION }}.amazonaws.com/${COGNITO_USER_POOL_ID}" >> apps/api/.env
+          echo "AWS_COGNITO_USER_POOL_CLIENT_ID=${COGNITO_USER_POOL_CLIENT_ID}" >> apps/api/.env
 
           # Web env vars
           echo "VITE_BUILD_ID=${{ github.run_number }}" >> apps/web/.env
