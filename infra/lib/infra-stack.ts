@@ -303,18 +303,15 @@ export class InfraStack extends cdk.Stack {
       integration: new integ.HttpLambdaIntegration("ApiIntegration", apiFn),
     });
 
-    // Protected routes - API Gateway handles JWT validation
+    // Protected routes - handled by Lambda middleware (not API Gateway authorizer)
+    // This ensures CORS headers are always returned, even on auth failures
     api.addRoutes({
       path: "/api/{proxy+}",
       methods: [apigwv2.HttpMethod.ANY],
       integration: new integ.HttpLambdaIntegration(
         "ApiIntegrationSecure",
-        apiFn,
-        {
-          payloadFormatVersion: apigwv2.PayloadFormatVersion.VERSION_2_0,
-        }
+        apiFn
       ),
-      authorizer,
     });
 
     new cdk.CfnOutput(this, "GardenApiFnName", { value: apiFn.functionName });

@@ -23,8 +23,8 @@ export const useAuthenticatedFetch = () => {
         }
       }
 
-      // Get the current access token
-      const token = auth.user?.access_token;
+      // Get the ID token (has proper aud claim for API Gateway)
+      const token = auth.user?.id_token;
 
       // Merge headers with authorization
       const headers: Record<string, string> = {
@@ -48,7 +48,7 @@ export const useAuthenticatedFetch = () => {
           // Try to refresh the token
           await auth.signinSilent();
           // Retry the request with the new token
-          const newToken = auth.user?.access_token;
+          const newToken = auth.user?.id_token;
           if (newToken) {
             headers["Authorization"] = `Bearer ${newToken}`;
           }
