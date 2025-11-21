@@ -111,11 +111,6 @@ jobs:
 
           echo "COGNITO_DOMAIN: $COGNITO_DOMAIN"
 
-          # api env vars
-          echo "AWS_REGION=${{ env.AWS_REGION }}" >> apps/api/.env
-          echo "AWS_COGNITO_USER_POOL_URL=https://cognito-idp.${{ env.AWS_REGION }}.amazonaws.com/${COGNITO_USER_POOL_ID}" >> apps/api/.env
-          echo "AWS_COGNITO_USER_POOL_CLIENT_ID=${COGNITO_USER_POOL_CLIENT_ID}" >> apps/api/.env
-
           # Web env vars
           echo "VITE_BUILD_ID=${{ github.run_number }}" >> apps/web/.env
           echo "VITE_COMMIT_SHA=${{ github.sha }}" >> apps/web/.env
@@ -227,11 +222,6 @@ jobs:
             --output text)
 
           echo "COGNITO_DOMAIN: $COGNITO_DOMAIN"
-
-          # api env vars
-          echo "AWS_REGION=${{ env.AWS_REGION }}" >> apps/api/.env
-          echo "AWS_COGNITO_USER_POOL_URL=https://cognito-idp.${{ env.AWS_REGION }}.amazonaws.com/${COGNITO_USER_POOL_ID}" >> apps/api/.env
-          echo "AWS_COGNITO_USER_POOL_CLIENT_ID=${COGNITO_USER_POOL_CLIENT_ID}" >> apps/api/.env
 
           # Web env vars
           echo "VITE_BUILD_ID=${{ github.run_number }}" >> apps/web/.env
