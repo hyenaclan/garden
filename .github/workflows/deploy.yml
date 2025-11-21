@@ -109,8 +109,6 @@ jobs:
             --query "Stacks[0].Outputs[?OutputKey=='UserPoolClientId'].OutputValue" \
             --output text)
 
-          echo "COGNITO_DOMAIN: $COGNITO_DOMAIN"
-
           # Web env vars
           echo "VITE_BUILD_ID=${{ github.run_number }}" >> apps/web/.env
           echo "VITE_COMMIT_SHA=${{ github.sha }}" >> apps/web/.env
@@ -119,13 +117,6 @@ jobs:
           echo "VITE_COGNITO_USER_POOL_CLIENT_ID=${COGNITO_USER_POOL_CLIENT_ID}" >> apps/web/.env
           echo "VITE_COGNITO_DOMAIN=${COGNITO_DOMAIN}" >> apps/web/.env
           echo "VITE_COGNITO_USER_POOL_ID=${COGNITO_USER_POOL_ID}" >> apps/web/.env
-
-          # Debug output
-          echo "Contents of apps/api/.env:"
-          cat apps/api/.env
-
-          echo "Contents of apps/web/.env:"
-          cat apps/web/.env
 
       - name: Install web build dependencies
         run: npm install @rollup/rollup-linux-x64-gnu --workspace apps/web --no-save
@@ -220,8 +211,6 @@ jobs:
             --stack-name $STACK_NAME-prod \
             --query "Stacks[0].Outputs[?OutputKey=='UserPoolClientId'].OutputValue" \
             --output text)
-
-          echo "COGNITO_DOMAIN: $COGNITO_DOMAIN"
 
           # Web env vars
           echo "VITE_BUILD_ID=${{ github.run_number }}" >> apps/web/.env
