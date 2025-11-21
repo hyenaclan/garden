@@ -296,7 +296,7 @@ export class InfraStack extends cdk.Stack {
         "ApiIntegrationSecure",
         apiFn
       ),
-      authorizer,
+      // No API Gateway authorizer here; Fastify handles auth
     });
 
     new cdk.CfnOutput(this, "GardenApiFnName", { value: apiFn.functionName });
