@@ -1,10 +1,28 @@
 import { FastifyRequest, FastifyReply } from "fastify";
+import { createRemoteJWKSet, jwtVerify } from "jose";
 import { config } from "dotenv";
 
 config();
 
-// Middleware to verify JWT tokens by validating claims (no signature verification)
-// This is secure because: 1) tokens come over HTTPS, 2) we validate issuer/exp/audience
+const ISSUER = process.env.AWS_COGNITO_USER_POOL_URL;
+const CLIENT_ID = process.env.AWS_COGNITO_USER_POOL_CLIENT_ID;
+
+// Cache the JWKS for the Cognito User Pool
+let jwks: ReturnType<typeof createRemoteJWKSet> | null = null;
+
+function getJWKS() {
+  if (!jwks) {
+    if (!ISSUER) {
+      throw new Error("AWS_COGNITO_USER_POOL_URL not configured");
+    }
+    // Cognito JWKS endpoint is at /.well-known/jwks.json
+    const jwksUrl = `${ISSUER}/.well-known/jwks.json`;
+    jwks = createRemoteJWKSet(new URL(jwksUrl));
+  }
+  return jwks;
+}
+
+// Middleware to verify JWT tokens with cryptographic signature verification
 export async function verifyAuth(request: FastifyRequest, reply: FastifyReply) {
   try {
     const authHeader = request.headers.authorization;
@@ -17,40 +35,18 @@ export async function verifyAuth(request: FastifyRequest, reply: FastifyReply) {
 
     const token = authHeader.substring(7);
 
-    // Decode JWT without signature verification
-    const { decodeJwt } = await import("jose");
-    const payload = decodeJwt(token);
-
-    const ISSUER = process.env.AWS_COGNITO_USER_POOL_URL;
-    const CLIENT_ID = process.env.AWS_COGNITO_USER_POOL_CLIENT_ID;
-
     if (!ISSUER || !CLIENT_ID) {
       return reply.code(500).send({ error: "Server configuration error" });
     }
 
-    // Validate issuer (must be from our Cognito User Pool)
-    if (payload.iss !== ISSUER) {
-      return reply.code(401).send({ error: "Invalid token" });
-    }
+    // Verify JWT signature using Cognito's JWKS and validate claims
+    const { payload } = await jwtVerify(token, getJWKS(), {
+      issuer: ISSUER,
+      audience: CLIENT_ID,
+    });
 
-    // Validate expiration
-    const now = Math.floor(Date.now() / 1000);
-    if (!payload.exp || payload.exp < now) {
-      return reply.code(401).send({ error: "Token expired" });
-    }
-
-    // Validate not before (if present)
-    if (payload.nbf && payload.nbf > now) {
-      return reply.code(401).send({ error: "Invalid token" });
-    }
-
-    // Validate audience/client_id (ID tokens use 'aud', access tokens use 'client_id')
-    const hasValidAudience =
-      payload.aud === CLIENT_ID ||
-      (Array.isArray(payload.aud) && payload.aud.includes(CLIENT_ID)) ||
-      (payload as any).client_id === CLIENT_ID;
-
-    if (!hasValidAudience) {
+    // Additional validation for access tokens which use 'client_id' instead of 'aud'
+    if (!payload.aud && (payload as any).client_id !== CLIENT_ID) {
       return reply.code(401).send({ error: "Invalid token" });
     }
 
