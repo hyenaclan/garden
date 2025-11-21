@@ -3,7 +3,12 @@ import cors from "@fastify/cors";
 import { getDb } from "./db";
 import { sql } from "drizzle-orm";
 import { gardeners } from "./schema";
-import { verifyAuth } from "./auth/auth-utils";
+
+declare module "fastify" {
+  interface FastifyRequest {
+    user?: Record<string, any>;
+  }
+}
 
 export function init() {
   const app = Fastify({ logger: true });
@@ -15,6 +20,27 @@ export function init() {
 
   // Register routes
   app.register(async (instance) => {
+    // Set user from JWT claims for protected routes
+    instance.addHook("preHandler", async (request, reply) => {
+      if (request.url.startsWith("/api/")) {
+        const claims = (request as any).requestContext?.authorizer?.jwt?.claims;
+        if (claims) {
+          request.user = claims;
+        } else {
+          // Local development: check for Authorization header
+          const authHeader = request.headers.authorization;
+          if (!authHeader || !authHeader.startsWith("Bearer ")) {
+            return reply
+              .code(401)
+              .send({ error: "Missing or invalid authorization header" });
+          }
+          // For local, you can decode without verification or mock
+          // Here, just set a mock user for testing
+          request.user = { sub: "local-user", email: "test@example.com" };
+        }
+      }
+    });
+
     instance.get(
       "/temp-api/health",
       {
@@ -68,15 +94,11 @@ export function init() {
       async () => ({ ok: true })
     );
 
-    app.get(
-      "/api/user/profile",
-      { preHandler: verifyAuth },
-      async (request) => ({
-        message: "This is a protected route",
-        user: request.user, // User info from JWT
-        timestamp: new Date().toISOString(),
-      })
-    );
+    instance.get("/api/user/profile", async (request) => ({
+      message: "This is a protected route",
+      user: request.user, // User info from JWT
+      timestamp: new Date().toISOString(),
+    }));
   });
 
   return app;

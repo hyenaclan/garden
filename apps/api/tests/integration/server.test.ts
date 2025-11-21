@@ -2,12 +2,6 @@ import { FastifyInstance } from "fastify";
 import { init } from "../../src/server";
 import { setupTestDb } from "./helpers";
 
-// Mock jose to avoid ES module issues with Jest
-jest.mock("jose", () => ({
-  createRemoteJWKSet: jest.fn(() => jest.fn()),
-  jwtVerify: jest.fn().mockResolvedValue({ payload: {} }),
-}));
-
 let db: Awaited<ReturnType<typeof setupTestDb>>;
 let app: FastifyInstance;
 

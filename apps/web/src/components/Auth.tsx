@@ -8,9 +8,10 @@ export default function Auth() {
   const authenticatedFetch = useAuthenticatedFetch();
   const [userProfile, setUserProfile] = useState<any>(null);
   const [userLoading, setUserLoading] = useState(false);
+  const [userError, setUserError] = useState<any>(null);
 
   const fetchUserData = async () => {
-    if (!auth.user) return;
+    setUserError(null);
     try {
       setUserLoading(true);
       const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
@@ -22,6 +23,7 @@ export default function Auth() {
       setUserProfile(data);
     } catch (error) {
       console.error("Error fetching user profile:", error);
+      setUserError(error);
     } finally {
       setUserLoading(false);
     }
@@ -44,6 +46,10 @@ export default function Auth() {
   return (
     <>
       <div style={authButtonRow}>
+        <button onClick={fetchUserData} disabled={userLoading}>
+          Fetch User Profile (protected)
+        </button>
+        {userError && <p>Error loading profile: {JSON.stringify(userError)}</p>}
         {!auth.isAuthenticated ? (
           <button
             disabled={auth.isLoading}
@@ -52,12 +58,7 @@ export default function Auth() {
             Sign in
           </button>
         ) : (
-          <>
-            <button onClick={fetchUserData} disabled={userLoading}>
-              Fetch User Profile
-            </button>
-            <button onClick={() => logout()}>Logout</button>
-          </>
+          <button onClick={() => logout()}>Logout</button>
         )}
       </div>
 
