@@ -189,7 +189,7 @@ jobs:
             --stack-name $STACK_NAME-prod \
             --query "Stacks[0].Outputs[?OutputKey=='MigrateFnName'].OutputValue" \
             --output text)
-          aws lambda invoke --function-name "$MIGRATE_FN" response.json
+          aws lambda invoke --function-name "$MIGRATE_FN" response.json --log-type Tail > result.json
           cat response.json
           FUNCTION_ERROR=$(jq -r '.FunctionError // empty' result.json)
           if [ -n "$FUNCTION_ERROR" ]; then
