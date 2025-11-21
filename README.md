@@ -34,7 +34,6 @@ Place the following env vars in the files:
 apps/api/.env:
 
 ```
-IS_LOCAL=true
 DB_HOST=localhost
 DB_USER=postgres
 DB_PASS=postgres
