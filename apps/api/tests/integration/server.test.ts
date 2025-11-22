@@ -35,7 +35,7 @@ describe("Server Integration Tests", () => {
   test("/public/temp-api/health has valid structure and data", async () => {
     const response = await app.inject({
       method: "GET",
-      url: "/temp-api/health",
+      url: "/public/temp-api/health",
     });
     const body = response.json();
     expect(body).toHaveProperty("message", "Hello from the Garden API");
