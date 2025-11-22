@@ -121,7 +121,7 @@ export class InfraStack extends cdk.Stack {
       targets: [
         new targets.LambdaFunction(apiFn, {
           event: events.RuleTargetInput.fromObject({
-            rawPath: "/health",
+            rawPath: "/public/health",
           }),
         }),
       ],
@@ -280,23 +280,20 @@ export class InfraStack extends cdk.Stack {
       }
     );
 
-    // Proxy all routes to the function
     api.addRoutes({
-      path: "/{proxy+}",
+      path: "/public/{proxy+}",
       methods: [apigwv2.HttpMethod.ANY],
       integration: new integ.HttpLambdaIntegration("ApiIntegration", apiFn),
     });
 
-    // Protected routes - handled by Lambda middleware (not API Gateway authorizer)
-    // This ensures CORS headers are always returned, even on auth failures
     api.addRoutes({
-      path: "/api/{proxy+}",
+      path: "/{proxy+}",
       methods: [apigwv2.HttpMethod.ANY],
       integration: new integ.HttpLambdaIntegration(
         "ApiIntegrationSecure",
         apiFn
       ),
-      // No API Gateway authorizer here; Fastify handles auth
+      authorizer,
     });
 
     new cdk.CfnOutput(this, "GardenApiFnName", { value: apiFn.functionName });

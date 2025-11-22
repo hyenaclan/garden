@@ -1,15 +1,8 @@
-import Fastify from "fastify";
 import cors from "@fastify/cors";
+import Fastify from "fastify";
+import { decodeJwt } from "jose";
 import { getDb } from "./db";
-import { sql } from "drizzle-orm";
 import { gardeners } from "./schema";
-import { authHandler } from "./auth-handler";
-
-declare module "fastify" {
-  interface FastifyRequest {
-    user?: Record<string, any>;
-  }
-}
 
 export function init() {
   const app = Fastify({ logger: true });
@@ -19,10 +12,46 @@ export function init() {
     credentials: true,
   });
 
-  // Register routes
   app.register(async (instance) => {
     // Set user from JWT claims for protected routes
-    authHandler(instance);
+    instance.addHook("preHandler", async (request, reply) => {
+      if (!request.url.startsWith("/public/")) {
+        const isLocal = process.env.NODE_ENV !== "production";
+
+        const claims = (request as any).requestContext?.authorizer?.jwt?.claims;
+        if (claims) {
+          request.user = claims;
+        } else {
+          const authHeader = request.headers.authorization;
+          if (!authHeader || !authHeader.startsWith("Bearer ")) {
+            return reply
+              .code(401)
+              .send({ error: "Missing or invalid authorization header" });
+          }
+
+          const token = authHeader.substring("Bearer ".length);
+
+          if (isLocal) {
+            try {
+              const decoded = decodeJwt(token);
+              request.user = decoded as Record<string, any>;
+            } catch (err) {
+              request.log.error({ err }, "Failed to decode local JWT");
+              return reply.code(401).send({ error: "Invalid local JWT" });
+            }
+          } else {
+            // In non-local environments, we expect API Gateway to have
+            // already validated the JWT and populated claims. If it's
+            // missing here, treat it as unauthorized.
+            return reply
+              .code(401)
+              .send({ error: "JWT claims not found in request context" });
+          }
+        }
+      } else {
+        // Public route; no user info needed
+      }
+    });
 
     instance.get(
       "/public/temp-api/health",
@@ -88,59 +117,4 @@ export function init() {
   });
 
   return app;
-}
-
-// if run locally (e.g. npm run dev)
-if (require.main === module) {
-  const app = init();
-
-  // Register Swagger for OpenAPI generation
-  const swagger = require("@fastify/swagger");
-  const swaggerUi = require("@fastify/swagger-ui");
-
-  app.register(swagger, {
-    openapi: {
-      info: {
-        title: "Garden API",
-        description: "API documentation for the Garden application",
-        version: "1.0.0",
-      },
-      servers: [
-        {
-          url: "http://localhost:3001",
-          description: "Development server",
-        },
-        ...(process.env.DEV_API_URL
-          ? [
-              {
-                url: process.env.DEV_API_URL,
-                description: "Dev environment",
-              },
-            ]
-          : []),
-      ],
-      tags: [{ name: "health", description: "Health check endpoints" }],
-    },
-    transform: ({ schema, url }: { schema: any; url: string }) => {
-      return { schema, url };
-    },
-  });
-
-  app.register(swaggerUi, {
-    routePrefix: "/docs",
-    uiConfig: {
-      docExpansion: "list",
-      deepLinking: false,
-    },
-    staticCSP: true,
-  });
-
-  const port = 3001;
-  app.listen({ port }, (err, address) => {
-    if (err) {
-      app.log.error(err);
-      process.exit(1);
-    }
-    app.log.info(`[API] Server running at ${address}`);
-  });
 }

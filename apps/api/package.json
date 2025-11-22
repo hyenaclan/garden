@@ -31,7 +31,8 @@
     "nodemon": "^3.1.10",
     "testcontainers": "^11.8.1",
     "ts-jest": "^29.2.0",
-    "ts-node": "^10.9.2"
+    "ts-node": "^10.9.2",
+    "jose": "^6.1.1"
   },
   "dependencies": {
     "@fastify/aws-lambda": "^6.1.1",
