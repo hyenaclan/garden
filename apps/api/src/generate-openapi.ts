@@ -1,14 +1,14 @@
-import { writeFileSync } from 'fs';
-import { join } from 'path';
-import { config } from 'dotenv';
-import { init } from './server';
+import { writeFileSync } from "fs";
+import { join } from "path";
+import { config } from "dotenv";
+import { init } from "./server";
 
 // Load environment variables
 config();
 
 async function generateOpenApiSpec() {
   // Initialize app with Swagger enabled
-  const app = init({ enableSwagger: true });
+  const app = init();
 
   // Ready the app to finalize all routes
   await app.ready();
@@ -17,7 +17,7 @@ async function generateOpenApiSpec() {
   const spec = (app as any).swagger();
 
   // Write to file
-  const outputPath = join(__dirname, '..', 'openapi.json');
+  const outputPath = join(__dirname, "..", "openapi.json");
   writeFileSync(outputPath, JSON.stringify(spec, null, 2));
 
   console.log(`✅ OpenAPI spec generated at: ${outputPath}`);
@@ -26,6 +26,6 @@ async function generateOpenApiSpec() {
 }
 
 generateOpenApiSpec().catch((err) => {
-  console.error('❌ Failed to generate OpenAPI spec:', err);
+  console.error("❌ Failed to generate OpenAPI spec:", err);
   process.exit(1);
 });
