@@ -293,7 +293,7 @@ export class InfraStack extends cdk.Stack {
         "ApiIntegrationSecure",
         apiFn
       ),
-      authorizer,
+      // authorizer,
     });
 
     new cdk.CfnOutput(this, "GardenApiFnName", { value: apiFn.functionName });
