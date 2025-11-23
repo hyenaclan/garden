@@ -1,14 +1,14 @@
 import { writeFileSync } from "fs";
 import { join } from "path";
 import { config } from "dotenv";
-import { init } from "./init";
+import { init } from "./server";
 
 // Load environment variables
 config();
 
 async function generateOpenApiSpec() {
   // Initialize app with Swagger enabled
-  const app = init({ enableSwagger: true });
+  const app = init();
 
   // Ready the app to finalize all routes
   await app.ready();

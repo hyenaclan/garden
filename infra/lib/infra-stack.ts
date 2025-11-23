@@ -288,12 +288,18 @@ export class InfraStack extends cdk.Stack {
 
     api.addRoutes({
       path: "/{proxy+}",
-      methods: [apigwv2.HttpMethod.ANY],
+      methods: [
+        apigwv2.HttpMethod.GET,
+        apigwv2.HttpMethod.POST,
+        apigwv2.HttpMethod.PUT,
+        apigwv2.HttpMethod.PATCH,
+        apigwv2.HttpMethod.DELETE
+      ],
       integration: new integ.HttpLambdaIntegration(
         "ApiIntegrationSecure",
         apiFn
       ),
-      // authorizer,
+      authorizer,
     });
 
     new cdk.CfnOutput(this, "GardenApiFnName", { value: apiFn.functionName });
