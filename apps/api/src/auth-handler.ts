@@ -16,11 +16,6 @@ export function authHandler(
   >
 ) {
   instance.addHook("preHandler", async (request, reply) => {
-    if (request.method === "OPTIONS") {
-      // Let CORS plugin handle preflight; no auth
-      return;
-    }
-
     if (!request.url.startsWith("/public/")) {
       const isLocal = process.env.NODE_ENV !== "production";
       const claims = (request as any).requestContext?.authorizer?.jwt?.claims;
