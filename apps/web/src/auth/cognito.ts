@@ -9,7 +9,7 @@ const cognitoUserPoolClientId = import.meta.env
 export const cognitoConfig = {
   authority: `https://${cognitoDomain}.auth.${awsRegion}.amazoncognito.com`,
   client_id: cognitoUserPoolClientId,
-  redirect_uri: `${baseUrl}`,
+  redirect_uri: `${baseUrl}/auth/callback`,
   post_logout_redirect_uri: baseUrl,
   response_type: "code",
   scope: "email openid",
