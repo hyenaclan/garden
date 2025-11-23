@@ -267,7 +267,7 @@ export class InfraStack extends cdk.Stack {
         ],
         allowMethods: [apigwv2.CorsHttpMethod.ANY],
         allowHeaders: ["*"],
-        allowCredentials: true,
+        // allowCredentials: true,
         exposeHeaders: ["*"],
       },
     });
