@@ -78,7 +78,6 @@ export function init() {
     );
 
     instance.get("/api/user/profile", async (request) => {
-      console.log("REQUEST⚛️⚛️⚛️⚛️:", request);
       return {
         message: "This is a protected route",
         user: request.user, // User info from JWT
