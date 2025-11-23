@@ -40,7 +40,8 @@ DB_PASS=postgres
 DB_NAME=garden
 DB_PORT=5432
 DEV_API_URL=<your-dev-api-gateway-url>
-AWS_REGION
+AWS_REGION=us-east-1
+IS_LOCAL=true
 ```
 
 apps/web/.env:

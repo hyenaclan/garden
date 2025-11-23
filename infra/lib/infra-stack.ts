@@ -33,10 +33,6 @@ export class InfraStack extends cdk.Stack {
       ],
     });
 
-    const s3Gw = vpc.addGatewayEndpoint("S3Gw", {
-      service: ec2.GatewayVpcEndpointAwsService.S3,
-    });
-
     const dbSg = new ec2.SecurityGroup(this, "DbSg", {
       vpc,
       allowAllOutbound: true,
@@ -101,6 +97,7 @@ export class InfraStack extends cdk.Stack {
         DB_PASS: dbPassword.valueAsString,
         DB_NAME: "garden",
         DB_PORT: "5432",
+        IS_LOCAL: "false",
       },
       logGroup: new logs.LogGroup(this, "GardenApiFnLogs", {
         retention: logs.RetentionDays.TWO_WEEKS,
@@ -148,6 +145,7 @@ export class InfraStack extends cdk.Stack {
         DB_PASS: dbPassword.valueAsString,
         DB_NAME: "garden",
         DB_PORT: "5432",
+        IS_LOCAL: "false",
       },
       timeout: cdk.Duration.seconds(29),
       bundling: {
@@ -293,7 +291,7 @@ export class InfraStack extends cdk.Stack {
         apigwv2.HttpMethod.POST,
         apigwv2.HttpMethod.PUT,
         apigwv2.HttpMethod.PATCH,
-        apigwv2.HttpMethod.DELETE
+        apigwv2.HttpMethod.DELETE,
       ],
       integration: new integ.HttpLambdaIntegration(
         "ApiIntegrationSecure",

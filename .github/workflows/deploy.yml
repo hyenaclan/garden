@@ -216,7 +216,7 @@ jobs:
           echo "VITE_BUILD_ID=${{ github.run_number }}" >> apps/web/.env
           echo "VITE_COMMIT_SHA=${{ github.sha }}" >> apps/web/.env
           echo "VITE_API_BASE_URL=https://2ugomkefji.execute-api.${{ env.AWS_REGION }}.amazonaws.com" >> apps/web/.env
-          echo "VITE_AWS_REGION=${AWS_REGION}" >> apps/web/.env
+          echo "VITE_AWS_REGION=${{ env.AWS_REGION }}" >> apps/web/.env
           echo "VITE_COGNITO_USER_POOL_CLIENT_ID=${COGNITO_USER_POOL_CLIENT_ID}" >> apps/web/.env
           echo "VITE_COGNITO_DOMAIN=${COGNITO_DOMAIN}" >> apps/web/.env
           echo "VITE_COGNITO_USER_POOL_ID=${COGNITO_USER_POOL_ID}" >> apps/web/.env
