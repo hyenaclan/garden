@@ -1,9 +1,8 @@
 import { FastifyInstance } from "fastify";
+import swagger from "@fastify/swagger";
+import swaggerUi from "@fastify/swagger-ui";
 
 export function registerSwagger(app: FastifyInstance) {
-  const swagger = require("@fastify/swagger");
-  const swaggerUi = require("@fastify/swagger-ui");
-
   app.register(swagger, {
     openapi: {
       info: {

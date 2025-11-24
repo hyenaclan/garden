@@ -1,11 +1,5 @@
+import { FastifyInstance } from "fastify";
 import { authHandler } from "./auth-handler";
-
-declare module "fastify" {
-  interface FastifyRequest {
-    user?: Record<string, any>;
-  }
-}
-import Fastify, { FastifyInstance } from "fastify";
 import cors from "@fastify/cors";
 import { getDb } from "./db";
 import { sql } from "drizzle-orm";
@@ -89,18 +83,21 @@ export function init(app: FastifyInstance) {
 
 // if run locally (e.g. npm run dev)
 if (require.main === module) {
-  const { registerSwagger } = require("./swagger");
-  const app = Fastify({ logger: true });
+  (async () => {
+    const { default: Fastify } = await import("fastify");
+    const { registerSwagger } = await import("./swagger");
 
-  registerSwagger(app);
-  init(app);
+    const app = Fastify({ logger: true });
+    registerSwagger(app);
+    init(app);
 
-  const port = 3001;
-  app.listen({ port }, (err, address) => {
-    if (err) {
-      app.log.error(err);
-      process.exit(1);
-    }
-    app.log.info(`[API] Server running at ${address}`);
-  });
+    const port = 3001;
+    app.listen({ port }, (err: Error | null, address: string) => {
+      if (err) {
+        app.log.error(err);
+        process.exit(1);
+      }
+      app.log.info(`[API] Server running at ${address}`);
+    });
+  })();
 }
