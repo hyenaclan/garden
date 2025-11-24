@@ -9,7 +9,7 @@
     "schemas": {}
   },
   "paths": {
-    "/temp-api/health": {
+    "/public/temp-api/health": {
       "get": {
         "tags": [
           "health"
@@ -48,7 +48,7 @@
         }
       }
     },
-    "/health": {
+    "/public/health": {
       "get": {
         "tags": [
           "health"
@@ -69,6 +69,15 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/api/user/profile": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Default Response"
           }
         }
       }

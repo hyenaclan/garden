@@ -33,10 +33,6 @@ export class InfraStack extends cdk.Stack {
       ],
     });
 
-    const s3Gw = vpc.addGatewayEndpoint("S3Gw", {
-      service: ec2.GatewayVpcEndpointAwsService.S3,
-    });
-
     const dbSg = new ec2.SecurityGroup(this, "DbSg", {
       vpc,
       allowAllOutbound: true,
@@ -101,6 +97,7 @@ export class InfraStack extends cdk.Stack {
         DB_PASS: dbPassword.valueAsString,
         DB_NAME: "garden",
         DB_PORT: "5432",
+        IS_LOCAL: "false",
       },
       logGroup: new logs.LogGroup(this, "GardenApiFnLogs", {
         retention: logs.RetentionDays.TWO_WEEKS,
@@ -121,7 +118,7 @@ export class InfraStack extends cdk.Stack {
       targets: [
         new targets.LambdaFunction(apiFn, {
           event: events.RuleTargetInput.fromObject({
-            rawPath: "/health",
+            rawPath: "/public/health",
           }),
         }),
       ],
@@ -148,6 +145,7 @@ export class InfraStack extends cdk.Stack {
         DB_PASS: dbPassword.valueAsString,
         DB_NAME: "garden",
         DB_PORT: "5432",
+        IS_LOCAL: "false",
       },
       timeout: cdk.Duration.seconds(29),
       bundling: {
@@ -204,6 +202,21 @@ export class InfraStack extends cdk.Stack {
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
       },
       defaultRootObject: "index.html",
+      // Handle SPA routing - return index.html for 403/404 errors
+      errorResponses: [
+        {
+          httpStatus: 403,
+          responseHttpStatus: 200,
+          responsePagePath: "/index.html",
+          ttl: cdk.Duration.minutes(5),
+        },
+        {
+          httpStatus: 404,
+          responseHttpStatus: 200,
+          responsePagePath: "/index.html",
+          ttl: cdk.Duration.minutes(5),
+        },
+      ],
       comment: `React site (${stage})`,
     });
 
@@ -244,30 +257,42 @@ export class InfraStack extends cdk.Stack {
 
     const api = new apigwv2.HttpApi(this, "HttpApi", {
       corsPreflight: {
-        allowOrigins: ["*"], // todo rube: tighten later to your CF origin
+        allowOrigins: [
+          `https://${distribution.distributionDomainName}`,
+          "http://localhost:5173",
+          "http://localhost:3000",
+        ],
         allowMethods: [apigwv2.CorsHttpMethod.ANY],
         allowHeaders: ["*"],
+        allowCredentials: true,
+        exposeHeaders: ["*"],
       },
     });
 
     const authorizer = new apigwv2_authorizers.HttpJwtAuthorizer(
       "CognitoAuthorizer",
-      `https://cognito-idp.${this.region}.amazonaws.com/${userPool.userPoolId}`,
+      `https://cognito-idp.${cdk.Stack.of(this).region}.amazonaws.com/${userPool.userPoolId}`,
       {
         jwtAudience: [userPoolClient.userPoolClientId],
+        identitySource: ["$request.header.Authorization"],
       },
     );
 
-    // Proxy all routes to the function
     api.addRoutes({
-      path: "/{proxy+}",
+      path: "/public/{proxy+}",
       methods: [apigwv2.HttpMethod.ANY],
       integration: new integ.HttpLambdaIntegration("ApiIntegration", apiFn),
     });
 
     api.addRoutes({
-      path: "/api/{proxy+}",
-      methods: [apigwv2.HttpMethod.ANY],
+      path: "/{proxy+}",
+      methods: [
+        apigwv2.HttpMethod.GET,
+        apigwv2.HttpMethod.POST,
+        apigwv2.HttpMethod.PUT,
+        apigwv2.HttpMethod.PATCH,
+        apigwv2.HttpMethod.DELETE,
+      ],
       integration: new integ.HttpLambdaIntegration(
         "ApiIntegrationSecure",
         apiFn,

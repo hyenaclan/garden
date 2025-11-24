@@ -1,3 +1,10 @@
+import { authHandler } from "./auth-handler";
+
+declare module "fastify" {
+  interface FastifyRequest {
+    user?: Record<string, any>;
+  }
+}
 import Fastify, { FastifyInstance } from "fastify";
 import cors from "@fastify/cors";
 import { getDb } from "./db";
@@ -6,14 +13,17 @@ import { gardeners } from "./schema";
 
 export function init(app: FastifyInstance) {
   app.register(cors, {
-    origin: true,
+    origin: true, // Allow all origins (API Gateway already has CORS configured)
     credentials: true,
   });
 
   // Register routes
   app.register(async (instance) => {
+    // Set user from JWT claims for protected routes
+    authHandler(instance);
+
     instance.get(
-      "/temp-api/health",
+      "/public/temp-api/health",
       {
         schema: {
           tags: ["health"],
@@ -47,7 +57,7 @@ export function init(app: FastifyInstance) {
     );
 
     instance.get(
-      "/health",
+      "/public/health",
       {
         schema: {
           tags: ["health"],
@@ -64,6 +74,14 @@ export function init(app: FastifyInstance) {
       },
       async () => ({ ok: true }),
     );
+
+    instance.get("/api/user/profile", async (request) => {
+      return {
+        message: "This is a protected route",
+        user: request.user, // User info from JWT
+        timestamp: new Date().toISOString(),
+      };
+    });
   });
 
   return app;

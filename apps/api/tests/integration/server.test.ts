@@ -19,24 +19,24 @@ describe("Server Integration Tests", () => {
     await app.close();
   });
 
-  test("GET /health returns 200 OK with { ok: true }", async () => {
-    const response = await app.inject({ method: "GET", url: "/health" });
+  test("GET /public/health returns 200 OK with { ok: true }", async () => {
+    const response = await app.inject({ method: "GET", url: "/public/health" });
     expect(response.statusCode).toBe(200);
     expect(response.json()).toEqual({ ok: true });
   });
 
-  test("GET /temp-api/health returns 200 OK", async () => {
+  test("GET /public/temp-api/health returns 200 OK", async () => {
     const response = await app.inject({
       method: "GET",
-      url: "/temp-api/health",
+      url: "/public/temp-api/health",
     });
     expect(response.statusCode).toBe(200);
   });
 
-  test("/temp-api/health has valid structure and data", async () => {
+  test("/public/temp-api/health has valid structure and data", async () => {
     const response = await app.inject({
       method: "GET",
-      url: "/temp-api/health",
+      url: "/public/temp-api/health",
     });
     const body = response.json();
     expect(body).toHaveProperty("message", "Hello from the Garden API");
@@ -46,10 +46,10 @@ describe("Server Integration Tests", () => {
     expect(date.toISOString()).toBe(body.timestamp);
   });
 
-  test("/temp-api/health includes CORS headers", async () => {
+  test("/public/temp-api/health includes CORS headers", async () => {
     const response = await app.inject({
       method: "GET",
-      url: "/temp-api/health",
+      url: "/public/temp-api/health",
       headers: { origin: "http://localhost:5173" },
     });
     expect(response.headers).toHaveProperty("access-control-allow-origin");
@@ -60,10 +60,10 @@ describe("Server Integration Tests", () => {
     expect(response.statusCode).toBe(404);
   });
 
-  test("OPTIONS /temp-api/health handles CORS preflight", async () => {
+  test("OPTIONS /public/temp-api/health handles CORS preflight", async () => {
     const response = await app.inject({
       method: "OPTIONS",
-      url: "/temp-api/health",
+      url: "/public/temp-api/health",
       headers: {
         origin: "http://localhost:5173",
         "access-control-request-method": "GET",

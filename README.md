@@ -28,8 +28,10 @@ docker run --name local-postgres \
 
 ### 3. .env file for local dev
 
-Create a .env file in apps/api folder. It should have all the required ENV vars for the api to run.
-Place the following env vars in the file:
+Create a .env file in both web and api folders. It should have all the required ENV vars for the api to run.
+Place the following env vars in the files:
+
+apps/api/.env:
 
 ```
 DB_HOST=localhost
@@ -38,6 +40,20 @@ DB_PASS=postgres
 DB_NAME=garden
 DB_PORT=5432
 DEV_API_URL=<your-dev-api-gateway-url>
+AWS_REGION=us-east-1
+IS_LOCAL=true
+```
+
+apps/web/.env:
+
+```
+VITE_BUILD_ID
+VITE_COMMIT_SHA
+VITE_API_BASE_URL
+VITE_AWS_REGION
+VITE_COGNITO_DOMAIN
+VITE_COGNITO_USER_POOL_ID
+VITE_COGNITO_USER_POOL_CLIENT_ID
 ```
 
 ### 4. Use Drizzle to view database (you can also use your preferred db viewer like Beekeeper)

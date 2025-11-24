@@ -2,9 +2,27 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.scss";
 import App from "./App";
+import { AuthProvider } from "react-oidc-context";
+import { cognitoConfig } from "./auth/cognito";
+
+// Optional: Add event handlers for token refresh events
+const onSigninCallback = () => {
+  window.history.replaceState({}, document.title, window.location.pathname);
+};
+
+const oidcConfig = {
+  ...cognitoConfig,
+  onSigninCallback,
+  // Events for monitoring token refresh (optional, for debugging)
+  onSigninSilentCallback: () => {
+    console.debug("Token refreshed silently");
+  },
+};
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <App />
+    <AuthProvider {...oidcConfig}>
+      <App />
+    </AuthProvider>
   </StrictMode>,
 );
