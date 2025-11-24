@@ -24,5 +24,5 @@ createRoot(document.getElementById("root")!).render(
     <AuthProvider {...oidcConfig}>
       <App />
     </AuthProvider>
-  </StrictMode>
+  </StrictMode>,
 );

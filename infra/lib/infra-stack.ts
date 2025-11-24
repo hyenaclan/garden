@@ -53,11 +53,11 @@ export class InfraStack extends cdk.Stack {
       }),
       instanceType: ec2.InstanceType.of(
         ec2.InstanceClass.T4G,
-        ec2.InstanceSize.MICRO
+        ec2.InstanceSize.MICRO,
       ),
       credentials: rds.Credentials.fromPassword(
         dbUser.valueAsString,
-        cdk.SecretValue.unsafePlainText(dbPassword.valueAsString)
+        cdk.SecretValue.unsafePlainText(dbPassword.valueAsString),
       ),
       databaseName: "garden",
       allocatedStorage: 20,
@@ -84,7 +84,7 @@ export class InfraStack extends cdk.Stack {
         "apps",
         "api",
         "src",
-        "lambda.ts"
+        "lambda.ts",
       ),
       handler: "handler",
       runtime: lambda.Runtime.NODEJS_LATEST,
@@ -132,7 +132,7 @@ export class InfraStack extends cdk.Stack {
         "apps",
         "api",
         "src",
-        "migrate.ts"
+        "migrate.ts",
       ),
       handler: "handler",
       runtime: lambda.Runtime.NODEJS_LATEST,
@@ -162,7 +162,7 @@ export class InfraStack extends cdk.Stack {
               "..",
               "apps",
               "api",
-              "drizzle"
+              "drizzle",
             );
             console.log("Resolved drizzleSrc:", drizzleSrc);
 
@@ -275,7 +275,7 @@ export class InfraStack extends cdk.Stack {
       {
         jwtAudience: [userPoolClient.userPoolClientId],
         identitySource: ["$request.header.Authorization"],
-      }
+      },
     );
 
     api.addRoutes({
@@ -295,7 +295,7 @@ export class InfraStack extends cdk.Stack {
       ],
       integration: new integ.HttpLambdaIntegration(
         "ApiIntegrationSecure",
-        apiFn
+        apiFn,
       ),
       authorizer,
     });

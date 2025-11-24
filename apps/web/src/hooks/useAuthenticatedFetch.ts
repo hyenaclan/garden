@@ -62,7 +62,7 @@ export const useAuthenticatedFetch = () => {
 
       return response;
     },
-    [auth]
+    [auth],
   );
 
   return authenticatedFetch;

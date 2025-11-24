@@ -1,6 +1,6 @@
-import { getDb } from '../../src/db';
-import 'dotenv/config';
-import { setupTestDb } from './helpers';
+import { getDb } from "../../src/db";
+import "dotenv/config";
+import { setupTestDb } from "./helpers";
 
 let db: Awaited<ReturnType<typeof setupTestDb>>;
 
@@ -12,8 +12,8 @@ afterAll(async () => {
   await db.teardown();
 });
 
-describe('Database migration integration tests', () => {
-  test('creates expected tables in the public schema', async () => {
+describe("Database migration integration tests", () => {
+  test("creates expected tables in the public schema", async () => {
     const db = getDb();
     const result = await db.execute(`
       SELECT table_name 
@@ -21,10 +21,10 @@ describe('Database migration integration tests', () => {
       WHERE table_schema = 'public';
     `);
     const tableNames = result.rows.map((r) => r.table_name);
-    expect(tableNames).toEqual(expect.arrayContaining(['gardeners']));
+    expect(tableNames).toEqual(expect.arrayContaining(["gardeners"]));
   });
 
-  test('records applied migrations in drizzle schema', async () => {
+  test("records applied migrations in drizzle schema", async () => {
     const db = getDb();
     const migrations = await db.execute(`
       SELECT id, hash, created_at
@@ -32,15 +32,15 @@ describe('Database migration integration tests', () => {
       ORDER BY created_at DESC;
     `);
     expect(migrations.rows.length).toBeGreaterThan(0);
-    expect(migrations.rows[0]).toHaveProperty('hash');
+    expect(migrations.rows[0]).toHaveProperty("hash");
   });
 
-  test('verifies database is queryable after migrations', async () => {
+  test("verifies database is queryable after migrations", async () => {
     const db = getDb();
     const result = await db.execute(`
       SELECT COUNT(*)::int AS count FROM gardeners;
     `);
     const [{ count }] = result.rows;
-    expect(typeof count).toBe('number');
+    expect(typeof count).toBe("number");
   });
 });

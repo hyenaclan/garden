@@ -17,7 +17,7 @@ export default function Auth() {
       const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
       // Use authenticatedFetch which handles token refresh automatically
       const response = await authenticatedFetch(
-        `${API_BASE_URL}/api/user/profile`
+        `${API_BASE_URL}/api/user/profile`,
       );
       const data = await response.json();
       setUserProfile(data);

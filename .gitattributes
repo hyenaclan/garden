@@ -1,0 +1,6 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# Force LF for shell scripts (required for husky hooks)
+*.sh text eol=lf
+.husky/* text eol=lf

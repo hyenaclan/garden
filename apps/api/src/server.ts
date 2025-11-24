@@ -1,19 +1,11 @@
-import Fastify from "fastify";
+import { FastifyInstance } from "fastify";
+import { authHandler } from "./auth-handler";
 import cors from "@fastify/cors";
 import { getDb } from "./db";
 import { sql } from "drizzle-orm";
 import { gardeners } from "./schema";
-import { authHandler } from "./auth-handler";
 
-declare module "fastify" {
-  interface FastifyRequest {
-    user?: Record<string, any>;
-  }
-}
-
-export function init() {
-  const app = Fastify({ logger: true });
-
+export function init(app: FastifyInstance) {
   app.register(cors, {
     origin: true, // Allow all origins (API Gateway already has CORS configured)
     credentials: true,
@@ -55,7 +47,7 @@ export function init() {
           status: "ok",
           user_count: Number(count),
         };
-      }
+      },
     );
 
     instance.get(
@@ -74,7 +66,7 @@ export function init() {
           },
         },
       },
-      async () => ({ ok: true })
+      async () => ({ ok: true }),
     );
 
     instance.get("/api/user/profile", async (request) => {
@@ -91,55 +83,21 @@ export function init() {
 
 // if run locally (e.g. npm run dev)
 if (require.main === module) {
-  const app = init();
+  (async () => {
+    const { default: Fastify } = await import("fastify");
+    const { registerSwagger } = await import("./swagger");
 
-  // Register Swagger for OpenAPI generation
-  const swagger = require("@fastify/swagger");
-  const swaggerUi = require("@fastify/swagger-ui");
+    const app = Fastify({ logger: true });
+    registerSwagger(app);
+    init(app);
 
-  app.register(swagger, {
-    openapi: {
-      info: {
-        title: "Garden API",
-        description: "API documentation for the Garden application",
-        version: "1.0.0",
-      },
-      servers: [
-        {
-          url: "http://localhost:3001",
-          description: "Development server",
-        },
-        ...(process.env.DEV_API_URL
-          ? [
-              {
-                url: process.env.DEV_API_URL,
-                description: "Dev environment",
-              },
-            ]
-          : []),
-      ],
-      tags: [{ name: "health", description: "Health check endpoints" }],
-    },
-    transform: ({ schema, url }: { schema: any; url: string }) => {
-      return { schema, url };
-    },
-  });
-
-  app.register(swaggerUi, {
-    routePrefix: "/docs",
-    uiConfig: {
-      docExpansion: "list",
-      deepLinking: false,
-    },
-    staticCSP: true,
-  });
-
-  const port = 3001;
-  app.listen({ port }, (err, address) => {
-    if (err) {
-      app.log.error(err);
-      process.exit(1);
-    }
-    app.log.info(`[API] Server running at ${address}`);
-  });
+    const port = 3001;
+    app.listen({ port }, (err: Error | null, address: string) => {
+      if (err) {
+        app.log.error(err);
+        process.exit(1);
+      }
+      app.log.info(`[API] Server running at ${address}`);
+    });
+  })();
 }
