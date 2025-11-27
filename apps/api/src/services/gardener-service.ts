@@ -18,7 +18,7 @@ export enum ExternalProvider {
  * @param userParams - The user parameters
  * @returns The user object from the database
  */
-export const upsertAndGetUser = async (
+export const upsertAndGetGardener = async (
   userParams: IUserParams,
 ): Promise<typeof gardeners.$inferSelect> => {
   const db = getDb();

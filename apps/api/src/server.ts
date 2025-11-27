@@ -7,7 +7,7 @@ import cors from "@fastify/cors";
 import { getDb } from "./db";
 import { sql } from "drizzle-orm";
 import { gardeners } from "./schema";
-import { ExternalProvider, IUserParams } from "./services/user-service";
+import { ExternalProvider, IUserParams } from "./services/gardener-service";
 
 export function init(app: FastifyInstance) {
   app.register(cors, {
@@ -74,7 +74,9 @@ export function init(app: FastifyInstance) {
     );
 
     instance.get("/api/user/profile", async (request) => {
-      const { upsertAndGetUser } = await import("./services/user-service");
+      const { upsertAndGetGardener: upsertAndGetUser } = await import(
+        "./services/gardener-service"
+      );
 
       const user = request.user;
 
