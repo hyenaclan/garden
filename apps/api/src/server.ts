@@ -1,3 +1,6 @@
+// eslint-disable-next-line @typescript-eslint/triple-slash-reference
+/// <reference path="./types/fastify.d.ts" />
+
 import { FastifyInstance } from "fastify";
 import { authHandler } from "./auth-handler";
 import cors from "@fastify/cors";
