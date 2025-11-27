@@ -17,13 +17,12 @@ export interface IUserParams {
 export const upsertAndGetUser = async (userParams: IUserParams) => {
   const db = getDb();
   // Ensure name is not null or empty
-  const name = userParams.name || userParams.email;
   const result = await db
     .insert(gardeners)
     .values({
       id: userParams.id,
       email: userParams.email,
-      name,
+      name: null,
       lastLogin: new Date(),
     })
     .onConflictDoUpdate({

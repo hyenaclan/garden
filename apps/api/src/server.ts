@@ -90,11 +90,6 @@ export function init(app: FastifyInstance) {
 
       const userProfile = await upsertAndGetUser(userParams);
       return userProfile;
-      // return {
-      //   message: "This is a protected route",
-      //   user: request.user, // User info from JWT
-      //   timestamp: new Date().toISOString(),
-      // };
     });
   });
 
