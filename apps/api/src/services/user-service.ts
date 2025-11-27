@@ -2,9 +2,13 @@ import { getDb } from "../db";
 import { gardeners } from "../schema";
 
 export interface IUserParams {
-  id: string;
   email: string;
-  name: string | null;
+  externalId: string;
+  externalProvider: string;
+}
+
+export enum ExternalProvider {
+  COGNITO = "cognito",
 }
 
 /**
@@ -14,23 +18,26 @@ export interface IUserParams {
  * @param userParams - The user parameters
  * @returns The user object from the database
  */
-export const upsertAndGetUser = async (userParams: IUserParams) => {
+export const upsertAndGetUser = async (
+  userParams: IUserParams,
+): Promise<typeof gardeners.$inferSelect> => {
   const db = getDb();
-  // Ensure name is not null or empty
+  const utcNow = new Date();
   const result = await db
     .insert(gardeners)
     .values({
-      id: userParams.id,
       email: userParams.email,
-      name: null,
-      lastLogin: new Date(),
+      externalId: userParams.externalId,
+      externalProvider: userParams.externalProvider,
+      lastLogin: utcNow,
     })
     .onConflictDoUpdate({
       target: gardeners.email,
       set: {
-        lastLogin: new Date(),
+        lastLogin: utcNow,
       },
     })
     .returning();
+
   return result[0];
 };

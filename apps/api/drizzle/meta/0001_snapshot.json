@@ -1,5 +1,5 @@
 {
-  "id": "20c8ff62-d357-418a-a8af-205417971ada",
+  "id": "716b4ef4-e973-4173-8448-5b08f402803e",
   "prevId": "4f8175db-b354-4edf-b9b1-301b9a5da006",
   "version": "7",
   "dialect": "postgresql",
@@ -14,12 +14,6 @@
           "primaryKey": true,
           "notNull": true,
           "default": "gen_random_uuid()"
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
         },
         "email": {
           "name": "email",
@@ -40,6 +34,18 @@
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
+        },
+        "external_id": {
+          "name": "external_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "external_provider": {
+          "name": "external_provider",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
         }
       },
       "indexes": {},
@@ -49,7 +55,16 @@
         "gardeners_email_unique": {
           "name": "gardeners_email_unique",
           "nullsNotDistinct": false,
-          "columns": ["email"]
+          "columns": [
+            "email"
+          ]
+        },
+        "gardeners_external_id_unique": {
+          "name": "gardeners_external_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "external_id"
+          ]
         }
       },
       "policies": {},

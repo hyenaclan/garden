@@ -7,6 +7,7 @@ import cors from "@fastify/cors";
 import { getDb } from "./db";
 import { sql } from "drizzle-orm";
 import { gardeners } from "./schema";
+import { ExternalProvider, IUserParams } from "./services/user-service";
 
 export function init(app: FastifyInstance) {
   app.register(cors, {
@@ -82,10 +83,10 @@ export function init(app: FastifyInstance) {
         throw new Error("Unauthorized");
       }
 
-      const userParams = {
-        id: user.sub,
+      const userParams: IUserParams = {
         email: user.email,
-        name: null,
+        externalId: user.sub,
+        externalProvider: ExternalProvider.COGNITO, // Hardcoded for now
       };
 
       const userProfile = await upsertAndGetUser(userParams);
