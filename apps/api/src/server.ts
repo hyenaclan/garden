@@ -73,11 +73,28 @@ export function init(app: FastifyInstance) {
     );
 
     instance.get("/api/user/profile", async (request) => {
-      return {
-        message: "This is a protected route",
-        user: request.user, // User info from JWT
-        timestamp: new Date().toISOString(),
+      const { upsertAndGetUser } = await import("./services/user-service");
+
+      const user = request.user;
+
+      if (!user?.sub || !user?.email) {
+        request.log.error({ user }, "Missing required user information");
+        throw new Error("Unauthorized");
+      }
+
+      const userParams = {
+        id: user.sub,
+        email: user.email,
+        name: null,
       };
+
+      const userProfile = await upsertAndGetUser(userParams);
+      return userProfile;
+      // return {
+      //   message: "This is a protected route",
+      //   user: request.user, // User info from JWT
+      //   timestamp: new Date().toISOString(),
+      // };
     });
   });
 
