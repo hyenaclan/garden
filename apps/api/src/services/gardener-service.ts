@@ -32,12 +32,16 @@ export const upsertAndGetGardener = async (
       lastLogin: utcNow,
     })
     .onConflictDoUpdate({
-      target: gardeners.email,
+      target: gardeners.externalId,
       set: {
         lastLogin: utcNow,
       },
     })
     .returning();
+
+  if (!result[0]) {
+    throw new Error("Upsert failed: no record returned");
+  }
 
   return result[0];
 };

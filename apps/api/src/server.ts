@@ -73,7 +73,7 @@ export function init(app: FastifyInstance) {
       async () => ({ ok: true }),
     );
 
-    instance.get("/api/user/profile", async (request) => {
+    instance.get("/api/user/profile", async (request, reply) => {
       const { upsertAndGetGardener: upsertAndGetUser } = await import(
         "./services/gardener-service"
       );
@@ -82,7 +82,7 @@ export function init(app: FastifyInstance) {
 
       if (!user?.sub || !user?.email) {
         request.log.error({ user }, "Missing required user information");
-        throw new Error("Unauthorized");
+        return reply.code(401).send({ error: "Unauthorized" });
       }
 
       const userParams: IUserParams = {
