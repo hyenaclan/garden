@@ -75,3 +75,7 @@ VITE_COGNITO_USER_POOL_CLIENT_ID
 ## apply migrations
 
 `npm run drizzle:migrate`
+
+## Run Prettier against all files (needed to satisfy pre-commit hook)
+
+`npx prettier --write "**/*.{ts,tsx,md}"`
