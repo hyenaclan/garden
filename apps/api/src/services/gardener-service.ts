@@ -12,10 +12,10 @@ export enum ExternalProvider {
 }
 
 /**
- * Fetches the user profile by email, updating the lastLogin timestamp.
+ * Upserts a gardener record based on externalId, updating lastLogin on each call.
  * If the user doesn't exist, creates a new user with the provided details.
  * Uses an upsert operation to minimize database calls.
- * @param userParams - The user parameters
+ * @param userParams - The user parameters including email, externalId, and externalProvider
  * @returns The user object from the database
  */
 export const upsertAndGetGardener = async (

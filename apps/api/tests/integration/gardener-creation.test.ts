@@ -18,6 +18,12 @@ describe("Gardener Creation Tests", () => {
     await app.ready();
   });
 
+  beforeEach(async () => {
+    // Clean up gardeners table before each test
+    const testDb = getDb();
+    await testDb.delete(gardeners);
+  });
+
   afterAll(async () => {
     await db.teardown();
     await app.close();
@@ -79,6 +85,10 @@ describe("Gardener Creation Tests", () => {
     expect(secondProfile.id).toBe(firstProfile.id); // Should be the same gardener
     expect(secondProfile.email).toBe(firstProfile.email);
     expect(secondProfile.externalId).toBe(firstProfile.externalId);
+    // Verify lastLogin was updated
+    expect(new Date(secondProfile.lastLogin).getTime()).toBeGreaterThanOrEqual(
+      new Date(firstProfile.lastLogin).getTime(),
+    );
 
     // Verify still only one gardener in db
     const afterSecondCall = await testDb

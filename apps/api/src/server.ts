@@ -74,7 +74,7 @@ export function init(app: FastifyInstance) {
     );
 
     instance.get("/api/user/profile", async (request, reply) => {
-      const { upsertAndGetGardener: upsertAndGetUser } = await import(
+      const { upsertAndGetGardener } = await import(
         "./services/gardener-service"
       );
 
@@ -91,7 +91,7 @@ export function init(app: FastifyInstance) {
         externalProvider: ExternalProvider.COGNITO, // Hardcoded for now
       };
 
-      const userProfile = await upsertAndGetUser(userParams);
+      const userProfile = await upsertAndGetGardener(userParams);
       return userProfile;
     });
   });

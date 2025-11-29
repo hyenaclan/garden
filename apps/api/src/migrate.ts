@@ -30,8 +30,15 @@ export const handler = async () => {
   const client = (db as any).session.client;
 
   try {
-    // Ensure schema + permissions
-    await client.query(`GRANT CREATE ON DATABASE ${DB_NAME} TO ${DB_USER}`);
+    // Ensure schema + permissions (ignore concurrent update errors)
+    try {
+      await client.query(`GRANT CREATE ON DATABASE ${DB_NAME} TO ${DB_USER}`);
+    } catch (err: any) {
+      // Ignore concurrent update errors or permission already exists
+      if (!err.message?.includes("concurrently") && err.code !== "42P01") {
+        throw err;
+      }
+    }
     await client.query(
       `CREATE SCHEMA IF NOT EXISTS drizzle AUTHORIZATION ${DB_USER}`,
     );
