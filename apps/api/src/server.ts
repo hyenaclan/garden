@@ -1,12 +1,11 @@
-// eslint-disable-next-line @typescript-eslint/triple-slash-reference
-/// <reference path="./types/fastify.d.ts" />
-
-import { FastifyInstance } from "fastify";
+import { FastifyInstance, FastifyRequest } from "fastify";
 import { authHandler } from "./auth-handler";
 import cors from "@fastify/cors";
 import { getDb } from "./db";
 import { sql } from "drizzle-orm";
 import { gardeners } from "./schema";
+import { registerGardenRoutes } from "./routes/garden/routes";
+import type {} from "./types/fastify";
 
 export function init(app: FastifyInstance) {
   app.register(cors, {
@@ -18,6 +17,8 @@ export function init(app: FastifyInstance) {
   app.register(async (instance) => {
     // Set user from JWT claims for protected routes
     authHandler(instance);
+
+    await registerGardenRoutes(instance);
 
     instance.get(
       "/public/temp-api/health",
@@ -72,7 +73,7 @@ export function init(app: FastifyInstance) {
       async () => ({ ok: true }),
     );
 
-    instance.get("/api/user/profile", async (request) => {
+    instance.get("/api/user/profile", async (request: FastifyRequest) => {
       return {
         message: "This is a protected route",
         user: request.user, // User info from JWT
