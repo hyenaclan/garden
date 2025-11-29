@@ -2,6 +2,7 @@ import { useAuth } from "react-oidc-context";
 import { useState } from "react";
 import { signOutRedirect } from "../auth/cognito";
 import { useAuthenticatedFetch } from "../hooks/useAuthenticatedFetch";
+import { Button } from "@garden/ui/components/ui/button";
 
 export default function Auth() {
   const auth = useAuth();
@@ -46,19 +47,19 @@ export default function Auth() {
   return (
     <>
       <div style={authButtonRow}>
-        <button onClick={fetchUserData} disabled={userLoading}>
+        <Button onClick={fetchUserData} disabled={userLoading}>
           Fetch User Profile (protected)
-        </button>
+        </Button>
         {userError && <p>Error loading profile: {JSON.stringify(userError)}</p>}
         {!auth.isAuthenticated ? (
-          <button
+          <Button
             disabled={auth.isLoading}
             onClick={() => auth.signinRedirect()}
           >
             Sign in
-          </button>
+          </Button>
         ) : (
-          <button onClick={() => logout()}>Logout</button>
+          <Button onClick={() => logout()}>Logout</Button>
         )}
       </div>
 

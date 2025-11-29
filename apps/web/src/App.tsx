@@ -4,6 +4,7 @@ import viteLogo from "/vite.svg";
 import "./App.scss";
 import { useApiFetch } from "./hooks/useApiFetch";
 import Auth from "./components/Auth";
+import { Button } from "@garden/ui/components/ui/button";
 
 function App() {
   const [count, setCount] = useState(0);
@@ -27,9 +28,9 @@ function App() {
       </div>
       <h1>Vite + React</h1>
       <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
+        <Button onClick={() => setCount((count) => count + 1)}>
           count is {count}
-        </button>
+        </Button>
         <p>
           Edit <code>src/App.tsx</code> and save to test HMR
         </p>
@@ -38,9 +39,9 @@ function App() {
         Click on the Vite and React logos to learn more
       </p>
       <div>
-        <button onClick={fetchData} disabled={isLoading}>
+        <Button onClick={fetchData} disabled={isLoading}>
           Fetch from API
-        </button>
+        </Button>
         <div className="mt-4 font-bold">API Output:</div>
         <p className="bg-white p-2 border border-gray-300 rounded text-sm break-all min-h-[2.5rem]">
           {apiResponse || "Click button to fetch data"}
