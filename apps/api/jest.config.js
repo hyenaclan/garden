@@ -26,13 +26,10 @@ module.exports = {
     "!src/**/*.d.ts",
   ],
 
-  transform: {
-    "^.+\\.tsx?$": [
-      "ts-jest",
-      {
-        tsconfig: "tsconfig.json",
-      },
-    ],
+    transform: {
+    '^.+\\.tsx?$': ['ts-jest', {
+      tsconfig: 'tsconfig.test.json',
+    }],
   },
 
   // Test timeout (useful for async tests)

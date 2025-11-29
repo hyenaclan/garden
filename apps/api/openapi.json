@@ -9,6 +9,150 @@
     "schemas": {}
   },
   "paths": {
+    "/gardens/{gardenId}/events": {
+      "post": {
+        "summary": "Append garden events and update snapshot",
+        "tags": [
+          "gardens"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "new_events": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "versionId": {
+                          "type": "integer"
+                        },
+                        "growAreaType": {
+                          "type": "string"
+                        },
+                        "x1": {
+                          "type": "number"
+                        },
+                        "x2": {
+                          "type": "number"
+                        },
+                        "y1": {
+                          "type": "number"
+                        },
+                        "y2": {
+                          "type": "number"
+                        },
+                        "eventType": {
+                          "type": "string"
+                        },
+                        "timestamp": {
+                          "format": "date-time",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "versionId",
+                        "growAreaType",
+                        "x1",
+                        "x2",
+                        "y1",
+                        "y2",
+                        "eventType",
+                        "timestamp"
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "new_events"
+                ]
+              }
+            }
+          },
+          "required": true
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "gardenId",
+            "required": true
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "next_version": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "next_version"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "enum": [
+                            "invalidEvents"
+                          ]
+                        },
+                        {
+                          "type": "string",
+                          "enum": [
+                            "untrackedEvents"
+                          ]
+                        },
+                        {
+                          "type": "string",
+                          "enum": [
+                            "insertFailed"
+                          ]
+                        }
+                      ]
+                    },
+                    "untracked_events": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer"
+                      }
+                    },
+                    "retry_hint": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "untracked_events",
+                    "retry_hint"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/public/temp-api/health": {
       "get": {
         "tags": [

@@ -1,12 +1,11 @@
-// eslint-disable-next-line @typescript-eslint/triple-slash-reference
-/// <reference path="./types/fastify.d.ts" />
-
-import { FastifyInstance } from "fastify";
+import { FastifyInstance, FastifyRequest } from "fastify";
 import { authHandler } from "./auth-handler";
 import cors from "@fastify/cors";
 import { getDb } from "./db";
 import { sql } from "drizzle-orm";
 import { gardeners } from "./schema";
+import { registerGardenRoutes } from "./routes/garden/routes";
+import type {} from "./types/fastify";
 import { ExternalProvider, IUserParams } from "./services/gardener-service";
 
 export function init(app: FastifyInstance) {
@@ -19,6 +18,8 @@ export function init(app: FastifyInstance) {
   app.register(async (instance) => {
     // Set user from JWT claims for protected routes
     authHandler(instance);
+
+    await registerGardenRoutes(instance);
 
     instance.get(
       "/public/temp-api/health",

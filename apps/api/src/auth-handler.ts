@@ -7,14 +7,15 @@ export function authHandler(instance: FastifyInstance): void {
       return;
     }
 
-    const is_local = process.env.IS_LOCAL;
-    if (is_local !== "true") {
-      // In non-local environments, we expect API Gateway to verify token and populate claims
-      request.user = (
-        request as any
-      ).awsLambda?.event?.requestContext?.authorizer?.jwt?.claims;
+    const lambdaEvent = request.awsLambda?.event;
+    const isAwsInvocation = lambdaEvent !== undefined;
+
+    if (isAwsInvocation) {
+      // AWS invocation — use API Gateway-provided JWT claims
+      request.user =
+        lambdaEvent.requestContext?.authorizer?.jwt?.claims ?? undefined;
     } else {
-      // In local environments, we need to decode the jwt to get the claims
+      // Local invocation — decode JWT manually
       const authHeader = request.headers.authorization;
       if (!authHeader?.startsWith("Bearer ")) {
         return reply

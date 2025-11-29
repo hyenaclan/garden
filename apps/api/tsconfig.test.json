@@ -1,7 +1,9 @@
+// tsconfig.test.json
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "rootDir": "."
+    "rootDir": ".",
+    "types": ["node", "aws-lambda", "jest"]
   },
   "include": ["src/**/*.ts", "tests/**/*.ts"]
 }
