@@ -1,5 +1,6 @@
-import { getDb, closeDb } from "./db";
+import { getDb, closeDb, getPool } from "./db";
 import { migrate } from "drizzle-orm/node-postgres/migrator";
+import type { Pool } from "pg";
 
 // Drizzle migration metadata row structure
 export type MigrationRow = {
@@ -9,53 +10,52 @@ export type MigrationRow = {
 };
 
 // Safely query migrations table, even if first run
-async function getAppliedMigrations(client: any): Promise<MigrationRow[]> {
+async function getAppliedMigrations(pool: Pool): Promise<MigrationRow[]> {
   try {
-    const result = await client.query(`
+    const result = await pool.query<MigrationRow>(`
       SELECT id, hash, created_at
       FROM drizzle.__drizzle_migrations
       ORDER BY created_at ASC;
     `);
-    return result.rows as MigrationRow[];
-  } catch (err: any) {
-    // Table doesn't exist → first-run
-    if (err.code === "42P01") return [];
+    return result.rows;
+  } catch (err: unknown) {
+    const migrate_table_missing =
+      typeof err === "object" &&
+      err !== null &&
+      "code" in err &&
+      (err as { code?: string }).code === "42P01";
+    if (migrate_table_missing) {
+      return [];
+    }
     throw err;
   }
 }
 
 export const handler = async () => {
   const { DB_USER, DB_NAME } = process.env;
+
   const db = getDb();
-  const client = (db as any).session.client;
+  const pool = getPool();
 
   try {
-    // Ensure schema + permissions (ignore concurrent update errors)
-    try {
-      await client.query(`GRANT CREATE ON DATABASE ${DB_NAME} TO ${DB_USER}`);
-    } catch (err: any) {
-      // Ignore concurrent update errors or permission already exists
-      if (!err.message?.includes("concurrently") && err.code !== "42P01") {
-        throw err;
-      }
-    }
-    await client.query(
+    await pool.query(`GRANT CREATE ON DATABASE ${DB_NAME} TO ${DB_USER}`);
+    await pool.query(
       `CREATE SCHEMA IF NOT EXISTS drizzle AUTHORIZATION ${DB_USER}`,
     );
 
     // Before state
-    const before = await getAppliedMigrations(client);
+    const before = await getAppliedMigrations(pool);
     console.log("Previously applied migrations:", before);
 
     console.log("Running new migrations...");
     await migrate(db, { migrationsFolder: "./drizzle" });
 
     // After state
-    const after = await getAppliedMigrations(client);
+    const after = await getAppliedMigrations(pool);
 
     // Delta
-    const beforeHashes = new Set(before.map((m: MigrationRow) => m.hash));
-    const delta = after.filter((m: MigrationRow) => !beforeHashes.has(m.hash));
+    const beforeHashes = new Set(before.map((m) => m.hash));
+    const delta = after.filter((m) => !beforeHashes.has(m.hash));
 
     console.log("Newly applied migrations:", delta);
 

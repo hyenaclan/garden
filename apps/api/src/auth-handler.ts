@@ -7,14 +7,15 @@ export function authHandler(instance: FastifyInstance): void {
       return;
     }
 
-    const is_local = process.env.IS_LOCAL;
-    if (is_local !== "true") {
-      // In non-local environments, we expect API Gateway to verify token and populate claims
-      request.user = (
-        request as any
-      ).awsLambda?.event?.requestContext?.authorizer?.jwt?.claims;
+    const lambdaEvent = request.awsLambda?.event;
+    const isAwsInvocation = lambdaEvent !== undefined;
+
+    if (isAwsInvocation) {
+      // AWS invocation — use API Gateway-provided JWT claims
+      request.user =
+        lambdaEvent.requestContext?.authorizer?.jwt?.claims ?? undefined;
     } else {
-      // In local environments, we need to decode the jwt to get the claims
+      // Local invocation — decode JWT manually
       const authHeader = request.headers.authorization;
       if (!authHeader?.startsWith("Bearer ")) {
         return reply
@@ -26,12 +27,12 @@ export function authHandler(instance: FastifyInstance): void {
         // Simple JWT decode for tests (no signature verification)
         const parts = token.split(".");
         const payload = JSON.parse(Buffer.from(parts[1], "base64").toString());
-        request.user = payload as Record<string, any>;
+        request.user = payload as Record<string, unknown>;
       } else {
         try {
           const { decodeJwt } = await import("jose");
           const decoded = decodeJwt(token);
-          request.user = decoded as Record<string, any>;
+          request.user = decoded as Record<string, unknown>;
         } catch (err) {
           request.log.error({ err }, "Failed to decode local JWT");
           return reply.code(401).send({ error: "Invalid local JWT" });

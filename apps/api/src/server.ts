@@ -1,12 +1,11 @@
-// eslint-disable-next-line @typescript-eslint/triple-slash-reference
-/// <reference path="./types/fastify.d.ts" />
-
-import { FastifyInstance } from "fastify";
+import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { authHandler } from "./auth-handler";
 import cors from "@fastify/cors";
 import { getDb } from "./db";
 import { sql } from "drizzle-orm";
 import { gardeners } from "./schema";
+import { registerGardenRoutes } from "./routes/garden/routes";
+import type {} from "./types/fastify";
 import { ExternalProvider, IUserParams } from "./services/gardener-service";
 
 export function init(app: FastifyInstance) {
@@ -19,6 +18,8 @@ export function init(app: FastifyInstance) {
   app.register(async (instance) => {
     // Set user from JWT claims for protected routes
     authHandler(instance);
+
+    await registerGardenRoutes(instance);
 
     instance.get(
       "/public/temp-api/health",
@@ -73,27 +74,30 @@ export function init(app: FastifyInstance) {
       async () => ({ ok: true }),
     );
 
-    instance.get("/api/user/profile", async (request, reply) => {
-      const { upsertAndGetGardener } = await import(
-        "./services/gardener-service"
-      );
+    instance.get(
+      "/api/user/profile",
+      async (request: FastifyRequest, reply: FastifyReply) => {
+        const { upsertAndGetGardener } = await import(
+          "./services/gardener-service"
+        );
 
-      const user = request.user;
+        const user = request.user;
 
-      if (!user?.sub || !user?.email) {
-        request.log.error({ user }, "Missing required user information");
-        return reply.code(401).send({ error: "Unauthorized" });
-      }
+        if (!user?.sub || !user?.email) {
+          request.log.error({ user }, "Missing required user information");
+          return reply.code(401).send({ error: "Unauthorized" });
+        }
 
-      const userParams: IUserParams = {
-        email: user.email,
-        externalId: user.sub,
-        externalProvider: ExternalProvider.COGNITO, // Hardcoded for now
-      };
+        const userParams: IUserParams = {
+          email: user.email,
+          externalId: user.sub,
+          externalProvider: ExternalProvider.COGNITO, // Hardcoded for now
+        };
 
-      const userProfile = await upsertAndGetGardener(userParams);
-      return userProfile;
-    });
+        const userProfile = await upsertAndGetGardener(userParams);
+        return userProfile;
+      },
+    );
   });
 
   return app;
