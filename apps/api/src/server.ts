@@ -7,6 +7,7 @@ import cors from "@fastify/cors";
 import { getDb } from "./db";
 import { sql } from "drizzle-orm";
 import { gardeners } from "./schema";
+import { ExternalProvider, IUserParams } from "./services/gardener-service";
 
 export function init(app: FastifyInstance) {
   app.register(cors, {
@@ -72,12 +73,26 @@ export function init(app: FastifyInstance) {
       async () => ({ ok: true }),
     );
 
-    instance.get("/api/user/profile", async (request) => {
-      return {
-        message: "This is a protected route",
-        user: request.user, // User info from JWT
-        timestamp: new Date().toISOString(),
+    instance.get("/api/user/profile", async (request, reply) => {
+      const { upsertAndGetGardener } = await import(
+        "./services/gardener-service"
+      );
+
+      const user = request.user;
+
+      if (!user?.sub || !user?.email) {
+        request.log.error({ user }, "Missing required user information");
+        return reply.code(401).send({ error: "Unauthorized" });
+      }
+
+      const userParams: IUserParams = {
+        email: user.email,
+        externalId: user.sub,
+        externalProvider: ExternalProvider.COGNITO, // Hardcoded for now
       };
+
+      const userProfile = await upsertAndGetGardener(userParams);
+      return userProfile;
     });
   });
 

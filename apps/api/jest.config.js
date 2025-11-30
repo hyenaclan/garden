@@ -4,34 +4,35 @@
  */
 module.exports = {
   // Use the ts-jest preset for TypeScript support
-  preset: 'ts-jest', 
-  
+  preset: "ts-jest",
+
   // Test environment for Node.js
-  testEnvironment: 'node', 
-  
+  testEnvironment: "node",
+
   // Root directory is the API app folder
-  rootDir: '.',
-  
+  rootDir: ".",
+
   // Glob patterns to match test files
-  testMatch: [
-    '<rootDir>/tests/**/*.test.ts',
-  ],
-  
+  testMatch: ["<rootDir>/tests/**/*.test.ts"],
+
   // Module file extensions to resolve
-  moduleFileExtensions: ['ts', 'js', 'json', 'node'],
+  moduleFileExtensions: ["ts", "js", "json", "node"],
 
   // Coverage configuration
   collectCoverageFrom: [
-    'src/**/*.ts',
-    '!src/**/*.test.ts',
-    '!src/**/*.spec.ts',
-    '!src/**/*.d.ts'
+    "src/**/*.ts",
+    "!src/**/*.test.ts",
+    "!src/**/*.spec.ts",
+    "!src/**/*.d.ts",
   ],
 
-    transform: {
-    '^.+\\.tsx?$': ['ts-jest', {
-      tsconfig: 'tsconfig.json',
-    }],
+  transform: {
+    "^.+\\.tsx?$": [
+      "ts-jest",
+      {
+        tsconfig: "tsconfig.json",
+      },
+    ],
   },
 
   // Test timeout (useful for async tests)
@@ -41,5 +42,11 @@ module.exports = {
   clearMocks: true,
 
   // Verbose output
-  verbose: true
+  verbose: true,
+
+  // Transform ESM modules
+  transformIgnorePatterns: ["node_modules/(?!jose/)"],
+
+  // Use CI mode for tests (enables localhost DB instead of Docker)
+  setupFilesAfterEnv: ["<rootDir>/jest.setup.js"],
 };

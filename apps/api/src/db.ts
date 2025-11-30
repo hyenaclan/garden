@@ -15,7 +15,7 @@ export const getDb = () => {
 
     const isLocal = DB_HOST === "localhost" || process.env.CI === "true";
 
-    const connectionString = `postgresql://${DB_USER}:${encodeURIComponent(DB_PASS!)}@${DB_HOST}:${DB_PORT}/${DB_NAME}`;
+    const connectionString = `postgresql://${DB_USER}:${encodeURIComponent(DB_PASS!)}@${DB_HOST}:${DB_PORT}/${DB_NAME}?timezone=UTC`;
     cachedPool = new Pool({
       connectionString,
       ssl: isLocal ? false : { rejectUnauthorized: false },
