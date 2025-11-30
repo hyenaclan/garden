@@ -40,7 +40,9 @@ export const upsertAndGetGardener = async (
     .returning();
 
   if (!result[0]) {
-    throw new Error("Upsert failed: no record returned");
+    throw new Error(
+      `Failed to upsert gardener for externalId: ${userParams.externalId}. Database returned no record.`,
+    );
   }
 
   return result[0];
