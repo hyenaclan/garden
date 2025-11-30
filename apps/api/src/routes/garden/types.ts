@@ -55,6 +55,54 @@ export const PostGardenEventsErrorSchema = Type.Strict(
 );
 export type PostGardenEventsError = Static<typeof PostGardenEventsErrorSchema>;
 
+export const GetGardenParamsSchema = Type.Strict(
+  Type.Object({
+    gardenId: Type.String(),
+  }),
+);
+export type GetGardenParams = Static<typeof GetGardenParamsSchema>;
+
+const GardenObjectSchema = Type.Strict(
+  Type.Object({
+    id: Type.String(),
+    type: Type.Literal("growArea"),
+    name: Type.String(),
+    x: Type.Number(),
+    y: Type.Number(),
+    width: Type.Number(),
+    height: Type.Number(),
+    rotation: Type.Number(),
+    growAreaKind: Type.String(),
+    plantable: Type.Boolean(),
+  }),
+);
+
+const GardenSchema = Type.Strict(
+  Type.Object({
+    id: Type.String(),
+    name: Type.String(),
+    unit: Type.Union([Type.Literal("ft"), Type.Literal("m")]),
+    growAreas: Type.Array(GardenObjectSchema),
+  }),
+);
+
+export const GetGardenSuccessSchema = Type.Strict(
+  Type.Object({
+    garden: GardenSchema,
+    version: Type.Integer(),
+  }),
+);
+export type GetGardenSuccess = Static<typeof GetGardenSuccessSchema>;
+
+export const getGardenSchema: FastifySchema = {
+  tags: ["gardens"],
+  summary: "Fetch garden snapshot",
+  params: GetGardenParamsSchema,
+  response: {
+    200: GetGardenSuccessSchema,
+  },
+};
+
 export const postGardenEventsSchema: FastifySchema = {
   tags: ["gardens"],
   summary: "Append garden events and update snapshot",

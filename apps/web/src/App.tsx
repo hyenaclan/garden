@@ -4,17 +4,36 @@ import viteLogo from "/vite.svg";
 import "./App.scss";
 import { useApiFetch } from "./hooks/useApiFetch";
 import Auth from "./components/Auth";
+import { GardenDemoPage } from "./garden/GardenDemoPage";
+import { GardenProvider } from "./state/gardenStore";
+import { useAuthenticatedFetch } from "./hooks/useAuthenticatedFetch";
+import { queryClient } from "./queryClient";
+
+type View = "home" | "garden";
 
 function App() {
   const [count, setCount] = useState(0);
-  // Use state to hold the API response message
   const { apiResponse, isLoading, fetchData } = useApiFetch();
+  const [view, setView] = useState<View>("home");
+  const authenticatedFetch = useAuthenticatedFetch();
 
   const buildId = import.meta.env.VITE_BUILD_ID;
   const commitSha = import.meta.env.VITE_COMMIT_SHA?.slice(0, 7);
 
+  if (view === "garden") {
+    return (
+      <GardenProvider
+        gardenId="1f0b4950-f6ea-4c98-8811-50b3469e063a"
+        fetcher={authenticatedFetch}
+        queryClient={queryClient}
+      >
+        <GardenDemoPage onBack={() => setView("home")} />
+      </GardenProvider>
+    );
+  }
+
   return (
-    <>
+    <div className="home-page">
       <Auth />
 
       <div>
@@ -27,7 +46,7 @@ function App() {
       </div>
       <h1>Vite + React</h1>
       <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
+        <button onClick={() => setCount((current) => current + 1)}>
           count is {count}
         </button>
         <p>
@@ -47,10 +66,19 @@ function App() {
         </p>
       </div>
 
+      <div style={{ marginTop: "1.5rem" }}>
+        <button
+          onClick={() => setView("garden")}
+          className="home-button"
+        >
+          Open Garden Canvas
+        </button>
+      </div>
+
       <footer className="text-xs text-gray-500 mt-4">
         Build #{buildId} ({commitSha})
       </footer>
-    </>
+    </div>
   );
 }
 

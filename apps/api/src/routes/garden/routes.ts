@@ -6,10 +6,47 @@ import {
   PostGardenEventsSuccess,
   PostGardenEventsError,
   postGardenEventsSchema,
+  GetGardenParams,
+  GetGardenSuccess,
+  getGardenSchema,
 } from "./types";
 import { appendGardenEvents } from "../../services/append-garden-events";
 
 export async function registerGardenRoutes(app: FastifyInstance) {
+  app.get<{
+    Params: GetGardenParams;
+    Reply: GetGardenSuccess;
+  }>(
+    "/gardens/:gardenId",
+    { schema: getGardenSchema },
+    async (request, reply) => {
+      const { gardenId } = request.params;
+
+      // Placeholder implementation until real persistence exists.
+      const garden = {
+        id: gardenId,
+        name: "Demo Garden",
+        unit: "ft" as const,
+        growAreas: [
+          {
+            id: "bed-1",
+            type: "growArea" as const,
+            name: "Bed 1",
+            x: 0,
+            y: 0,
+            width: 48,
+            height: 96,
+            rotation: 0,
+            growAreaKind: "raisedBed",
+            plantable: true,
+          },
+        ],
+      };
+
+      return reply.send({ garden, version: 1 });
+    },
+  );
+
   app.post<{
     Params: PostGardenEventsParams;
     Body: PostGardenEventsBody;

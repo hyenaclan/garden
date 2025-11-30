@@ -8,8 +8,10 @@ import { useCallback } from "react";
 export const useAuthenticatedFetch = () => {
   const auth = useAuth();
 
-  const authenticatedFetch = useCallback(
-    async (url: string, options: RequestInit = {}) => {
+  const authenticatedFetch: typeof fetch = useCallback(
+    async (input: RequestInfo | URL, init: RequestInit = {}) => {
+      const url = typeof input === "string" || input instanceof URL ? input : "";
+
       // Check if token is expired or about to expire
       if (auth.user && auth.user.expired) {
         try {
@@ -29,7 +31,7 @@ export const useAuthenticatedFetch = () => {
       // Merge headers with authorization
       const headers: Record<string, string> = {
         "Content-Type": "application/json",
-        ...((options.headers as Record<string, string>) || {}),
+        ...((init.headers as Record<string, string>) || {}),
       };
 
       if (token) {
@@ -38,7 +40,7 @@ export const useAuthenticatedFetch = () => {
 
       // Make the fetch request
       const response = await fetch(url, {
-        ...options,
+        ...init,
         headers,
       });
 
@@ -52,7 +54,7 @@ export const useAuthenticatedFetch = () => {
           if (newToken) {
             headers["Authorization"] = `Bearer ${newToken}`;
           }
-          return await fetch(url, { ...options, headers });
+          return await fetch(url, { ...init, headers });
         } catch (error) {
           console.error("Token refresh failed on 401:", error);
           await auth.signinRedirect();
