@@ -27,12 +27,12 @@ export function authHandler(instance: FastifyInstance): void {
         // Simple JWT decode for tests (no signature verification)
         const parts = token.split(".");
         const payload = JSON.parse(Buffer.from(parts[1], "base64").toString());
-        request.user = payload as Record<string, any>;
+        request.user = payload as Record<string, unknown>;
       } else {
         try {
           const { decodeJwt } = await import("jose");
           const decoded = decodeJwt(token);
-          request.user = decoded as Record<string, any>;
+          request.user = decoded as Record<string, unknown>;
         } catch (err) {
           request.log.error({ err }, "Failed to decode local JWT");
           return reply.code(401).send({ error: "Invalid local JWT" });

@@ -19,10 +19,11 @@ async function getAppliedMigrations(pool: Pool): Promise<MigrationRow[]> {
     `);
     return result.rows;
   } catch (err: unknown) {
-    const migrate_table_missing = typeof err === "object" &&
+    const migrate_table_missing =
+      typeof err === "object" &&
       err !== null &&
       "code" in err &&
-      (err as { code?: string }).code === "42P01"
+      (err as { code?: string }).code === "42P01";
     if (migrate_table_missing) {
       return [];
     }
@@ -37,15 +38,7 @@ export const handler = async () => {
   const pool = getPool();
 
   try {
-    // Ensure schema + permissions (ignore concurrent update errors)
-    try {
-      await pool.query(`GRANT CREATE ON DATABASE ${DB_NAME} TO ${DB_USER}`);
-    } catch (err: any) {
-      // Ignore concurrent update errors or permission already exists
-      if (!err.message?.includes("concurrently") && err.code !== "42P01") {
-        throw err;
-      }
-    }
+    await pool.query(`GRANT CREATE ON DATABASE ${DB_NAME} TO ${DB_USER}`);
     await pool.query(
       `CREATE SCHEMA IF NOT EXISTS drizzle AUTHORIZATION ${DB_USER}`,
     );

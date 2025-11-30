@@ -43,7 +43,4 @@ module.exports = {
 
   // Transform ESM modules
   transformIgnorePatterns: ["node_modules/(?!jose/)"],
-
-  // Use CI mode for tests (enables localhost DB instead of Docker)
-  setupFilesAfterEnv: ["<rootDir>/jest.setup.js"],
 };
