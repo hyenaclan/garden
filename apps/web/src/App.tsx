@@ -1,7 +1,7 @@
 import { useState } from "react";
 import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
-import "./App.scss";
+import "./App.css";
 import { useApiFetch } from "./hooks/useApiFetch";
 import Auth from "./components/Auth";
 import { Button } from "@garden/ui/components/button";

@@ -6,7 +6,7 @@
   "exports": {
     "./components/*": "./src/components/*.tsx",
     "./lib/*": "./src/lib/*.ts",
-    "./hooks/*": "./src/hooks/*.ts"
+    "./styles/*": "./src/styles/*.css"
   },
   "scripts": {
     "lint": "eslint .",

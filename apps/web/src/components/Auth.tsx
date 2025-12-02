@@ -3,13 +3,14 @@ import { useState } from "react";
 import { signOutRedirect } from "../auth/cognito";
 import { useAuthenticatedFetch } from "../hooks/useAuthenticatedFetch";
 import { Button } from "@garden/ui/components/button";
+import type { UserProfile, ApiError } from "../types/user";
 
 export default function Auth() {
   const auth = useAuth();
   const authenticatedFetch = useAuthenticatedFetch();
-  const [userProfile, setUserProfile] = useState<any>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [userLoading, setUserLoading] = useState(false);
-  const [userError, setUserError] = useState<any>(null);
+  const [userError, setUserError] = useState<ApiError | Error | null>(null);
 
   const fetchUserData = async () => {
     setUserError(null);
@@ -24,7 +25,7 @@ export default function Auth() {
       setUserProfile(data);
     } catch (error) {
       console.error("Error fetching user profile:", error);
-      setUserError(error);
+      setUserError(error instanceof Error ? error : new Error(String(error)));
     } finally {
       setUserLoading(false);
     }
@@ -50,7 +51,14 @@ export default function Auth() {
         <Button onClick={fetchUserData} disabled={userLoading}>
           Fetch User Profile (protected)
         </Button>
-        {userError && <p>Error loading profile: {JSON.stringify(userError)}</p>}
+        {userError && (
+          <p>
+            Error loading profile:{" "}
+            {userError instanceof Error
+              ? userError.message
+              : JSON.stringify(userError)}
+          </p>
+        )}
         {!auth.isAuthenticated ? (
           <Button
             disabled={auth.isLoading}

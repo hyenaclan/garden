@@ -1,6 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import "./index.scss";
+import "@garden/ui/styles/globals.css";
+import "./index.css";
 import App from "./App";
 import { AuthProvider } from "react-oidc-context";
 import { cognitoConfig } from "./auth/cognito";
