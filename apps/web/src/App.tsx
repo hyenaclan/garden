@@ -18,7 +18,7 @@ function App() {
     <>
       <Auth />
 
-      <div>
+      <div className="flex justify-center">
         <a href="https://vite.dev" target="_blank">
           <img src={viteLogo} className="logo" alt="Vite logo" />
         </a>
@@ -43,9 +43,7 @@ function App() {
           Fetch from API
         </Button>
         <div className="mt-4 font-bold">API Output:</div>
-        <p className="bg-white p-2 border border-gray-300 rounded text-sm break-all min-h-[2.5rem]">
-          {apiResponse || "Click button to fetch data"}
-        </p>
+        <p>{apiResponse || "Click button to fetch data"}</p>
       </div>
 
       <footer className="text-xs text-gray-500 mt-4">

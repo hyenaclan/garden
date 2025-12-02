@@ -79,7 +79,7 @@ export default function Auth() {
         </div>
       )}
       {userProfile && (
-        <p className="bg-white p-2 border border-gray-300 rounded text-sm break-all min-h-[2.5rem]">
+        <p>
           user profile: <pre>{JSON.stringify(userProfile, null, 2)}</pre>
         </p>
       )}
