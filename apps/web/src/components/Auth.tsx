@@ -2,7 +2,7 @@ import { useAuth } from "react-oidc-context";
 import { useState } from "react";
 import { signOutRedirect } from "../auth/cognito";
 import { useAuthenticatedFetch } from "../hooks/useAuthenticatedFetch";
-import { Button } from "@garden/ui/components/ui/button";
+import { Button } from "@garden/ui/components/button";
 
 export default function Auth() {
   const auth = useAuth();

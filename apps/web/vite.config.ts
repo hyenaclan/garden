@@ -9,7 +9,8 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "../../packages/ui/src"),
+      "@": path.resolve(__dirname, "./src"),
+      "@garden/ui": path.resolve(__dirname, "../../packages/ui/src"),
     },
   },
   server: {

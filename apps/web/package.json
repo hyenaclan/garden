@@ -12,6 +12,7 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
+    "@garden/ui": "*",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-oidc-context": "^3.3.0"

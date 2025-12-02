@@ -4,7 +4,7 @@ import viteLogo from "/vite.svg";
 import "./App.scss";
 import { useApiFetch } from "./hooks/useApiFetch";
 import Auth from "./components/Auth";
-import { Button } from "@garden/ui/components/ui/button";
+import { Button } from "@garden/ui/components/button";
 
 function App() {
   const [count, setCount] = useState(0);
