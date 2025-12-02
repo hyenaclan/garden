@@ -84,7 +84,7 @@ VITE_COGNITO_USER_POOL_CLIENT_ID
 
 This project uses `shadcn/ui` for the component library, which is located in the `packages/ui` workspace.
 
-To add a new component (e.g., `button`), run the following command from the `apps/web` directory:
+To add a new component (e.g., `button`), run the following command from the `apps/web` directory and they all be added to `packages/ui/components`:
 
 ```bash
 npx shadcn-ui@latest add [component]
