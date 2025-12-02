@@ -9,6 +9,137 @@
     "schemas": {}
   },
   "paths": {
+    "/gardens/{gardenId}": {
+      "get": {
+        "summary": "Fetch garden snapshot",
+        "tags": [
+          "gardens"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "gardenId",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "garden": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "unit": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "enum": [
+                                "ft"
+                              ]
+                            },
+                            {
+                              "type": "string",
+                              "enum": [
+                                "m"
+                              ]
+                            }
+                          ]
+                        },
+                        "growAreas": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string"
+                              },
+                              "name": {
+                                "type": "string"
+                              },
+                              "x": {
+                                "type": "number"
+                              },
+                              "y": {
+                                "type": "number"
+                              },
+                              "width": {
+                                "type": "number"
+                              },
+                              "height": {
+                                "type": "number"
+                              },
+                              "rotation": {
+                                "type": "number"
+                              },
+                              "growAreaKind": {
+                                "type": "string"
+                              },
+                              "plantable": {
+                                "type": "boolean"
+                              },
+                              "versionId": {
+                                "type": "integer"
+                              },
+                              "eventType": {
+                                "type": "string"
+                              },
+                              "timestamp": {
+                                "format": "date-time",
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "name",
+                              "x",
+                              "y",
+                              "width",
+                              "height",
+                              "rotation",
+                              "growAreaKind",
+                              "plantable",
+                              "versionId",
+                              "eventType",
+                              "timestamp"
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "name",
+                        "unit",
+                        "growAreas"
+                      ]
+                    },
+                    "version": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "garden",
+                    "version"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/gardens/{gardenId}/events": {
       "post": {
         "summary": "Append garden events and update snapshot",
@@ -26,23 +157,35 @@
                     "items": {
                       "type": "object",
                       "properties": {
-                        "versionId": {
-                          "type": "integer"
-                        },
-                        "growAreaType": {
+                        "id": {
                           "type": "string"
                         },
-                        "x1": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "x": {
                           "type": "number"
                         },
-                        "x2": {
+                        "y": {
                           "type": "number"
                         },
-                        "y1": {
+                        "width": {
                           "type": "number"
                         },
-                        "y2": {
+                        "height": {
                           "type": "number"
+                        },
+                        "rotation": {
+                          "type": "number"
+                        },
+                        "growAreaKind": {
+                          "type": "string"
+                        },
+                        "plantable": {
+                          "type": "boolean"
+                        },
+                        "versionId": {
+                          "type": "integer"
                         },
                         "eventType": {
                           "type": "string"
@@ -53,12 +196,16 @@
                         }
                       },
                       "required": [
+                        "id",
+                        "name",
+                        "x",
+                        "y",
+                        "width",
+                        "height",
+                        "rotation",
+                        "growAreaKind",
+                        "plantable",
                         "versionId",
-                        "growAreaType",
-                        "x1",
-                        "x2",
-                        "y1",
-                        "y2",
                         "eventType",
                         "timestamp"
                       ]
