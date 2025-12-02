@@ -9,6 +9,297 @@
     "schemas": {}
   },
   "paths": {
+    "/gardens/{gardenId}": {
+      "get": {
+        "summary": "Fetch garden snapshot",
+        "tags": [
+          "gardens"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "gardenId",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "garden": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "unit": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "enum": [
+                                "ft"
+                              ]
+                            },
+                            {
+                              "type": "string",
+                              "enum": [
+                                "m"
+                              ]
+                            }
+                          ]
+                        },
+                        "growAreas": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string"
+                              },
+                              "name": {
+                                "type": "string"
+                              },
+                              "x": {
+                                "type": "number"
+                              },
+                              "y": {
+                                "type": "number"
+                              },
+                              "width": {
+                                "type": "number"
+                              },
+                              "height": {
+                                "type": "number"
+                              },
+                              "rotation": {
+                                "type": "number"
+                              },
+                              "growAreaKind": {
+                                "type": "string"
+                              },
+                              "plantable": {
+                                "type": "boolean"
+                              },
+                              "versionId": {
+                                "type": "integer"
+                              },
+                              "eventType": {
+                                "type": "string"
+                              },
+                              "timestamp": {
+                                "format": "date-time",
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "name",
+                              "x",
+                              "y",
+                              "width",
+                              "height",
+                              "rotation",
+                              "growAreaKind",
+                              "plantable",
+                              "versionId",
+                              "eventType",
+                              "timestamp"
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "name",
+                        "unit",
+                        "growAreas"
+                      ]
+                    },
+                    "version": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "garden",
+                    "version"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/gardens/{gardenId}/events": {
+      "post": {
+        "summary": "Append garden events and update snapshot",
+        "tags": [
+          "gardens"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "new_events": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "x": {
+                          "type": "number"
+                        },
+                        "y": {
+                          "type": "number"
+                        },
+                        "width": {
+                          "type": "number"
+                        },
+                        "height": {
+                          "type": "number"
+                        },
+                        "rotation": {
+                          "type": "number"
+                        },
+                        "growAreaKind": {
+                          "type": "string"
+                        },
+                        "plantable": {
+                          "type": "boolean"
+                        },
+                        "versionId": {
+                          "type": "integer"
+                        },
+                        "eventType": {
+                          "type": "string"
+                        },
+                        "timestamp": {
+                          "format": "date-time",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "name",
+                        "x",
+                        "y",
+                        "width",
+                        "height",
+                        "rotation",
+                        "growAreaKind",
+                        "plantable",
+                        "versionId",
+                        "eventType",
+                        "timestamp"
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "new_events"
+                ]
+              }
+            }
+          },
+          "required": true
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "gardenId",
+            "required": true
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "next_version": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "next_version"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "enum": [
+                            "invalidEvents"
+                          ]
+                        },
+                        {
+                          "type": "string",
+                          "enum": [
+                            "untrackedEvents"
+                          ]
+                        },
+                        {
+                          "type": "string",
+                          "enum": [
+                            "insertFailed"
+                          ]
+                        }
+                      ]
+                    },
+                    "untracked_events": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer"
+                      }
+                    },
+                    "retry_hint": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "untracked_events",
+                    "retry_hint"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/public/temp-api/health": {
       "get": {
         "tags": [
