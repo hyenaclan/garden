@@ -35,6 +35,9 @@ module.exports = {
   // Test timeout (useful for async tests)
   testTimeout: 10000,
 
+  // Run tests serially to avoid shared resource contention
+  maxWorkers: 1,
+
   // Clear mocks between tests
   clearMocks: true,
 
