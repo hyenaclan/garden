@@ -79,3 +79,13 @@ VITE_COGNITO_USER_POOL_CLIENT_ID
 ## Run Prettier against all files (needed to satisfy pre-commit hook)
 
 `npx prettier --write "**/*.{ts,tsx,md}"`
+
+# Adding UI Components
+
+This project uses `shadcn/ui` for the component library, which is located in the `packages/ui` workspace.
+
+To add a new component (e.g., `button`), run the following command from the `apps/web` directory and they all be added to `packages/ui/components`:
+
+```bash
+npx shadcn-ui@latest add [component]
+```

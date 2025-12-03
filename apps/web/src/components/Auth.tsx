@@ -2,13 +2,15 @@ import { useAuth } from "react-oidc-context";
 import { useState } from "react";
 import { signOutRedirect } from "../auth/cognito";
 import { useAuthenticatedFetch } from "../hooks/useAuthenticatedFetch";
+import { Button } from "@garden/ui/components/button";
+import type { UserProfile, ApiError } from "../types/user";
 
 export default function Auth() {
   const auth = useAuth();
   const authenticatedFetch = useAuthenticatedFetch();
-  const [userProfile, setUserProfile] = useState<any>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [userLoading, setUserLoading] = useState(false);
-  const [userError, setUserError] = useState<any>(null);
+  const [userError, setUserError] = useState<ApiError | Error | null>(null);
 
   const fetchUserData = async () => {
     setUserError(null);
@@ -23,7 +25,7 @@ export default function Auth() {
       setUserProfile(data);
     } catch (error) {
       console.error("Error fetching user profile:", error);
-      setUserError(error);
+      setUserError(error instanceof Error ? error : new Error(String(error)));
     } finally {
       setUserLoading(false);
     }
@@ -46,19 +48,26 @@ export default function Auth() {
   return (
     <>
       <div style={authButtonRow}>
-        <button onClick={fetchUserData} disabled={userLoading}>
+        <Button onClick={fetchUserData} disabled={userLoading}>
           Fetch User Profile (protected)
-        </button>
-        {userError && <p>Error loading profile: {JSON.stringify(userError)}</p>}
+        </Button>
+        {userError && (
+          <p>
+            Error loading profile:{" "}
+            {userError instanceof Error
+              ? userError.message
+              : JSON.stringify(userError)}
+          </p>
+        )}
         {!auth.isAuthenticated ? (
-          <button
+          <Button
             disabled={auth.isLoading}
             onClick={() => auth.signinRedirect()}
           >
             Sign in
-          </button>
+          </Button>
         ) : (
-          <button onClick={() => logout()}>Logout</button>
+          <Button onClick={() => logout()}>Logout</Button>
         )}
       </div>
 
@@ -70,7 +79,7 @@ export default function Auth() {
         </div>
       )}
       {userProfile && (
-        <p className="bg-white p-2 border border-gray-300 rounded text-sm break-all min-h-[2.5rem]">
+        <p>
           user profile: <pre>{JSON.stringify(userProfile, null, 2)}</pre>
         </p>
       )}

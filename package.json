@@ -27,7 +27,8 @@
   },
   "packageManager": "npm@11.6.0",
   "workspaces": [
-    "apps/*"
+    "apps/*",
+    "packages/*"
   ],
   "optionalDependencies": {
     "@esbuild/win32-x64": "^0.27.0",
