@@ -1,15 +1,13 @@
 import { Button } from "@garden/ui/components/button";
-import { useMemo } from "react";
 import { useHealthQuery } from "../../hooks/useHealthQuery";
 
 export function HealthStatus() {
   const { data, isFetching, isError, error, refetch, isSuccess } =
     useHealthQuery(false);
 
-  const apiResponse = useMemo(() => {
-    if (!data) return "";
-    return `API Message: "${data.message}" | Status: ${data.status} | Timestamp: ${data.timestamp} | Gardeners #: ${data.user_count}`;
-  }, [data]);
+  const apiResponse = data
+    ? `API Message: "${data.message}" | Status: ${data.status} | Timestamp: ${data.timestamp} | Gardeners #: ${data.user_count}`
+    : "";
 
   return (
     <section>
