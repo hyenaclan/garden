@@ -6,20 +6,14 @@ import { HomePage } from "./components/pages/home/HomePage";
 import { LoginPage } from "./components/pages/login/LoginPage";
 import { CultsPage } from "./components/pages/cults/CultsPage";
 import { ProfilePage } from "./components/pages/profile/ProfilePage";
-
-const pageTitles: Record<string, string> = {
-  "/": "Home",
-  "/cults": "Cults",
-  "/profile": "Profile",
-  "/login": "Login",
-};
+import { APP_NAME, ROUTES, PAGE_TITLES } from "./config";
 
 function TitleUpdater() {
   const location = useLocation();
 
   useEffect(() => {
-    const pageTitle = pageTitles[location.pathname];
-    document.title = pageTitle ? `growcult - ${pageTitle}` : "growcult";
+    const pageTitle = PAGE_TITLES[location.pathname];
+    document.title = pageTitle ? `${APP_NAME} - ${pageTitle}` : APP_NAME;
   }, [location.pathname]);
 
   return null;
@@ -32,14 +26,14 @@ export default function App() {
       <Routes>
         {/* Routes with Header */}
         <Route element={<MainLayout />}>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/cults" element={<CultsPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
+          <Route path={ROUTES.HOME} element={<HomePage />} />
+          <Route path={ROUTES.CULTS} element={<CultsPage />} />
+          <Route path={ROUTES.PROFILE} element={<ProfilePage />} />
         </Route>
 
         {/* Routes without Header (Auth pages) */}
         <Route element={<AuthLayout />}>
-          <Route path="/login" element={<LoginPage />} />
+          <Route path={ROUTES.LOGIN} element={<LoginPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

@@ -1,6 +1,6 @@
 export function Header({ children }: { children?: React.ReactNode }) {
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border bg-white shadow-sm">
+    <header className="sticky top-0 z-50 w-full border-b border-border bg-nav shadow-sm">
       {children}
     </header>
   );

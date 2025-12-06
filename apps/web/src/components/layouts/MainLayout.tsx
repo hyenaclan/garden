@@ -13,6 +13,8 @@ import {
   HeaderActions,
 } from "../shared/Header";
 import { Button } from "@garden/ui/components/button";
+import { ThemeToggle } from "../shared/ThemeToggle";
+import { APP_NAME, ROUTES } from "../../config";
 
 function NavLink({
   to,
@@ -74,7 +76,7 @@ export function MainLayout() {
   const navigate = useNavigate();
 
   const handleSignOut = () => {
-    navigate("/login");
+    navigate(ROUTES.LOGIN);
   };
 
   return (
@@ -85,24 +87,25 @@ export function MainLayout() {
           <HeaderContainer>
             <HeaderBrand>
               <Link
-                to="/"
+                to={ROUTES.HOME}
                 className="font-semibold text-lg flex items-center gap-1.5"
               >
-                🌱 growcult
+                🌱 {APP_NAME}
               </Link>
             </HeaderBrand>
             <HeaderNav>
-              <NavLink to="/" icon={House}>
+              <NavLink to={ROUTES.HOME} icon={House}>
                 Home
               </NavLink>
-              <NavLink to="/cults" icon={Users}>
+              <NavLink to={ROUTES.CULTS} icon={Users}>
                 Cults
               </NavLink>
-              <NavLink to="/profile" icon={User}>
+              <NavLink to={ROUTES.PROFILE} icon={User}>
                 Profile
               </NavLink>
             </HeaderNav>
             <HeaderActions>
+              <ThemeToggle />
               <Button variant="outline" size="sm" onClick={handleSignOut}>
                 Sign Out
               </Button>
@@ -117,13 +120,14 @@ export function MainLayout() {
           <HeaderContainer>
             <HeaderBrand>
               <Link
-                to="/"
+                to={ROUTES.HOME}
                 className="font-semibold text-lg flex items-center gap-1.5"
               >
-                🌱 growcult
+                🌱 {APP_NAME}
               </Link>
             </HeaderBrand>
             <HeaderActions>
+              <ThemeToggle />
               <Button variant="outline" size="sm" onClick={handleSignOut}>
                 Sign Out
               </Button>
@@ -137,15 +141,15 @@ export function MainLayout() {
       </main>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-border shadow-[0_-1px_3px_0_rgb(0_0_0_/0.1)]">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-nav border-t border-border shadow-nav-up">
         <div className="flex justify-around items-center max-w-7xl mx-auto">
-          <MobileNavLink to="/" icon={House}>
+          <MobileNavLink to={ROUTES.HOME} icon={House}>
             Home
           </MobileNavLink>
-          <MobileNavLink to="/cults" icon={Users}>
+          <MobileNavLink to={ROUTES.CULTS} icon={Users}>
             Cults
           </MobileNavLink>
-          <MobileNavLink to="/profile" icon={User}>
+          <MobileNavLink to={ROUTES.PROFILE} icon={User}>
             Profile
           </MobileNavLink>
         </div>
