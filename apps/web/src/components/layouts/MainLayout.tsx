@@ -137,7 +137,7 @@ export function MainLayout() {
       </main>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-border shadow-lg">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-border shadow-[0_-1px_3px_0_rgb(0_0_0_/0.1)]">
         <div className="flex justify-around items-center max-w-7xl mx-auto">
           <MobileNavLink to="/" icon={House}>
             Home
