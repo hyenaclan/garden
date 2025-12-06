@@ -4,6 +4,7 @@ import { MainLayout } from "./components/layouts/MainLayout";
 import { AuthLayout } from "./components/layouts/AuthLayout";
 import { HomePage } from "./components/pages/home/HomePage";
 import { LoginPage } from "./components/pages/login/LoginPage";
+import { AuthCallbackPage } from "./components/pages/auth/AuthCallbackPage";
 import { CultsPage } from "./components/pages/cults/CultsPage";
 import { ProfilePage } from "./components/pages/profile/ProfilePage";
 import { APP_NAME, ROUTES, PAGE_TITLES } from "./config";
@@ -34,6 +35,7 @@ export default function App() {
         {/* Routes without Header (Auth pages) */}
         <Route element={<AuthLayout />}>
           <Route path={ROUTES.LOGIN} element={<LoginPage />} />
+          <Route path={ROUTES.AUTH_CALLBACK} element={<AuthCallbackPage />} />
         </Route>
       </Routes>
     </BrowserRouter>
