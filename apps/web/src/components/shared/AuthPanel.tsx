@@ -22,26 +22,12 @@ export function AuthPanel() {
     signOutRedirect();
   };
 
-  const authButtonRow = {
-    maxWidth: "1000px",
-    width: "100%",
-    display: "flex",
-    gap: "8px",
-    justifyContent: "flex-end",
-  };
-
   return (
-    <>
-      <div style={authButtonRow}>
+    <div className="w-full max-w-7xl mx-auto">
+      <div className="flex gap-2 justify-center mb-4">
         <Button onClick={fetchUserData} disabled={isFetching}>
           Fetch User Profile (protected)
         </Button>
-        {isError && (
-          <p>
-            Error loading profile:{" "}
-            {error instanceof Error ? error.message : "Unknown error"}
-          </p>
-        )}
         {!auth.isAuthenticated ? (
           <Button
             disabled={auth.isLoading}
@@ -54,18 +40,34 @@ export function AuthPanel() {
         )}
       </div>
 
-      {auth.isLoading && <p>Loading authentication...</p>}
-      {auth.error && <p>Authentication Error: {auth.error?.message}</p>}
+      {isError && (
+        <p className="text-destructive mb-4">
+          Error loading profile:{" "}
+          {error instanceof Error ? error.message : "Unknown error"}
+        </p>
+      )}
+
+      {auth.isLoading && (
+        <p className="text-muted-foreground mb-4">Loading authentication...</p>
+      )}
+      {auth.error && (
+        <p className="text-destructive mb-4">
+          Authentication Error: {auth.error?.message}
+        </p>
+      )}
       {auth.isAuthenticated && (
-        <div>
-          <pre> Hello: {auth.user?.profile.email} </pre>
+        <div className="mb-4">
+          <pre className="text-sm">Hello: {auth.user?.profile.email}</pre>
         </div>
       )}
       {userProfile && (
-        <p>
-          user profile: <pre>{JSON.stringify(userProfile, null, 2)}</pre>
-        </p>
+        <div className="mb-4">
+          <p className="text-sm mb-2">User profile:</p>
+          <pre className="text-xs bg-muted p-4 rounded-md overflow-auto">
+            {JSON.stringify(userProfile, null, 2)}
+          </pre>
+        </div>
       )}
-    </>
+    </div>
   );
 }
