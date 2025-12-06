@@ -42,6 +42,8 @@
   --sidebar-border: oklch(0.88 0.03 145);
   --sidebar-ring: oklch(0.60 0.10 145);
   --nav: oklch(1 0 0);
+  --icon-stroke-width: 2;
+  --icon-stroke-width-active: 2.5;
 }
 
 .dark {
@@ -118,6 +120,8 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-nav: var(--nav);
+  --icon-stroke-width: var(--icon-stroke-width);
+  --icon-stroke-width-active: var(--icon-stroke-width-active);
 }
 
 @layer base {

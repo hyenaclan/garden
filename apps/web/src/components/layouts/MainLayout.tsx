@@ -36,7 +36,14 @@ function NavLink({
     >
       {({ isActive }) => (
         <>
-          <Icon className="w-4 h-4" strokeWidth={isActive ? 2.5 : 2} />
+          <Icon
+            className="w-4 h-4"
+            strokeWidth={
+              isActive
+                ? "var(--icon-stroke-width-active)"
+                : "var(--icon-stroke-width)"
+            }
+          />
           {children}
         </>
       )}
@@ -64,7 +71,14 @@ function MobileNavLink({
     >
       {({ isActive }) => (
         <>
-          <Icon className="w-5 h-5" strokeWidth={isActive ? 2.5 : 2} />
+          <Icon
+            className="w-5 h-5"
+            strokeWidth={
+              isActive
+                ? "var(--icon-stroke-width-active)"
+                : "var(--icon-stroke-width)"
+            }
+          />
           <span className="text-xs">{children}</span>
         </>
       )}
