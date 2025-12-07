@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
-import { AuthPanel } from "../../shared/AuthPanel";
+import { AuthPanel } from "../auth/AuthPanel";
 import { Button } from "@garden/ui/components/button";
-import { APP_NAME, ROUTES } from "../../../config";
+import { APP_NAME, ROUTES } from "../../core/config";
 
 export function LoginPage() {
   const navigate = useNavigate();

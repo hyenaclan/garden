@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { apiRequest } from "../core/api/client";
-import { API_ROUTES } from "../core/api/routes";
+import { apiRequest } from "../../core/api/client";
+import { API_ROUTES } from "../../core/api/routes";
 
 export function useHealthQuery(enabled = false) {
   return useQuery({

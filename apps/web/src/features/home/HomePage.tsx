@@ -1,10 +1,10 @@
 import { useState } from "react";
-import reactLogo from "../../../assets/react.svg";
+import reactLogo from "../../assets/react.svg";
 import viteLogo from "/vite.svg";
-import "../../../App.css";
+import "../../App.css";
 import { Button } from "@garden/ui/components/button";
-import { AuthPanel } from "../../shared/AuthPanel";
-import { HealthStatus } from "../../shared/HealthStatus";
+import { AuthPanel } from "../auth/AuthPanel";
+import { HealthStatus } from "./HealthStatus";
 
 export function HomePage() {
   const [count, setCount] = useState(0);

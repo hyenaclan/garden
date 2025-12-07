@@ -1,6 +1,6 @@
 import { useAuth } from "react-oidc-context";
 import { Button } from "@garden/ui/components/button";
-import { useUserProfileQuery } from "../../hooks/useUserProfileQuery";
+import { useUserProfileQuery } from "./useUserProfileQuery";
 import { signOutRedirect } from "../../core/auth/cognito";
 
 export function AuthPanel() {

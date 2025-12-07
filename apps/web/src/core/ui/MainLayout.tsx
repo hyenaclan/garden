@@ -11,10 +11,10 @@ import {
   HeaderBrand,
   HeaderNav,
   HeaderActions,
-} from "../shared/Header";
+} from "./Header";
 import { Button } from "@garden/ui/components/button";
-import { ThemeToggle } from "../shared/ThemeToggle";
-import { APP_NAME, ROUTES } from "../../config";
+import { ThemeToggle } from "./ThemeToggle";
+import { APP_NAME, ROUTES } from "../config";
 
 function NavLink({
   to,

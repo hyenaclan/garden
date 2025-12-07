@@ -1,5 +1,5 @@
 import { Button } from "@garden/ui/components/button";
-import { useHealthQuery } from "../../hooks/useHealthQuery";
+import { useHealthQuery } from "./useHealthQuery";
 
 export function HealthStatus() {
   const { data, isFetching, isError, error, refetch, isSuccess } =
