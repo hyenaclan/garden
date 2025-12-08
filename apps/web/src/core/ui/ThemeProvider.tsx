@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import type { ThemeConfig } from "../theme/types";
 import { getActiveTheme, applyThemeColors } from "../theme/utils";
 
@@ -32,21 +32,15 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   const [activeThemeConfig] = useState<ThemeConfig>(() => getActiveTheme());
 
-  // Track if initial theme has been applied
-  const hasAppliedInitialTheme = useRef(false);
-
-  // Apply theme colors on mount and when theme mode changes
+  // Apply theme colors on mount
   useEffect(() => {
-    // Only apply once on mount to avoid duplicate applications
-    if (hasAppliedInitialTheme.current) return;
-    hasAppliedInitialTheme.current = true;
-
     const colors =
       theme === "dark"
         ? activeThemeConfig.colors.dark
         : activeThemeConfig.colors.light;
     applyThemeColors(colors, theme);
-  }, [theme, activeThemeConfig]); // Now properly includes dependencies
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run once on mount
 
   const updateTheme = (newMode: ThemeMode) => {
     setTheme(newMode);
