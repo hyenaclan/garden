@@ -58,7 +58,7 @@
                             }
                           ]
                         },
-                        "growAreas": {
+                        "gardenObjects": {
                           "type": "array",
                           "items": {
                             "type": "object",
@@ -84,21 +84,11 @@
                               "rotation": {
                                 "type": "number"
                               },
-                              "growAreaKind": {
+                              "type": {
                                 "type": "string"
                               },
                               "plantable": {
                                 "type": "boolean"
-                              },
-                              "versionId": {
-                                "type": "integer"
-                              },
-                              "eventType": {
-                                "type": "string"
-                              },
-                              "timestamp": {
-                                "format": "date-time",
-                                "type": "string"
                               }
                             },
                             "required": [
@@ -109,29 +99,26 @@
                               "width",
                               "height",
                               "rotation",
-                              "growAreaKind",
-                              "plantable",
-                              "versionId",
-                              "eventType",
-                              "timestamp"
+                              "type",
+                              "plantable"
                             ]
                           }
+                        },
+                        "version": {
+                          "type": "integer"
                         }
                       },
                       "required": [
                         "id",
                         "name",
                         "unit",
-                        "growAreas"
+                        "gardenObjects",
+                        "version"
                       ]
-                    },
-                    "version": {
-                      "type": "integer"
                     }
                   },
                   "required": [
-                    "garden",
-                    "version"
+                    "garden"
                   ]
                 }
               }
@@ -157,57 +144,67 @@
                     "items": {
                       "type": "object",
                       "properties": {
-                        "id": {
-                          "type": "string"
-                        },
-                        "name": {
-                          "type": "string"
-                        },
-                        "x": {
-                          "type": "number"
-                        },
-                        "y": {
-                          "type": "number"
-                        },
-                        "width": {
-                          "type": "number"
-                        },
-                        "height": {
-                          "type": "number"
-                        },
-                        "rotation": {
-                          "type": "number"
-                        },
-                        "growAreaKind": {
-                          "type": "string"
-                        },
-                        "plantable": {
-                          "type": "boolean"
-                        },
-                        "versionId": {
+                        "version": {
                           "type": "integer"
                         },
                         "eventType": {
-                          "type": "string"
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "enum": [
+                                "create"
+                              ]
+                            },
+                            {
+                              "type": "string",
+                              "enum": [
+                                "update"
+                              ]
+                            },
+                            {
+                              "type": "string",
+                              "enum": [
+                                "delete"
+                              ]
+                            }
+                          ]
                         },
-                        "timestamp": {
-                          "format": "date-time",
-                          "type": "string"
+                        "payload": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "x": {
+                              "type": "number"
+                            },
+                            "y": {
+                              "type": "number"
+                            },
+                            "width": {
+                              "type": "number"
+                            },
+                            "height": {
+                              "type": "number"
+                            },
+                            "rotation": {
+                              "type": "number"
+                            },
+                            "type": {
+                              "type": "string"
+                            },
+                            "plantable": {
+                              "type": "boolean"
+                            }
+                          }
                         }
                       },
                       "required": [
-                        "id",
-                        "name",
-                        "x",
-                        "y",
-                        "width",
-                        "height",
-                        "rotation",
-                        "growAreaKind",
-                        "plantable",
-                        "versionId",
-                        "eventType",
-                        "timestamp"
+                        "version",
+                        "eventType"
                       ]
                     }
                   }
@@ -300,45 +297,6 @@
         }
       }
     },
-    "/public/temp-api/health": {
-      "get": {
-        "tags": [
-          "health"
-        ],
-        "description": "Health check endpoint with detailed information",
-        "responses": {
-          "200": {
-            "description": "Default Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string"
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "format": "date-time"
-                    },
-                    "status": {
-                      "type": "string",
-                      "enum": [
-                        "ok",
-                        "error"
-                      ]
-                    },
-                    "user_count": {
-                      "type": "number"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/public/health": {
       "get": {
         "tags": [
@@ -360,15 +318,6 @@
                 }
               }
             }
-          }
-        }
-      }
-    },
-    "/api/user/profile": {
-      "get": {
-        "responses": {
-          "200": {
-            "description": "Default Response"
           }
         }
       }

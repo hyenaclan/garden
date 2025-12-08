@@ -6,7 +6,7 @@ import App from "./App";
 import { AuthProvider } from "react-oidc-context";
 import { cognitoConfig } from "./core/auth/cognito";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { createQueryClient } from "./core/api/queryClient";
+import { createQueryClient } from "./core/api/query-client";
 import { ThemeProvider } from "./core/ui/ThemeProvider";
 
 // Optional: Add event handlers for token refresh events
