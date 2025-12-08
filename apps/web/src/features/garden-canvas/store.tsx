@@ -169,10 +169,36 @@ export function createGardenStore(
         const result = await appendGardenEvents({
           new_events: pendingEvents,
         });
+
+        const updatedObjects = pendingEvents.reduce((objects, event) => {
+          const payload = event.payload ?? {};
+          const id = payload.id;
+
+          if (event.eventType === "create" && payload.id) {
+            return [...objects, payload as GardenObject];
+          }
+
+          if (event.eventType === "update" && id) {
+            return objects.map((obj) =>
+              obj.id === id ? { ...obj, ...payload } : obj,
+            );
+          }
+
+          if (event.eventType === "delete" && id) {
+            return objects.filter((obj) => obj.id !== id);
+          }
+
+          return objects;
+        }, garden.gardenObjects);
+
         set((state) => ({
           ...state,
           garden: state.garden
-            ? { ...state.garden, version: result.next_version }
+            ? {
+                ...state.garden,
+                gardenObjects: updatedObjects,
+                version: result.next_version,
+              }
             : state.garden,
           currentVersion: result.next_version,
           pendingEvents: [],
