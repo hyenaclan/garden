@@ -3,7 +3,6 @@ import { useEffect } from "react";
 import { MainLayout } from "./core/ui/MainLayout";
 import { AuthLayout } from "./features/auth/AuthLayout";
 import { HomePage } from "./features/home/HomePage";
-import { LoginPage } from "./features/login/LoginPage";
 import { AuthCallbackPage } from "./features/auth/AuthCallbackPage";
 import { CultsPage } from "./features/cults/CultsPage";
 import { ProfilePage } from "./features/profile/ProfilePage";
@@ -32,9 +31,8 @@ export default function App() {
           <Route path={ROUTES.PROFILE} element={<ProfilePage />} />
         </Route>
 
-        {/* Routes without Header (Auth pages) */}
+        {/* Auth callback route */}
         <Route element={<AuthLayout />}>
-          <Route path={ROUTES.LOGIN} element={<LoginPage />} />
           <Route path={ROUTES.AUTH_CALLBACK} element={<AuthCallbackPage />} />
         </Route>
       </Routes>

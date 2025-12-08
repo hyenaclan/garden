@@ -21,10 +21,10 @@ export function AuthCallbackPage() {
           <h1 className="text-2xl font-bold mb-4">Authentication Error</h1>
           <p className="text-destructive mb-4">{auth.error.message}</p>
           <button
-            onClick={() => navigate(ROUTES.LOGIN)}
+            onClick={() => navigate(ROUTES.HOME)}
             className="text-primary hover:underline"
           >
-            Return to login
+            Return to home
           </button>
         </div>
       </div>
