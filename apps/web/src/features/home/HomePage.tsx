@@ -1,16 +1,17 @@
-import { useState } from "react";
 import { useAuth } from "react-oidc-context";
 import reactLogo from "../../assets/react.svg";
 import viteLogo from "/vite.svg";
 import "../../App.css";
 import { Button } from "@garden/ui/components/button";
 import { AuthPanel } from "../auth/AuthPanel";
-import { HealthStatus } from "./HealthStatus";
+import { GardenProvider } from "../garden-canvas/store";
+import { GardenCanvas } from "../garden-canvas/GardenCanvas";
+import { useState } from "react";
 import { LandingPage } from "./LandingPage";
 
 export function HomePage() {
   const auth = useAuth();
-  const [count, setCount] = useState(0);
+  const [showGarden, setShowGarden] = useState(false);
   const buildId = import.meta.env.VITE_BUILD_ID;
   const commitSha = import.meta.env.VITE_COMMIT_SHA?.slice(0, 7);
 
@@ -33,19 +34,19 @@ export function HomePage() {
         </a>
       </div>
       <h1>Vite + React</h1>
-      <div className="card">
-        <Button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </Button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
+
       <p className="read-the-docs">
         Click on the Vite and React logos to learn more
       </p>
-      <div>
-        <HealthStatus />
+      <div className="mt-6">
+        <Button variant="secondary" onClick={() => setShowGarden(true)}>
+          My Garden
+        </Button>
+        {showGarden && (
+          <GardenProvider gardenId="demo-garden">
+            <GardenCanvas />
+          </GardenProvider>
+        )}
       </div>
 
       <footer className="text-xs text-gray-500 mt-4">

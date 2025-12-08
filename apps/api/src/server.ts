@@ -1,9 +1,6 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { authHandler } from "./auth-handler";
 import cors from "@fastify/cors";
-import { getDb } from "./db";
-import { sql } from "drizzle-orm";
-import { gardeners } from "./schema";
 import { registerGardenRoutes } from "./routes/garden/routes";
 import type {} from "./types/fastify";
 import { ExternalProvider, IUserParams } from "./services/gardener-service";
@@ -20,40 +17,6 @@ export function init(app: FastifyInstance) {
     authHandler(instance);
 
     await registerGardenRoutes(instance);
-
-    instance.get(
-      "/public/temp-api/health",
-      {
-        schema: {
-          tags: ["health"],
-          description: "Health check endpoint with detailed information",
-          response: {
-            200: {
-              type: "object",
-              properties: {
-                message: { type: "string" },
-                timestamp: { type: "string", format: "date-time" },
-                status: { type: "string", enum: ["ok", "error"] },
-                user_count: { type: "number" },
-              },
-            },
-          },
-        },
-      },
-      async () => {
-        const db = getDb();
-        const [{ count }] = await db
-          .select({ count: sql<number>`count(*)` })
-          .from(gardeners);
-
-        return {
-          message: "Hello from the Garden API",
-          timestamp: new Date().toISOString(),
-          status: "ok",
-          user_count: Number(count),
-        };
-      },
-    );
 
     instance.get(
       "/public/health",
