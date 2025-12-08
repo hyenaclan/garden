@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "react-oidc-context";
-import { ROUTES } from "../../../config";
+import { ROUTES } from "../../core/config";
 
 export function AuthCallbackPage() {
   const navigate = useNavigate();

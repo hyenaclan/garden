@@ -1,13 +1,13 @@
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { useEffect } from "react";
-import { MainLayout } from "./components/layouts/MainLayout";
-import { AuthLayout } from "./components/layouts/AuthLayout";
-import { HomePage } from "./components/pages/home/HomePage";
-import { LoginPage } from "./components/pages/login/LoginPage";
-import { AuthCallbackPage } from "./components/pages/auth/AuthCallbackPage";
-import { CultsPage } from "./components/pages/cults/CultsPage";
-import { ProfilePage } from "./components/pages/profile/ProfilePage";
-import { APP_NAME, ROUTES, PAGE_TITLES } from "./config";
+import { MainLayout } from "./core/ui/MainLayout";
+import { AuthLayout } from "./features/auth/AuthLayout";
+import { HomePage } from "./features/home/HomePage";
+import { LoginPage } from "./features/login/LoginPage";
+import { AuthCallbackPage } from "./features/auth/AuthCallbackPage";
+import { CultsPage } from "./features/cults/CultsPage";
+import { ProfilePage } from "./features/profile/ProfilePage";
+import { APP_NAME, ROUTES, PAGE_TITLES } from "./core/config";
 
 function TitleUpdater() {
   const location = useLocation();

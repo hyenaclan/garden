@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { useAuthRequest } from "../core/api/auth";
-import { API_ROUTES } from "../core/api/routes";
+import { useAuthRequest } from "../../core/api/auth";
+import { API_ROUTES } from "../../core/api/routes";
 
 export function useUserProfileQuery(enabled = false) {
   const authRequest = useAuthRequest();
