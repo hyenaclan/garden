@@ -5,6 +5,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useAuthRequest, type AuthRequest } from "../../core/api/auth";
 import { API_ROUTES } from "../../core/api/routes";
 import {
+  AppendGardenEventsRequest,
+  AppendGardenEventsSuccess,
   GardenEvent,
   GardenObject,
   GardenState,
@@ -38,7 +40,20 @@ export function createGardenStore(
 ) {
   const { queryClient, authRequest } = options;
 
-  return createStore<GardenStore>((set) => ({
+  const appendGardenEvents = async (
+    body: AppendGardenEventsRequest,
+  ): Promise<AppendGardenEventsSuccess> => {
+    return authRequest<AppendGardenEventsSuccess>({
+      path: API_ROUTES.gardenEvents(gardenId),
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+  };
+
+  return createStore<GardenStore>((set, get) => ({
     ...initialState(gardenId),
     loadGarden: async () => {
       set({ status: "loading", errorMessage: undefined });
@@ -141,6 +156,36 @@ export function createGardenStore(
           errorMessage: undefined,
         };
       });
+    },
+    flushEvents: async () => {
+      const { pendingEvents, garden } = get();
+      if (!garden || pendingEvents.length === 0) {
+        return;
+      }
+
+      set({ status: "saving", errorMessage: undefined });
+
+      try {
+        const result = await appendGardenEvents({
+          new_events: pendingEvents,
+        });
+        set((state) => ({
+          ...state,
+          garden: state.garden
+            ? { ...state.garden, version: result.next_version }
+            : state.garden,
+          currentVersion: result.next_version,
+          pendingEvents: [],
+          status: "saved",
+          errorMessage: undefined,
+        }));
+      } catch (error) {
+        set({
+          status: "error",
+          errorMessage:
+            error instanceof Error ? error.message : "Failed to save events",
+        });
+      }
     },
   }));
 }

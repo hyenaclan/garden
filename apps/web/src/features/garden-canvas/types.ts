@@ -40,7 +40,21 @@ export interface GardenState {
 interface GardenActions {
   loadGarden: () => Promise<void>;
   replaceGarden: (nextGarden: Garden) => void;
-  //   flushEvents: () => Promise<void>;
+  flushEvents: () => Promise<void>;
 }
 
 export type GardenStore = GardenState & GardenActions;
+
+export interface AppendGardenEventsRequest {
+  new_events: GardenEvent[];
+}
+
+export interface AppendGardenEventsSuccess {
+  next_version: number;
+}
+
+export interface AppendGardenEventsError {
+  code: "invalidEvents" | "untrackedEvents" | "insertFailed";
+  untracked_events: number[];
+  retry_hint: string;
+}
