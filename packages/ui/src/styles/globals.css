@@ -7,6 +7,17 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/*
+ * Theme colors are managed dynamically via ThemeProvider
+ *
+ * Seasonal themes are defined in apps/web/src/core/theme/themes/
+ * Theme scheduling is configured in apps/web/src/core/theme/config.ts
+ * The active theme is automatically selected based on the current date
+ *
+ * These CSS values serve as fallback defaults only and will be
+ * overridden by JavaScript at runtime via inline styles on :root
+ */
+ 
 :root {
   --background: oklch(0.96 0.02 145);
   --foreground: oklch(0.35 0.08 145);
