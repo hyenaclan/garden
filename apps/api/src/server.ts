@@ -77,9 +77,8 @@ export function init(app: FastifyInstance) {
     instance.get(
       "/api/user/profile",
       async (request: FastifyRequest, reply: FastifyReply) => {
-        const { upsertAndGetGardener } = await import(
-          "./services/gardener-service"
-        );
+        const { upsertAndGetGardener } =
+          await import("./services/gardener-service");
 
         const user = request.user;
 

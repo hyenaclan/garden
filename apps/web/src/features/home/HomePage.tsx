@@ -1,15 +1,22 @@
 import { useState } from "react";
+import { useAuth } from "react-oidc-context";
 import reactLogo from "../../assets/react.svg";
 import viteLogo from "/vite.svg";
 import "../../App.css";
 import { Button } from "@garden/ui/components/button";
 import { AuthPanel } from "../auth/AuthPanel";
 import { HealthStatus } from "./HealthStatus";
+import { LandingPage } from "./LandingPage";
 
 export function HomePage() {
+  const auth = useAuth();
   const [count, setCount] = useState(0);
   const buildId = import.meta.env.VITE_BUILD_ID;
   const commitSha = import.meta.env.VITE_COMMIT_SHA?.slice(0, 7);
+
+  if (!auth.isAuthenticated) {
+    return <LandingPage />;
+  }
 
   return (
     <>
