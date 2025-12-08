@@ -1,9 +1,6 @@
 import type { ThemeConfig, ThemeColors } from "./types";
 import { themeRegistry } from "./config"; // Theme registry from config.ts
 
-// Constants
-export const MS_PER_DAY = 24 * 60 * 60 * 1000;
-
 /**
  * Gets the active theme based on the current date
  * Uses UTC timezone for consistency across regions
@@ -72,26 +69,4 @@ export function applyThemeColors(colors: ThemeColors, mode: "light" | "dark") {
   } else {
     root.classList.remove("dark");
   }
-}
-
-/**
- * Gets the next upcoming theme change date
- * @param currentDate - The date to check from (defaults to today)
- * @returns The next theme change date or null if none
- */
-export function getNextThemeChangeDate(
-  currentDate: Date = new Date(),
-): Date | null {
-  const dateString = currentDate.toISOString().split("T")[0];
-
-  // Find the next theme that starts after the current date
-  const upcomingThemes = themeRegistry.themes
-    .filter((theme) => theme.startDate > dateString)
-    .sort((a, b) => a.startDate.localeCompare(b.startDate));
-
-  if (upcomingThemes.length > 0) {
-    return new Date(upcomingThemes[0].startDate);
-  }
-
-  return null;
 }

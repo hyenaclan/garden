@@ -31,7 +31,7 @@ core/theme/
 1. **Theme Files**: Each season has its own file in `themes/` defining colors for both light and dark modes
 2. **Main Config**: The `config.ts` file imports all themes and assigns date ranges
 3. **Date-Based Selection**: The `ThemeProvider` automatically selects the active theme based on the current date
-4. **Automatic Updates**: The theme checks for changes at midnight every day
+4. **On-Load Checking**: The theme is checked and applied when users first visit the site
 5. **Dynamic Application**: Theme colors are applied via CSS custom properties at runtime
 
 **Important Notes**:
@@ -196,13 +196,13 @@ Example: `oklch(0.50 0.16 145)` = medium lightness, moderate saturation, green h
 import { useTheme } from "@/core/ui/ThemeProvider";
 
 function MyComponent() {
-  const { theme, activeThemeConfig, nextThemeChangeDate } = useTheme();
+  const { theme, activeThemeConfig } = useTheme();
 
   return (
     <div>
       <p>Current mode: {theme}</p>
       <p>Active theme: {activeThemeConfig.name}</p>
-      <p>Next change: {nextThemeChangeDate?.toLocaleDateString()}</p>
+      <p>Description: {activeThemeConfig.description}</p>
     </div>
   );
 }
@@ -238,41 +238,30 @@ Looks up a theme by its ID.
 
 Returns all available themes.
 
-### `getNextThemeChangeDate(currentDate?: Date): Date | null`
-
-Returns the date when the next theme change will occur.
-
 ### `applyThemeColors(colors: ThemeColors, mode: "light" | "dark")`
 
 Applies theme colors to CSS custom properties. Called automatically by ThemeProvider.
+
+## Type Safety
+
+The theme system uses TypeScript interfaces to enforce structure at compile time:
+
+- **`ThemeColors`** - Defines all 20 required color tokens. TypeScript will throw a compile error if any are missing.
+- **`ThemeModeConfig`** - Requires both `light` and `dark` modes to be defined.
+- **`ThemeConfig`** - Enforces the complete theme structure including metadata and colors.
+
+**No runtime validation needed** - if your theme file compiles without TypeScript errors, it has all required properties.
 
 ## Theme Queuing Logic
 
 The system automatically selects themes based on date:
 
-1. Check if current date falls within any theme's `startDate` to `endDate` range
+1. When a user visits the site, check if current date falls within any theme's `startDate` to `endDate` range
 2. If match found, use that theme
 3. If no match, fall back to the `defaultTheme` specified in the registry
-4. Check for theme changes at midnight every day
+4. The theme remains active for the duration of the user's session
 
 ## Development
-
-### Debug Component
-
-A `ThemeDebug` component is available for development (automatically hidden in production):
-
-```typescript
-import { ThemeDebug } from "@/core/ui/ThemeDebug";
-
-function App() {
-  return (
-    <>
-      <ThemeDebug /> {/* Shows theme info in bottom-left corner */}
-      {/* ... rest of app */}
-    </>
-  );
-}
-```
 
 ### Testing Different Dates
 
@@ -317,6 +306,6 @@ export function getActiveTheme(currentDate: Date = new Date("2026-07-15")) {
 The theme system is optimized for performance:
 
 - Theme colors are applied once at load time
-- Daily checks use a single timeout/interval
-- No continuous polling or watchers
+- No timers, intervals, or continuous polling
+- Theme selection happens only on initial page load
 - Theme configs are statically imported (tree-shakeable)

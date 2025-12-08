@@ -1,11 +1,6 @@
-import { createContext, useContext, useEffect, useState, useRef } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import type { ThemeConfig } from "../theme/types";
-import {
-  getActiveTheme,
-  applyThemeColors,
-  getNextThemeChangeDate,
-  MS_PER_DAY,
-} from "../theme/utils";
+import { getActiveTheme, applyThemeColors } from "../theme/utils";
 
 type ThemeMode = "light" | "dark";
 
@@ -13,97 +8,52 @@ interface ThemeContextType {
   theme: ThemeMode;
   setTheme: (theme: ThemeMode) => void;
   activeThemeConfig: ThemeConfig;
-  nextThemeChangeDate: Date | null;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
+// Storage key constant
+const THEME_MODE_STORAGE_KEY = "theme-mode";
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   // Initialize with a function to safely get the active theme
   const [theme, setTheme] = useState<ThemeMode>(() => {
-    const savedMode = localStorage.getItem("theme-mode") as ThemeMode | null;
+    // SSR guard: return default if window is not available
+    if (typeof window === "undefined") return "light";
+
+    const savedMode = localStorage.getItem(
+      THEME_MODE_STORAGE_KEY,
+    ) as ThemeMode | null;
     const prefersDark = window.matchMedia(
       "(prefers-color-scheme: dark)",
     ).matches;
     return savedMode || (prefersDark ? "dark" : "light");
   });
 
-  const [activeThemeConfig, setActiveThemeConfig] = useState<ThemeConfig>(
-    () => {
-      return getActiveTheme();
-    },
-  );
+  const [activeThemeConfig] = useState<ThemeConfig>(() => getActiveTheme());
 
-  const [nextThemeChangeDate, setNextThemeChangeDate] = useState<Date | null>(
-    () => {
-      return getNextThemeChangeDate();
-    },
-  );
+  // Track if initial theme has been applied
+  const hasAppliedInitialTheme = useRef(false);
 
-  // Ref to track the daily interval for cleanup
-  const dailyIntervalRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Initialize theme on mount
+  // Apply theme colors on mount and when theme mode changes
   useEffect(() => {
-    // Apply the theme colors based on the initialized state
+    // Only apply once on mount to avoid duplicate applications
+    if (hasAppliedInitialTheme.current) return;
+    hasAppliedInitialTheme.current = true;
+
     const colors =
       theme === "dark"
         ? activeThemeConfig.colors.dark
         : activeThemeConfig.colors.light;
     applyThemeColors(colors, theme);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Intentionally empty - only run on mount
-
-  // Check for theme changes daily
-  useEffect(() => {
-    const checkThemeChange = () => {
-      const currentTheme = getActiveTheme();
-
-      // If the active theme has changed, update it
-      if (currentTheme.id !== activeThemeConfig.id) {
-        setActiveThemeConfig(currentTheme);
-
-        // Apply the new theme colors with current mode
-        const colors =
-          theme === "dark"
-            ? currentTheme.colors.dark
-            : currentTheme.colors.light;
-        applyThemeColors(colors, theme);
-
-        // Update next theme change date
-        setNextThemeChangeDate(getNextThemeChangeDate());
-      }
-    };
-
-    // Check at midnight every day
-    const now = new Date();
-    const tomorrow = new Date(now);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    tomorrow.setHours(0, 0, 0, 0);
-
-    const timeUntilMidnight = tomorrow.getTime() - now.getTime();
-
-    // Set initial timeout to check at midnight
-    const midnightTimeout = setTimeout(() => {
-      checkThemeChange();
-
-      // Then check every 24 hours (store in ref for cleanup)
-      dailyIntervalRef.current = setInterval(checkThemeChange, MS_PER_DAY);
-    }, timeUntilMidnight);
-
-    // Cleanup function
-    return () => {
-      clearTimeout(midnightTimeout);
-      if (dailyIntervalRef.current) {
-        clearInterval(dailyIntervalRef.current);
-        dailyIntervalRef.current = null;
-      }
-    };
-  }, [activeThemeConfig.id, theme]);
+  }, [theme, activeThemeConfig]); // Now properly includes dependencies
 
   const updateTheme = (newMode: ThemeMode) => {
     setTheme(newMode);
-    localStorage.setItem("theme-mode", newMode);
+    // SSR guard for localStorage
+    if (typeof window !== "undefined") {
+      localStorage.setItem(THEME_MODE_STORAGE_KEY, newMode);
+    }
 
     // Apply the new mode with the current theme config
     const colors =
@@ -119,7 +69,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         theme,
         setTheme: updateTheme,
         activeThemeConfig,
-        nextThemeChangeDate,
       }}
     >
       {children}
