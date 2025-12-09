@@ -1,45 +1,70 @@
 import { createContext, useContext, useEffect, useState } from "react";
+import type { ThemeConfig } from "../theme/types";
+import { getActiveTheme, applyThemeColors } from "../theme/utils";
 
-type Theme = "light" | "dark";
+type ThemeMode = "light" | "dark";
 
 interface ThemeContextType {
-  theme: Theme;
-  setTheme: (theme: Theme) => void;
+  theme: ThemeMode;
+  setTheme: (theme: ThemeMode) => void;
+  activeThemeConfig: ThemeConfig;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>("light");
+// Storage key constant
+const THEME_MODE_STORAGE_KEY = "theme-mode";
 
-  useEffect(() => {
-    // Check if user has a saved preference
-    const savedTheme = localStorage.getItem("theme") as Theme | null;
+export function ThemeProvider({ children }: { children: React.ReactNode }) {
+  // Initialize with a function to safely get the active theme
+  const [theme, setTheme] = useState<ThemeMode>(() => {
+    // SSR guard: return default if window is not available
+    if (typeof window === "undefined") return "light";
+
+    const savedMode = localStorage.getItem(
+      THEME_MODE_STORAGE_KEY,
+    ) as ThemeMode | null;
     const prefersDark = window.matchMedia(
       "(prefers-color-scheme: dark)",
     ).matches;
+    return savedMode || (prefersDark ? "dark" : "light");
+  });
 
-    const initialTheme = savedTheme || (prefersDark ? "dark" : "light");
-    setTheme(initialTheme);
+  const [activeThemeConfig] = useState<ThemeConfig>(() => getActiveTheme());
 
-    if (initialTheme === "dark") {
-      document.documentElement.classList.add("dark");
+  // Apply theme colors on mount
+  useEffect(() => {
+    const colors =
+      theme === "dark"
+        ? activeThemeConfig.colors.dark
+        : activeThemeConfig.colors.light;
+    applyThemeColors(colors, theme);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run once on mount
+
+  const updateTheme = (newMode: ThemeMode) => {
+    setTheme(newMode);
+    // SSR guard for localStorage
+    if (typeof window !== "undefined") {
+      localStorage.setItem(THEME_MODE_STORAGE_KEY, newMode);
     }
-  }, []);
 
-  const updateTheme = (newTheme: Theme) => {
-    setTheme(newTheme);
-    localStorage.setItem("theme", newTheme);
-
-    if (newTheme === "dark") {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
+    // Apply the new mode with the current theme config
+    const colors =
+      newMode === "dark"
+        ? activeThemeConfig.colors.dark
+        : activeThemeConfig.colors.light;
+    applyThemeColors(colors, newMode);
   };
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme: updateTheme }}>
+    <ThemeContext.Provider
+      value={{
+        theme,
+        setTheme: updateTheme,
+        activeThemeConfig,
+      }}
+    >
       {children}
     </ThemeContext.Provider>
   );
