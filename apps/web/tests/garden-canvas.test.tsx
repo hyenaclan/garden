@@ -105,9 +105,8 @@ describe("garden canvas store", () => {
     expect(state.currentVersion).toBe(2);
     expect(state.pendingEvents).toHaveLength(0);
     const createdCount =
-      state.garden?.gardenObjects.filter(
-        (obj) => obj.id === createdObject.id,
-      ).length ?? 0;
+      state.garden?.gardenObjects.filter((obj) => obj.id === createdObject.id)
+        .length ?? 0;
     expect(createdCount).toBe(1);
   });
 
