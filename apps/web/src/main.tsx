@@ -1,5 +1,6 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
+import { registerSW } from "virtual:pwa-register";
 import "@garden/ui/styles/globals.css";
 import "./index.css";
 import App from "./App";
@@ -24,6 +25,18 @@ const oidcConfig = {
 };
 
 const queryClient = createQueryClient();
+
+// Register service worker for PWA
+if ("serviceWorker" in navigator) {
+  registerSW({
+    onNeedRefresh() {
+      console.log("New content available, please refresh.");
+    },
+    onOfflineReady() {
+      console.log("App ready to work offline");
+    },
+  });
+}
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
