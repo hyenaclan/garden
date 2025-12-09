@@ -21,7 +21,8 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
-      "@garden/ui/*": ["../../packages/ui/src/*"]
+      "@garden/ui/*": ["../../packages/ui/src/*"],
+      "@garden/api-contract": ["../../packages/api-contract/src"]
     }
   },
   "include": ["src", "tests"]

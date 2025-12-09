@@ -1,0 +1,21 @@
+{
+  "name": "@garden/api-contract",
+  "version": "0.0.1",
+  "description": "Shared API contracts for Garden apps",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "commonjs",
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "@sinclair/typebox": "^0.23.5"
+  },
+  "devDependencies": {
+    "fastify": "^5.6.2",
+    "typescript": "^5.9.2"
+  }
+}

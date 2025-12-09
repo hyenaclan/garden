@@ -1,24 +1,22 @@
 import { FastifyInstance } from "fastify";
-import { getDb } from "../../db";
 import {
-  PostGardenEventsBody,
-  PostGardenEventsSuccess,
-  PostGardenEventsError,
-  postGardenEventsSchema,
   GetGardenParams,
   GetGardenSuccess,
-  getGardenSchema,
-} from "./types";
-import { appendGardenEvents } from "../../services/append-garden-events";
+  PostGardenEventsBody,
+  PostGardenEventsError,
+  PostGardenEventsSuccess,
+  gardenRoutes,
+} from "@garden/api-contract";
+import { getDb } from "../db";
+import { appendGardenEvents } from "../services/append-garden-events";
 
 export async function registerGardenRoutes(app: FastifyInstance) {
-  app.get<{
+  app.route<{
     Params: GetGardenParams;
     Reply: GetGardenSuccess;
-  }>(
-    "/gardens/:gardenId",
-    { schema: getGardenSchema },
-    async (request, reply) => {
+  }>({
+    ...gardenRoutes.getGarden,
+    async handler(request, reply) {
       const { gardenId } = request.params;
 
       // TODO: Placeholder implementation until real persistence exists.
@@ -44,16 +42,15 @@ export async function registerGardenRoutes(app: FastifyInstance) {
 
       return reply.send({ garden });
     },
-  );
+  });
 
-  app.post<{
+  app.route<{
     Params: GetGardenParams;
     Body: PostGardenEventsBody;
     Reply: PostGardenEventsSuccess | PostGardenEventsError;
-  }>(
-    "/gardens/:gardenId/events",
-    { schema: postGardenEventsSchema },
-    async (request, reply) => {
+  }>({
+    ...gardenRoutes.postGardenEvents,
+    async handler(request, reply) {
       const { gardenId } = request.params;
       const { new_events: newEvents } = request.body;
 
@@ -70,5 +67,5 @@ export async function registerGardenRoutes(app: FastifyInstance) {
 
       return { next_version: result.next_version };
     },
-  );
+  });
 }

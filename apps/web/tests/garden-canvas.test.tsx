@@ -3,11 +3,11 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { createGardenStore } from "../src/features/garden-canvas/store";
 import {
-  type AppendGardenEventsError,
-  type Garden,
-  type GardenEvent,
-  type GardenObject,
-} from "../src/features/garden-canvas/types";
+  GardenObject,
+  Garden,
+  GardenEvent,
+  AppendGardenEventsError,
+} from "@garden/api-contract";
 
 const baseObject: GardenObject = {
   id: "obj-1",
