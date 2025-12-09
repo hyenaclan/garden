@@ -24,28 +24,25 @@ export async function registerGardenRoutes(app: FastifyInstance) {
       // TODO: Placeholder implementation until real persistence exists.
       const garden = {
         id: gardenId,
-        name: "Demo Garden",
+        name: "My Garden",
         unit: "ft" as const,
-        growAreas: [
+        gardenObjects: [
           {
             id: "bed-1",
-            type: "growArea" as const,
+            type: "growArea",
             name: "Bed 1",
             x: 0,
             y: 0,
             width: 48,
             height: 96,
             rotation: 0,
-            growAreaKind: "raisedBed",
             plantable: true,
-            versionId: 1,
-            eventType: "create",
-            timestamp: new Date().toISOString(),
           },
         ],
+        version: 1,
       };
 
-      return reply.send({ garden, version: 1 });
+      return reply.send({ garden });
     },
   );
 

@@ -8,7 +8,7 @@ import { eq, sql } from "drizzle-orm";
 let db: Awaited<ReturnType<typeof setupTestDb>>;
 let app: FastifyInstance;
 
-describe("Gardener Creation Tests", () => {
+describe("Garden endpoint access", () => {
   beforeAll(async () => {
     process.env.IS_LOCAL = "true"; // Enable local JWT decoding for tests
     db = await setupTestDb();
@@ -29,7 +29,7 @@ describe("Gardener Creation Tests", () => {
     await app.close();
   });
 
-  test("creates gardener on first profile access and reuses on second", async () => {
+  test("returns garden data on repeated access", async () => {
     const testDb = getDb();
 
     // Verify no gardener in db initially
@@ -42,58 +42,39 @@ describe("Gardener Creation Tests", () => {
     const token =
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0LWV4dGVybmFsLWlkIiwiZW1haWwiOiJ0ZXN0QGV4YW1wbGUuY29tIn0.abc";
 
-    // First call to /api/user/profile
+    // First call to /gardens/:id
     const firstResponse = await app.inject({
       method: "GET",
-      url: "/api/user/profile",
+      url: "/gardens/demo-garden",
       headers: {
         authorization: `Bearer ${token}`,
       },
     });
 
     expect(firstResponse.statusCode).toBe(200);
-    const firstProfile = firstResponse.json();
-    expect(firstProfile).toHaveProperty("id");
-    expect(firstProfile.email).toBe("test@example.com");
-    expect(firstProfile.externalId).toBe("test-external-id");
+    const firstBody = firstResponse.json();
+    expect(firstBody).toHaveProperty("garden");
+    expect(firstBody.garden.id).toBe("demo-garden");
+    expect(firstBody.garden.name).toBe("My Garden");
 
-    // Verify gardener was created in db
-    const afterFirstCall = await testDb
-      .select({ count: sql<number>`count(*)` })
-      .from(gardeners);
-    expect(Number(afterFirstCall[0].count)).toBe(1);
-
-    const createdGardener = await testDb
-      .select()
-      .from(gardeners)
-      .where(eq(gardeners.email, "test@example.com"))
-      .limit(1);
-    expect(createdGardener.length).toBe(1);
-    expect(createdGardener[0].id).toBe(firstProfile.id);
-
-    // Second call to /api/user/profile with same token
+    // Second call to /gardens/:id should return the same sample data
     const secondResponse = await app.inject({
       method: "GET",
-      url: "/api/user/profile",
+      url: "/gardens/demo-garden",
       headers: {
         authorization: `Bearer ${token}`,
       },
     });
 
     expect(secondResponse.statusCode).toBe(200);
-    const secondProfile = secondResponse.json();
-    expect(secondProfile.id).toBe(firstProfile.id); // Should be the same gardener
-    expect(secondProfile.email).toBe(firstProfile.email);
-    expect(secondProfile.externalId).toBe(firstProfile.externalId);
-    // Verify lastLogin was updated
-    expect(new Date(secondProfile.lastLogin).getTime()).toBeGreaterThanOrEqual(
-      new Date(firstProfile.lastLogin).getTime(),
-    );
+    const secondBody = secondResponse.json();
+    expect(secondBody.garden.id).toBe(firstBody.garden.id);
+    expect(secondBody.garden.name).toBe(firstBody.garden.name);
 
-    // Verify still only one gardener in db
+    // Gardener creation is not expected on this endpoint
     const afterSecondCall = await testDb
       .select({ count: sql<number>`count(*)` })
       .from(gardeners);
-    expect(Number(afterSecondCall[0].count)).toBe(1);
+    expect(Number(afterSecondCall[0].count)).toBe(0);
   });
 });

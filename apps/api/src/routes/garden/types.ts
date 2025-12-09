@@ -10,18 +10,28 @@ export const GardenObjectSchema = Type.Strict(
     width: Type.Number(),
     height: Type.Number(),
     rotation: Type.Number(),
-    growAreaKind: Type.String(),
+    type: Type.String(),
     plantable: Type.Boolean(),
-    versionId: Type.Integer(),
-    eventType: Type.String(),
-    timestamp: Type.String({ format: "date-time" }),
   }),
 );
-export type GardenEvent = Static<typeof GardenObjectSchema>;
+export type GardenObject = Static<typeof GardenObjectSchema>;
+
+export const GardenEventSchema = Type.Strict(
+  Type.Object({
+    version: Type.Integer(),
+    eventType: Type.Union([
+      Type.Literal("create"),
+      Type.Literal("update"),
+      Type.Literal("delete"),
+    ]),
+    payload: Type.Optional(Type.Partial(GardenObjectSchema)),
+  }),
+);
+export type GardenEvent = Static<typeof GardenEventSchema>;
 
 export const PostGardenEventsBodySchema = Type.Strict(
   Type.Object({
-    new_events: Type.Array(GardenObjectSchema),
+    new_events: Type.Array(GardenEventSchema),
   }),
 );
 export type PostGardenEventsBody = Static<typeof PostGardenEventsBodySchema>;
@@ -60,14 +70,14 @@ const GardenSchema = Type.Strict(
     id: Type.String(),
     name: Type.String(),
     unit: Type.Union([Type.Literal("ft"), Type.Literal("m")]),
-    growAreas: Type.Array(GardenObjectSchema),
+    gardenObjects: Type.Array(GardenObjectSchema),
+    version: Type.Integer(),
   }),
 );
 
 export const GetGardenSuccessSchema = Type.Strict(
   Type.Object({
     garden: GardenSchema,
-    version: Type.Integer(),
   }),
 );
 export type GetGardenSuccess = Static<typeof GetGardenSuccessSchema>;

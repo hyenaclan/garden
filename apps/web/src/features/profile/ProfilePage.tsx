@@ -1,4 +1,11 @@
+import { useAuth } from "react-oidc-context";
+import { LandingPage } from "../home/LandingPage";
+
 export function ProfilePage() {
+  const auth = useAuth();
+  if (!auth.isAuthenticated) {
+    return <LandingPage />;
+  }
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-4">Profile</h1>
