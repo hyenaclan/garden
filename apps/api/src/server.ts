@@ -1,8 +1,8 @@
 import { FastifyInstance } from "fastify";
 import { authHandler } from "./auth-handler";
 import cors from "@fastify/cors";
-import { registerGardenRoutes } from "./routes/garden/routes";
 import type {} from "./types/fastify";
+import { registerGardenRoutes } from "./routes/garden-routes";
 
 export function init(app: FastifyInstance) {
   app.register(cors, {

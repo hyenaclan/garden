@@ -1,5 +1,4 @@
-import { Type, Static } from "@sinclair/typebox";
-import type { FastifySchema } from "fastify";
+import { Type, type Static } from "@sinclair/typebox";
 
 export const GardenObjectSchema = Type.Strict(
   Type.Object({
@@ -28,6 +27,7 @@ export const GardenEventSchema = Type.Strict(
   }),
 );
 export type GardenEvent = Static<typeof GardenEventSchema>;
+export type GardenEventType = GardenEvent["eventType"];
 
 export const PostGardenEventsBodySchema = Type.Strict(
   Type.Object({
@@ -57,6 +57,9 @@ export const PostGardenEventsErrorSchema = Type.Strict(
   }),
 );
 export type PostGardenEventsError = Static<typeof PostGardenEventsErrorSchema>;
+export type AppendGardenEventsRequest = PostGardenEventsBody;
+export type AppendGardenEventsSuccess = PostGardenEventsSuccess;
+export type AppendGardenEventsError = PostGardenEventsError;
 
 export const GetGardenParamsSchema = Type.Strict(
   Type.Object({
@@ -65,7 +68,7 @@ export const GetGardenParamsSchema = Type.Strict(
 );
 export type GetGardenParams = Static<typeof GetGardenParamsSchema>;
 
-const GardenSchema = Type.Strict(
+export const GardenSchema = Type.Strict(
   Type.Object({
     id: Type.String(),
     name: Type.String(),
@@ -74,6 +77,7 @@ const GardenSchema = Type.Strict(
     version: Type.Integer(),
   }),
 );
+export type Garden = Static<typeof GardenSchema>;
 
 export const GetGardenSuccessSchema = Type.Strict(
   Type.Object({
@@ -82,16 +86,16 @@ export const GetGardenSuccessSchema = Type.Strict(
 );
 export type GetGardenSuccess = Static<typeof GetGardenSuccessSchema>;
 
-export const getGardenSchema: FastifySchema = {
+export const getGardenSchema = {
   tags: ["gardens"],
   summary: "Fetch garden snapshot",
   params: GetGardenParamsSchema,
   response: {
     200: GetGardenSuccessSchema,
   },
-};
+} as const;
 
-export const postGardenEventsSchema: FastifySchema = {
+export const postGardenEventsSchema = {
   tags: ["gardens"],
   summary: "Append garden events and update snapshot",
   params: GetGardenParamsSchema,
@@ -100,4 +104,4 @@ export const postGardenEventsSchema: FastifySchema = {
     201: PostGardenEventsSuccessSchema,
     400: PostGardenEventsErrorSchema,
   },
-};
+} as const;

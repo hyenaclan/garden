@@ -1,5 +1,5 @@
+import { GardenEvent } from "@garden/api-contract";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
-import { GardenEvent } from "../routes/garden/types";
 
 export type AppendGardenEventsResult =
   | { success: true; next_version: number }

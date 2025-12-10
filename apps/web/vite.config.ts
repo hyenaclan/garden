@@ -12,6 +12,10 @@ export default defineConfig({
     alias: {
       "@": path.resolve(__dirname, "./src"),
       "@garden/ui": path.resolve(__dirname, "../../packages/ui/src"),
+      "@garden/api-contract": path.resolve(
+        __dirname,
+        "../../packages/api-contract/src",
+      ),
     },
   },
   server: {

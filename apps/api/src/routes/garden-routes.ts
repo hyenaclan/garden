@@ -1,24 +1,27 @@
 import { FastifyInstance } from "fastify";
-import { getDb } from "../../db";
 import {
-  PostGardenEventsBody,
-  PostGardenEventsSuccess,
-  PostGardenEventsError,
-  postGardenEventsSchema,
+  gardenContract,
   GetGardenParams,
   GetGardenSuccess,
-  getGardenSchema,
-} from "./types";
-import { appendGardenEvents } from "../../services/append-garden-events";
+  PostGardenEventsBody,
+  PostGardenEventsError,
+  PostGardenEventsSuccess,
+} from "@garden/api-contract";
+import { appendGardenEvents } from "../services/append-garden-events";
+import { getDb } from "../db";
+import { get } from "http";
 
 export async function registerGardenRoutes(app: FastifyInstance) {
-  app.get<{
+  
+  const getGardenContract = gardenContract.getGarden;
+  app.route<{
     Params: GetGardenParams;
     Reply: GetGardenSuccess;
-  }>(
-    "/gardens/:gardenId",
-    { schema: getGardenSchema },
-    async (request, reply) => {
+  }>({
+    schema: getGardenContract.schema,
+    method: getGardenContract.method,
+    url: getGardenContract.url,
+    async handler(request, reply) {
       const { gardenId } = request.params;
 
       // TODO: Placeholder implementation until real persistence exists.
@@ -44,16 +47,18 @@ export async function registerGardenRoutes(app: FastifyInstance) {
 
       return reply.send({ garden });
     },
-  );
+  });
 
-  app.post<{
+  const postGardenEventsContract = gardenContract.postGardenEvents;
+  app.route<{
     Params: GetGardenParams;
     Body: PostGardenEventsBody;
     Reply: PostGardenEventsSuccess | PostGardenEventsError;
-  }>(
-    "/gardens/:gardenId/events",
-    { schema: postGardenEventsSchema },
-    async (request, reply) => {
+  }>({
+    schema: postGardenEventsContract.schema,
+    method: postGardenEventsContract.method,
+    url: postGardenEventsContract.url,
+    async handler(request, reply) {
       const { gardenId } = request.params;
       const { new_events: newEvents } = request.body;
 
@@ -70,5 +75,5 @@ export async function registerGardenRoutes(app: FastifyInstance) {
 
       return { next_version: result.next_version };
     },
-  );
+  });
 }

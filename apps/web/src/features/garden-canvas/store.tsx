@@ -3,17 +3,16 @@ import { createStore, type StoreApi, useStore } from "zustand";
 import type { QueryClient } from "@tanstack/react-query";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuthRequest, type AuthRequest } from "../../core/api/auth";
-import { API_ROUTES } from "../../core/api/routes";
+import { GardenState, GardenStore } from "./types";
 import {
-  AppendGardenEventsRequest,
-  AppendGardenEventsError,
-  AppendGardenEventsSuccess,
-  GardenEvent,
   GardenObject,
-  GardenState,
-  GardenStore,
-  type Garden,
-} from "./types";
+  AppendGardenEventsRequest,
+  AppendGardenEventsSuccess,
+  AppendGardenEventsError,
+  Garden,
+  GardenEvent,
+  API_ROUTES,
+} from "@garden/api-contract";
 
 const initialState = (gardenId: string): GardenState => ({
   gardenId,
