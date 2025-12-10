@@ -1,21 +1,26 @@
 import { FastifyInstance } from "fastify";
 import {
+  gardenContract,
   GetGardenParams,
   GetGardenSuccess,
   PostGardenEventsBody,
   PostGardenEventsError,
   PostGardenEventsSuccess,
-  gardenRoutes,
 } from "@garden/api-contract";
-import { getDb } from "../db";
 import { appendGardenEvents } from "../services/append-garden-events";
+import { getDb } from "../db";
+import { get } from "http";
 
 export async function registerGardenRoutes(app: FastifyInstance) {
+  
+  const getGardenContract = gardenContract.getGarden;
   app.route<{
     Params: GetGardenParams;
     Reply: GetGardenSuccess;
   }>({
-    ...gardenRoutes.getGarden,
+    schema: getGardenContract.schema,
+    method: getGardenContract.method,
+    url: getGardenContract.url,
     async handler(request, reply) {
       const { gardenId } = request.params;
 
@@ -44,12 +49,15 @@ export async function registerGardenRoutes(app: FastifyInstance) {
     },
   });
 
+  const postGardenEventsContract = gardenContract.postGardenEvents;
   app.route<{
     Params: GetGardenParams;
     Body: PostGardenEventsBody;
     Reply: PostGardenEventsSuccess | PostGardenEventsError;
   }>({
-    ...gardenRoutes.postGardenEvents,
+    schema: postGardenEventsContract.schema,
+    method: postGardenEventsContract.method,
+    url: postGardenEventsContract.url,
     async handler(request, reply) {
       const { gardenId } = request.params;
       const { new_events: newEvents } = request.body;
