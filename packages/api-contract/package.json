@@ -2,9 +2,9 @@
   "name": "@garden/api-contract",
   "version": "0.0.1",
   "description": "Shared API contracts for Garden apps",
-  "main": "src/index.ts",
-  "types": "src/index.ts",
-  "type": "commonjs",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "type": "module",
   "scripts": {
     "build": "tsc -p tsconfig.json"
   },
@@ -13,9 +13,18 @@
     "src"
   ],
   "exports": {
-    ".": "./src/index.ts",
-    "./routes": "./src/routes.ts",
-    "./garden-routes": "./src/garden-routes.ts"
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts"
+    },
+    "./routes": {
+      "types": "./src/routes.ts",
+      "import": "./src/routes.ts"
+    },
+    "./garden-routes": {
+      "types": "./src/garden-routes.ts",
+      "import": "./src/garden-routes.ts"
+    }
   },
   "dependencies": {
     "@sinclair/typebox": "^0.23.5"

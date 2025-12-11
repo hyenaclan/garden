@@ -1,4 +1,4 @@
-import { getDb, closeDb, getPool } from "./db";
+import { getDb, closeDb, getPool } from "./db.js";
 import { migrate } from "drizzle-orm/node-postgres/migrator";
 import type { Pool } from "pg";
 
@@ -77,7 +77,7 @@ export const handler = async () => {
 };
 
 // Allow standalone CLI execution
-if (require.main === module) {
+if (typeof require !== "undefined" && require.main === module) {
   handler().catch((err) => {
     console.error(err);
     process.exit(1);

@@ -1,5 +1,5 @@
-import { getDb } from "../db";
-import { gardeners } from "../schema";
+import { getDb } from "../db.js";
+import { gardeners } from "../schema.js";
 
 export interface IUserParams {
   email: string;

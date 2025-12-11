@@ -1,7 +1,7 @@
 import awsLambdaFastify from "@fastify/aws-lambda";
 import Fastify from "fastify";
 import type { APIGatewayProxyEvent, Context } from "aws-lambda";
-import { init } from "./server";
+import { init } from "./server.js";
 
 const app = Fastify({ logger: true });
 init(app);

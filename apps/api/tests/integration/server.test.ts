@@ -1,6 +1,6 @@
 import Fastify, { FastifyInstance } from "fastify";
-import { init } from "../../src/server";
-import { setupTestDb } from "./helpers";
+import { init } from "../../src/server.js";
+import { setupTestDb } from "./helpers.js";
 
 let db: Awaited<ReturnType<typeof setupTestDb>>;
 let app: FastifyInstance;

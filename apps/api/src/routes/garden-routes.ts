@@ -7,12 +7,10 @@ import {
   PostGardenEventsError,
   PostGardenEventsSuccess,
 } from "@garden/api-contract";
-import { appendGardenEvents } from "../services/append-garden-events";
-import { getDb } from "../db";
-import { get } from "http";
+import { appendGardenEvents } from "../services/append-garden-events.js";
+import { getDb } from "../db.js";
 
 export async function registerGardenRoutes(app: FastifyInstance) {
-  
   const getGardenContract = gardenContract.getGarden;
   app.route<{
     Params: GetGardenParams;
