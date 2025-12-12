@@ -52,18 +52,6 @@ jobs:
           --health-retries 5
 
     steps:
-      - name: Validate env vars & secrets
-        run: |
-          if [ -z "${{ vars.ROLE_ARN }}" ]; then
-            echo "ROLE ARN is missing (vars.ROLE_ARN)"; exit 1;
-          fi
-          if [ -z "${{ vars.DB_USER }}" ]; then
-            echo "DB_USER is missing (vars.DB_USER)"; exit 1;
-          fi
-          if [ -z "${{ secrets.db_password }}" ]; then
-            echo "DB_PASSWORD is missing (secrets.db_password)"; exit 1;
-          fi
-
       - name: Checkout source
         uses: actions/checkout@v4
         with:
