@@ -13,8 +13,11 @@ import * as targets from "aws-cdk-lib/aws-events-targets";
 import * as origins from "aws-cdk-lib/aws-cloudfront-origins";
 import * as cognito from "aws-cdk-lib/aws-cognito";
 import * as apigwv2_authorizers from "aws-cdk-lib/aws-apigatewayv2-authorizers";
-import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
-import * as path from "path";
+import { NodejsFunction, OutputFormat } from "aws-cdk-lib/aws-lambda-nodejs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export class InfraStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -77,15 +80,7 @@ export class InfraStack extends cdk.Stack {
     });
 
     const apiFn = new NodejsFunction(this, "GardenApiFn", {
-      entry: path.join(
-        __dirname,
-        "..",
-        "..",
-        "apps",
-        "api",
-        "src",
-        "lambda.ts",
-      ),
+      entry: join(__dirname, "..", "..", "apps", "api", "src", "lambda.ts"),
       handler: "handler",
       runtime: lambda.Runtime.NODEJS_LATEST,
       vpc,
@@ -104,6 +99,8 @@ export class InfraStack extends cdk.Stack {
         removalPolicy: cdk.RemovalPolicy.DESTROY,
       }),
       bundling: {
+        format: OutputFormat.CJS,
+        target: "node22",
         minify: true,
         externalModules: [],
       },
@@ -125,15 +122,7 @@ export class InfraStack extends cdk.Stack {
     });
 
     const migrateFn = new NodejsFunction(this, "GardenDBMigrateFn", {
-      entry: path.join(
-        __dirname,
-        "..",
-        "..",
-        "apps",
-        "api",
-        "src",
-        "migrate.ts",
-      ),
+      entry: join(__dirname, "..", "..", "apps", "api", "src", "migrate.ts"),
       handler: "handler",
       runtime: lambda.Runtime.NODEJS_LATEST,
       vpc,
@@ -149,6 +138,9 @@ export class InfraStack extends cdk.Stack {
       },
       timeout: cdk.Duration.seconds(29),
       bundling: {
+        format: OutputFormat.CJS,
+        target: "node22",
+        externalModules: [],
         minify: true,
         commandHooks: {
           afterBundling(inputDir: string, outputDir: string): string[] {
@@ -157,13 +149,7 @@ export class InfraStack extends cdk.Stack {
             console.log("outputDir:", outputDir);
             console.log("cwd:", process.cwd());
 
-            const drizzleSrc = path.join(
-              inputDir,
-              "..",
-              "apps",
-              "api",
-              "drizzle",
-            );
+            const drizzleSrc = join(inputDir, "..", "apps", "api", "drizzle");
             console.log("Resolved drizzleSrc:", drizzleSrc);
 
             return [

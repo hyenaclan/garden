@@ -1,6 +1,6 @@
 import { GenericContainer } from "testcontainers";
-import { handler as runMigrations } from "../../src/migrate";
-import { closeDb } from "../../src/db";
+import { handler as runMigrations } from "../../src/migrate.js";
+import { closeDb } from "../../src/db.js";
 
 export async function setupTestDb() {
   if (process.env.CI) {

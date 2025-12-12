@@ -1,4 +1,4 @@
-import { API_ROUTES } from "./routes";
+import { API_ROUTES } from "./routes.js";
 import {
   GetGardenParams,
   GetGardenSuccess,
@@ -7,7 +7,7 @@ import {
   PostGardenEventsSuccess,
   getGardenSchema,
   postGardenEventsSchema,
-} from "./garden";
+} from "./garden.js";
 
 type RouteContract<Params, Body, Reply> = {
   method: "GET" | "POST";

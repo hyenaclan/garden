@@ -1,8 +1,8 @@
 import { FastifyInstance } from "fastify";
-import { authHandler } from "./auth-handler";
+import { authHandler } from "./auth-handler.js";
 import cors from "@fastify/cors";
-import type {} from "./types/fastify";
-import { registerGardenRoutes } from "./routes/garden-routes";
+import type {} from "./types/fastify.js";
+import { registerGardenRoutes } from "./routes/garden-routes.js";
 
 export function init(app: FastifyInstance) {
   app.register(cors, {
@@ -38,25 +38,4 @@ export function init(app: FastifyInstance) {
   });
 
   return app;
-}
-
-// if run locally (e.g. npm run dev)
-if (require.main === module) {
-  (async () => {
-    const { default: Fastify } = await import("fastify");
-    const { registerSwagger } = await import("./swagger");
-
-    const app = Fastify({ logger: true });
-    registerSwagger(app);
-    init(app);
-
-    const port = 3001;
-    app.listen({ port }, (err: Error | null, address: string) => {
-      if (err) {
-        app.log.error(err);
-        process.exit(1);
-      }
-      app.log.info(`[API] Server running at ${address}`);
-    });
-  })();
 }

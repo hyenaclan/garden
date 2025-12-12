@@ -1,13 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { writeFileSync } from "fs";
-import { join } from "path";
+import { writeFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { config } from "dotenv";
 import Fastify from "fastify";
-import { init } from "./server";
-import { registerSwagger } from "./swagger";
+import { init } from "./server.js";
+import { registerSwagger } from "./swagger.js";
 
 // Load environment variables
 config();
+
+const currentDir = dirname(fileURLToPath(import.meta.url));
 
 async function generateOpenApiSpec() {
   // Initialize app with Swagger enabled
@@ -22,7 +25,7 @@ async function generateOpenApiSpec() {
   const spec = (app as any).swagger();
 
   // Write to file
-  const outputPath = join(__dirname, "..", "openapi.json");
+  const outputPath = join(currentDir, "..", "openapi.json");
   writeFileSync(outputPath, JSON.stringify(spec, null, 2));
 
   console.log(`✅ OpenAPI spec generated at: ${outputPath}`);

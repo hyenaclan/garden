@@ -1,8 +1,8 @@
 import Fastify, { FastifyInstance } from "fastify";
-import { init } from "../../src/server";
-import { setupTestDb } from "./helpers";
-import { getDb } from "../../src/db";
-import { gardeners } from "../../src/schema";
+import { init } from "../../src/server.js";
+import { setupTestDb } from "./helpers.js";
+import { getDb } from "../../src/db.js";
+import { gardeners } from "../../src/schema.js";
 import { eq, sql } from "drizzle-orm";
 
 let db: Awaited<ReturnType<typeof setupTestDb>>;

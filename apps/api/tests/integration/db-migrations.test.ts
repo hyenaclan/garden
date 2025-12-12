@@ -1,6 +1,6 @@
-import { getDb } from "../../src/db";
+import { getDb } from "../../src/db.js";
 import "dotenv/config";
-import { setupTestDb } from "./helpers";
+import { setupTestDb } from "./helpers.js";
 
 let db: Awaited<ReturnType<typeof setupTestDb>>;
 
