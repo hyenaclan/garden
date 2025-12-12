@@ -18,6 +18,9 @@ on:
       api_base_url:
         required: true
         type: string
+    secrets:
+      db_password:
+        required: true
 
 permissions:
   contents: read
@@ -57,8 +60,8 @@ jobs:
           if [ -z "${{ vars.DB_USER }}" ]; then
             echo "DB_USER is missing (vars.DB_USER)"; exit 1;
           fi
-          if [ -z "${{ secrets.DB_PASSWORD }}" ]; then
-            echo "DB_PASSWORD is missing (secrets.DB_PASSWORD)"; exit 1;
+          if [ -z "${{ secrets.db_password }}" ]; then
+            echo "DB_PASSWORD is missing (secrets.db_password)"; exit 1;
           fi
 
       - name: Checkout source
@@ -102,8 +105,8 @@ jobs:
             --require-approval never \
             -c stage=${{ inputs.stack_suffix }} \
             --parameters DbUser=${{ vars.DB_USER }} \
-            --parameters DbPassword=${{ secrets.DB_PASSWORD }}
-      
+            --parameters DbPassword=${{ secrets.db_password }}
+
       - name: Run DB migrations
         run: |
           MIGRATE_FN=$(aws cloudformation describe-stacks \

@@ -19,3 +19,5 @@ jobs:
       stack_suffix: dev
       branch: ${{ github.ref_name }}
       api_base_url: https://e75x4uq227.execute-api.us-east-1.amazonaws.com
+    secrets:
+      db_password: ${{ secrets.DEV_DB_PASSWORD }}
