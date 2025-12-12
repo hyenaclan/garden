@@ -1,5 +1,4 @@
-name: Deploy Dev and Prod
-
+name: Deploy Main (Dev | Prod)
 on:
   push:
     branches: [main]
@@ -20,10 +19,6 @@ jobs:
       stack_suffix: dev
       branch: ${{ github.ref_name }}
       api_base_url: https://e75x4uq227.execute-api.us-east-1.amazonaws.com
-      role_arn: ${{ vars.ROLE_ARN }}
-      db_user: ${{ vars.DB_USER }}
-    secrets:
-      db_password: ${{ secrets.DB_PASSWORD }}
 
   deploy-prod:
     needs: deploy-dev
@@ -37,7 +32,3 @@ jobs:
       stack_suffix: prod
       branch: ${{ github.ref_name }}
       api_base_url: https://2ugomkefji.execute-api.us-east-1.amazonaws.com
-      role_arn: ${{ vars.ROLE_ARN }}
-      db_user: ${{ vars.DB_USER }}
-    secrets:
-      db_password: ${{ secrets.DB_PASSWORD }}
