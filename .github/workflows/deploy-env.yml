@@ -21,6 +21,9 @@ on:
       role_arn:
         required: true
         type: string
+      db_user:
+        required: true
+        type: string
     secrets:
       db_password:
         required: true
@@ -95,7 +98,7 @@ jobs:
           cdk deploy $STACK_NAME-${{ inputs.stack_suffix }} \
             --require-approval never \
             -c stage=${{ inputs.stack_suffix }} \
-            --parameters DbUser=${{ vars.DB_USER }} \
+            --parameters DbUser=${{ inputs.db_user }} \
             --parameters DbPassword=${{ secrets.db_password }}
 
       - name: Run DB migrations

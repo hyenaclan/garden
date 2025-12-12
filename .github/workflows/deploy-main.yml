@@ -4,18 +4,16 @@ on:
   push:
     branches: [main]
 
-env:
-  AWS_REGION: us-east-1
-
 jobs:
   deploy-prod:
     uses: ./.github/workflows/deploy-env.yml
     with:
-      aws_region: ${{ env.AWS_REGION }}
+      aws_region: us-east-1
       environment: prod
       stack_suffix: prod
       branch: ${{ github.ref_name }}
-      api_base_url: https://2ugomkefji.execute-api.${{ env.AWS_REGION }}.amazonaws.com
+      api_base_url: https://2ugomkefji.execute-api.us-east-1.amazonaws.com
       role_arn: ${{ vars.ROLE_ARN }}
+      db_user: ${{ vars.DB_USER }}
     secrets:
       db_password: ${{ secrets.DB_PASSWORD }}
