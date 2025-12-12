@@ -1,0 +1,20 @@
+name: Deploy to Dev
+
+on:
+  workflow_dispatch:
+
+env:
+  AWS_REGION: us-east-1
+
+jobs:
+  deploy-dev:
+    uses: ./.github/workflows/deploy-env.yml
+    with:
+      aws_region: ${{ env.AWS_REGION }}
+      environment: dev
+      stack_suffix: dev
+      branch: ${{ github.ref_name }}
+      api_base_url: https://e75x4uq227.execute-api.${{ env.AWS_REGION }}.amazonaws.com
+      role_arn: ${{ vars.ROLE_ARN }}
+    secrets:
+      db_password: ${{ secrets.DB_PASSWORD }}
