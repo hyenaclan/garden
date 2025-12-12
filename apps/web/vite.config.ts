@@ -27,6 +27,9 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    sourcemap: true,
+  },
   // @ts-expect-error - vitest config
   test: {
     globals: true,

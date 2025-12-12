@@ -6,6 +6,7 @@ import { HomePage } from "./features/home/HomePage";
 import { AuthCallbackPage } from "./features/auth/AuthCallbackPage";
 import { CultsPage } from "./features/cults/CultsPage";
 import { ProfilePage } from "./features/profile/ProfilePage";
+import { GardenCanvasPage } from "./features/garden-canvas/GardenCanvasPage";
 import { APP_NAME, ROUTES, PAGE_TITLES } from "./core/config";
 
 function TitleUpdater() {
@@ -28,6 +29,7 @@ export default function App() {
         <Route element={<MainLayout />}>
           <Route path={ROUTES.HOME} element={<HomePage />} />
           <Route path={ROUTES.CULTS} element={<CultsPage />} />
+          <Route path={ROUTES.GARDEN_CANVAS} element={<GardenCanvasPage />} />
           <Route path={ROUTES.PROFILE} element={<ProfilePage />} />
         </Route>
 
