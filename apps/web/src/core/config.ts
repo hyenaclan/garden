@@ -5,6 +5,7 @@ export const ROUTES = {
   CULTS: "/cults",
   PROFILE: "/profile",
   AUTH_CALLBACK: "/auth/callback",
+  GARDEN_CANVAS: "/garden",
 } as const;
 
 export const PAGE_TITLES: Record<string, string> = {
@@ -12,4 +13,5 @@ export const PAGE_TITLES: Record<string, string> = {
   [ROUTES.CULTS]: "Cults",
   [ROUTES.PROFILE]: "Profile",
   [ROUTES.AUTH_CALLBACK]: "Signing in",
+  [ROUTES.GARDEN_CANVAS]: "Garden Canvas",
 };
