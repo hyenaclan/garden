@@ -58,6 +58,14 @@ jobs:
           --health-retries 5
 
     steps:
+      - name: Validate inputs
+        run: |
+          if [ -z "${{ inputs.role_arn }}" ]; then
+            echo "ROLE ARN is missing (inputs.role_arn)"; exit 1;
+          fi
+          if [ -z "${{ inputs.db_user }}" ]; then
+            echo "DB_USER is missing (inputs.db_user)"; exit 1;
+          fi
       - name: Checkout source
         uses: actions/checkout@v4
         with:

@@ -1,4 +1,4 @@
-name: Main Deploy
+name: Deploy Dev and Prod
 
 on:
   push:
@@ -9,7 +9,27 @@ permissions:
   id-token: write
 
 jobs:
+  deploy-dev:
+    permissions:
+      contents: read
+      id-token: write
+    uses: ./.github/workflows/deploy-env.yml
+    with:
+      aws_region: us-east-1
+      environment: dev
+      stack_suffix: dev
+      branch: ${{ github.ref_name }}
+      api_base_url: https://e75x4uq227.execute-api.us-east-1.amazonaws.com
+      role_arn: ${{ vars.ROLE_ARN }}
+      db_user: ${{ vars.DB_USER }}
+    secrets:
+      db_password: ${{ secrets.DB_PASSWORD }}
+
   deploy-prod:
+    needs: deploy-dev
+    permissions:
+      contents: read
+      id-token: write
     uses: ./.github/workflows/deploy-env.yml
     with:
       aws_region: us-east-1
