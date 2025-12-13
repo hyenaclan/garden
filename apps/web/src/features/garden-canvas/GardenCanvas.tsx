@@ -7,7 +7,8 @@ import { Button } from "@garden/ui/components/button";
 const GRID_SIZE = 40;
 const STAGE_WIDTH = 1200;
 const STAGE_HEIGHT = 800;
-const bedSrc = new URL("../../assets/bed-wood-metal.svg", import.meta.url).href;
+const bed0Src = new URL("../../assets/bed-wood-metal-0.svg", import.meta.url).href;
+const bed90Src = new URL("../../assets/bed-wood-metal-90.svg", import.meta.url).href;
 
 function snap(value: number) {
   return Math.round(value / GRID_SIZE) * GRID_SIZE;
@@ -16,9 +17,39 @@ function snap(value: number) {
 function footprint(item: GardenObject) {
   const rotated = (item.rotation ?? 0) === 90;
   return {
-    width: rotated ? item.height : item.width,
+    width: rotated ? item.height * 0.59 : item.width,
     height: rotated ? item.width : item.height,
   };
+}
+
+function useBedImages() {
+  const [bed0, setBed0] = useState<HTMLImageElement | null>(null);
+  const [bed90, setBed90] = useState<HTMLImageElement | null>(null);
+
+  useEffect(() => {
+    const img0 = new Image();
+    const img90 = new Image();
+    const handle0 = () => setBed0(img0);
+    const handle90 = () => setBed90(img90);
+    if (img0.decode) {
+      img0.decode().then(handle0).catch(handle0);
+    } else {
+      img0.onload = handle0;
+    }
+    if (img90.decode) {
+      img90.decode().then(handle90).catch(handle90);
+    } else {
+      img90.onload = handle90;
+    }
+    img0.src = bed0Src;
+    img90.src = bed90Src;
+    return () => {
+      img0.onload = null;
+      img90.onload = null;
+    };
+  }, []);
+
+  return { bed0, bed90 };
 }
 
 function GardenBox({
@@ -28,6 +59,7 @@ function GardenBox({
   onDragEnd,
   onSelect,
   onRotate,
+  images,
 }: {
   item: GardenObject;
   selected: boolean;
@@ -35,23 +67,10 @@ function GardenBox({
   onDragEnd: (id: string, x: number, y: number) => void;
   onSelect: (id: string) => void;
   onRotate: (id: string) => void;
+  images: { bed0: HTMLImageElement | null; bed90: HTMLImageElement | null };
 }) {
-  const [bedImage, setBedImage] = useState<HTMLImageElement | null>(null);
   const { width: renderWidth, height: renderHeight } = footprint(item);
-
-  useEffect(() => {
-    const img = new Image();
-    const handleLoad = () => setBedImage(img);
-    if (img.decode) {
-      img.decode().then(handleLoad).catch(handleLoad);
-    } else {
-      img.onload = handleLoad;
-    }
-    img.src = bedSrc;
-    return () => {
-      img.onload = null;
-    };
-  }, []);
+  const image = (item.rotation ?? 0) === 90 ? images.bed90 : images.bed0;
 
   return (
     <Group
@@ -76,8 +95,8 @@ function GardenBox({
       }}
     >
       {/* Bed graphic */}
-      {bedImage ? (
-        <KonvaImage image={bedImage} width={renderWidth} height={renderHeight} />
+      {image ? (
+        <KonvaImage image={image} width={renderWidth} height={renderHeight} />
       ) : (
         <Rect width={renderWidth} height={renderHeight} fill="#d7e3d8" cornerRadius={4} />
       )}
@@ -133,6 +152,7 @@ export function GardenCanvas() {
   const [items, setItems] = useState<GardenObject[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const stageRef = useRef<any>(null);
+  const bedImages = useBedImages();
 
   useEffect(() => {
     loadGarden();
@@ -256,6 +276,7 @@ export function GardenCanvas() {
                 onDragEnd={handleMoveEnd}
                 onSelect={setSelectedId}
                 onRotate={rotateItem}
+                images={bedImages}
               />
             ))}
           </Layer>
