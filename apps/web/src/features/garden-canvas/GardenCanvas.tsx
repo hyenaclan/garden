@@ -13,20 +13,31 @@ function snap(value: number) {
   return Math.round(value / GRID_SIZE) * GRID_SIZE;
 }
 
+function footprint(item: GardenObject) {
+  const rotated = (item.rotation ?? 0) === 90;
+  return {
+    width: rotated ? item.height : item.width,
+    height: rotated ? item.width : item.height,
+  };
+}
+
 function GardenBox({
   item,
   selected,
   onDragMove,
   onDragEnd,
   onSelect,
+  onRotate,
 }: {
   item: GardenObject;
   selected: boolean;
   onDragMove: (id: string, x: number, y: number) => void;
   onDragEnd: (id: string, x: number, y: number) => void;
   onSelect: (id: string) => void;
+  onRotate: (id: string) => void;
 }) {
   const [bedImage, setBedImage] = useState<HTMLImageElement | null>(null);
+  const { width: renderWidth, height: renderHeight } = footprint(item);
 
   useEffect(() => {
     const img = new Image();
@@ -66,21 +77,47 @@ function GardenBox({
     >
       {/* Bed graphic */}
       {bedImage ? (
-        <KonvaImage image={bedImage} width={item.width} height={item.height} />
+        <KonvaImage image={bedImage} width={renderWidth} height={renderHeight} />
       ) : (
-        <Rect width={item.width} height={item.height} fill="#d7e3d8" cornerRadius={4} />
+        <Rect width={renderWidth} height={renderHeight} fill="#d7e3d8" cornerRadius={4} />
       )}
 
       {/* Selection outline */}
       {selected && (
         <Rect
-          width={item.width}
-          height={item.height}
+          width={renderWidth}
+          height={renderHeight}
           stroke="#2e7d32"
           strokeWidth={2}
           dash={[8, 4]}
           listening={false}
         />
+      )}
+
+      {selected && (
+        <Group
+          x={renderWidth + 8}
+          y={-28}
+          onMouseDown={(e) => {
+            e.cancelBubble = true;
+            onRotate(item.id);
+          }}
+          onClick={(e) => {
+            e.cancelBubble = true;
+            onRotate(item.id);
+          }}
+        >
+          <Rect width={32} height={24} fill="#ffffff" stroke="#2e7d32" cornerRadius={6} />
+          <Text
+            text="↻"
+            x={9}
+            y={4}
+            fontSize={14}
+            fontStyle="bold"
+            fill="#2e7d32"
+            listening={false}
+          />
+        </Group>
       )}
     </Group>
   );
@@ -109,9 +146,11 @@ export function GardenCanvas() {
 
   const sortedItems = useMemo(
     () =>
-      [...items].sort(
-        (a, b) => a.y + a.height - (b.y + b.height),
-      ),
+      [...items].sort((a, b) => {
+        const aHeight = footprint(a).height;
+        const bHeight = footprint(b).height;
+        return a.y + aHeight - (b.y + bHeight);
+      }),
     [items],
   );
 
@@ -153,6 +192,16 @@ export function GardenCanvas() {
     setItems(next);
     sync(next);
     setSelectedId(newBox.id);
+  };
+
+  const rotateItem = (id: string) => {
+    setItems((prev) => {
+      const next = prev.map((obj) =>
+        obj.id === id ? { ...obj, rotation: (obj.rotation ?? 0) === 90 ? 0 : 90 } : obj,
+      );
+      sync(next);
+      return next;
+    });
   };
 
   const gridLines = useMemo(() => {
@@ -206,6 +255,7 @@ export function GardenCanvas() {
                 onDragMove={handleMove}
                 onDragEnd={handleMoveEnd}
                 onSelect={setSelectedId}
+                onRotate={rotateItem}
               />
             ))}
           </Layer>
