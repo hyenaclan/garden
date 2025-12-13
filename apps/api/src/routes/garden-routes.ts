@@ -28,17 +28,6 @@ export async function registerGardenRoutes(app: FastifyInstance) {
         name: "My Garden",
         unit: "ft" as const,
         gardenObjects: [
-          {
-            id: "bed-1",
-            type: "growArea",
-            name: "Bed 1",
-            x: 0,
-            y: 0,
-            width: 48,
-            height: 96,
-            rotation: 0,
-            plantable: true,
-          },
         ],
         version: 1,
       };
