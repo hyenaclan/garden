@@ -1,5 +1,27 @@
+html,
+body,
+#root {
+  height: 100%;
+}
+
 body {
   margin: 0;
   min-width: 320px;
+  /* Prefer scrolling within the app shell (see MainLayout) vs the page itself. */
   min-height: 100vh;
+  min-height: 100dvh;
+  overflow: hidden;
+}
+
+/*
+ * Viewport height fallbacks (especially for iOS Safari):
+ * - `100vh`: broadly supported, but can be incorrect when browser UI shows/hides
+ * - `-webkit-fill-available`: iOS Safari workaround
+ * - `100dvh`: modern “dynamic viewport” unit (preferred when supported)
+ * Order matters: the last supported declaration wins.
+ */
+.app-shell {
+  height: 100vh;
+  height: -webkit-fill-available;
+  height: 100dvh;
 }
