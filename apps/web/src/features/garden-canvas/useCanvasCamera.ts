@@ -14,12 +14,19 @@ const DEFAULT_MIN_SCALE = 0.25;
 const DEFAULT_MAX_SCALE = 3;
 const DEFAULT_WHEEL_SCALE_BY = 1.05;
 const DEFAULT_PINCH_ZOOM_SENSITIVITY = 1.8;
+const DEFAULT_OVERSCROLL_PX = 160;
 
 export type CameraTransform = {
   x: number;
   y: number;
   scaleX: number;
   scaleY: number;
+};
+
+export type CameraBounds = {
+  worldWidth: number;
+  worldHeight: number;
+  overscrollPx?: number;
 };
 
 type GestureState =
@@ -44,6 +51,7 @@ export function useCanvasCamera(options?: {
   maxScale?: number;
   wheelScaleBy?: number;
   pinchZoomSensitivity?: number;
+  bounds?: CameraBounds;
 }): {
   cameraTransform: CameraTransform;
   stageHandlers: StageHandlers;
@@ -53,12 +61,57 @@ export function useCanvasCamera(options?: {
   const wheelScaleBy = options?.wheelScaleBy ?? DEFAULT_WHEEL_SCALE_BY;
   const pinchZoomSensitivity =
     options?.pinchZoomSensitivity ?? DEFAULT_PINCH_ZOOM_SENSITIVITY;
+  const bounds = options?.bounds;
+  const worldWidth = bounds?.worldWidth;
+  const worldHeight = bounds?.worldHeight;
+  const overscrollPx = bounds?.overscrollPx ?? DEFAULT_OVERSCROLL_PX;
 
   const [camera, setCamera] = useState<Camera>(
     options?.initialCamera ?? { x: 0, y: 0, scale: 1 },
   );
 
   const gestureRef = useRef<GestureState>({ mode: "none" });
+
+  const constrainCamera = useCallback(
+    (
+      nextCamera: Camera,
+      stageSize: { width: number; height: number },
+    ): Camera => {
+      if (
+        worldWidth === undefined ||
+        worldHeight === undefined ||
+        worldWidth <= 0 ||
+        worldHeight <= 0
+      ) {
+        return nextCamera;
+      }
+
+      const scaledWorldWidth = worldWidth * nextCamera.scale;
+      const scaledWorldHeight = worldHeight * nextCamera.scale;
+
+      let minX = stageSize.width - overscrollPx - scaledWorldWidth;
+      let maxX = overscrollPx;
+      if (minX > maxX) {
+        const centeredX = (stageSize.width - scaledWorldWidth) / 2;
+        minX = centeredX;
+        maxX = centeredX;
+      }
+
+      let minY = stageSize.height - overscrollPx - scaledWorldHeight;
+      let maxY = overscrollPx;
+      if (minY > maxY) {
+        const centeredY = (stageSize.height - scaledWorldHeight) / 2;
+        minY = centeredY;
+        maxY = centeredY;
+      }
+
+      const x = clamp(nextCamera.x, minX, maxX);
+      const y = clamp(nextCamera.y, minY, maxY);
+      if (x === nextCamera.x && y === nextCamera.y) return nextCamera;
+      return { ...nextCamera, x, y };
+    },
+    [overscrollPx, worldHeight, worldWidth],
+  );
 
   const endPointerGesture = useCallback(() => {
     gestureRef.current = { mode: "none" };
@@ -70,6 +123,7 @@ export function useCanvasCamera(options?: {
 
       const stage = e.target.getStage();
       if (!stage) return;
+      const stageSize = { width: stage.width(), height: stage.height() };
 
       const pointer = stage.getPointerPosition();
       if (!pointer) return;
@@ -79,10 +133,17 @@ export function useCanvasCamera(options?: {
           e.evt.deltaY > 0
             ? prev.scale / wheelScaleBy
             : prev.scale * wheelScaleBy;
-        return zoomAroundPoint(prev, pointer, nextScale, minScale, maxScale);
+        const next = zoomAroundPoint(
+          prev,
+          pointer,
+          nextScale,
+          minScale,
+          maxScale,
+        );
+        return constrainCamera(next, stageSize);
       });
     },
-    [maxScale, minScale, wheelScaleBy],
+    [constrainCamera, maxScale, minScale, wheelScaleBy],
   );
 
   const handleMouseDown = useCallback(
@@ -106,6 +167,7 @@ export function useCanvasCamera(options?: {
     (e: Konva.KonvaEventObject<MouseEvent>) => {
       const stage = e.target.getStage();
       if (!stage) return;
+      const stageSize = { width: stage.width(), height: stage.height() };
 
       const gesture = gestureRef.current;
       if (gesture.mode !== "pan") return;
@@ -116,10 +178,12 @@ export function useCanvasCamera(options?: {
       const dx = pointer.x - gesture.lastPos.x;
       const dy = pointer.y - gesture.lastPos.y;
 
-      setCamera((prev) => ({ ...prev, x: prev.x + dx, y: prev.y + dy }));
+      setCamera((prev) =>
+        constrainCamera({ ...prev, x: prev.x + dx, y: prev.y + dy }, stageSize),
+      );
       gestureRef.current = { mode: "pan", lastPos: pointer };
     },
-    [],
+    [constrainCamera],
   );
 
   const handleTouchStart = useCallback(
@@ -153,6 +217,7 @@ export function useCanvasCamera(options?: {
 
       const stage = e.target.getStage();
       if (!stage) return;
+      const stageSize = { width: stage.width(), height: stage.height() };
 
       const pointers = stage.getPointersPositions();
       if (pointers.length === 2) {
@@ -179,11 +244,12 @@ export function useCanvasCamera(options?: {
             gesture.lastCenter,
             prev,
           );
-          return {
+          const next = {
             scale: nextScale,
             x: nextCenter.x - worldPoint.x * nextScale,
             y: nextCenter.y - worldPoint.y * nextScale,
           };
+          return constrainCamera(next, stageSize);
         });
 
         gestureRef.current = {
@@ -201,11 +267,16 @@ export function useCanvasCamera(options?: {
         const dx = pointers[0].x - gesture.lastPos.x;
         const dy = pointers[0].y - gesture.lastPos.y;
 
-        setCamera((prev) => ({ ...prev, x: prev.x + dx, y: prev.y + dy }));
+        setCamera((prev) =>
+          constrainCamera(
+            { ...prev, x: prev.x + dx, y: prev.y + dy },
+            stageSize,
+          ),
+        );
         gestureRef.current = { mode: "pan", lastPos: pointers[0] };
       }
     },
-    [maxScale, minScale, pinchZoomSensitivity],
+    [constrainCamera, maxScale, minScale, pinchZoomSensitivity],
   );
 
   const handleTouchEnd = useCallback(

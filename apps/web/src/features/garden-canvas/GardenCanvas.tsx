@@ -10,6 +10,11 @@ import { GardenWorld } from "./GardenWorld";
 const GRID_SIZE = 40;
 const WORLD_WIDTH = 6000;
 const WORLD_HEIGHT = 4000;
+const CAMERA_BOUNDS = {
+  worldWidth: WORLD_WIDTH,
+  worldHeight: WORLD_HEIGHT,
+  overscrollPx: GRID_SIZE * 4,
+} as const;
 
 export function GardenCanvas() {
   const garden = useGardenStore((s) => s.garden);
@@ -25,7 +30,9 @@ export function GardenCanvas() {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [viewport, setViewport] = useState({ width: 0, height: 0 });
 
-  const { cameraTransform, stageHandlers } = useCanvasCamera();
+  const { cameraTransform, stageHandlers } = useCanvasCamera({
+    bounds: CAMERA_BOUNDS,
+  });
 
   useEffect(() => {
     loadGarden();
