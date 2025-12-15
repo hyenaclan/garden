@@ -10,6 +10,7 @@ type Props = {
   gridLines: Array<{ x?: number; y?: number }>;
   worldWidth: number;
   worldHeight: number;
+  gridSize: number;
   items: GardenObjectModel[];
   selectedId: string | null;
   snap: (value: number) => number;
@@ -25,6 +26,7 @@ export function GardenWorld({
   gridLines,
   worldWidth,
   worldHeight,
+  gridSize,
   items,
   selectedId,
   snap,
@@ -70,6 +72,9 @@ export function GardenWorld({
               item={item}
               selected={item.id === selectedId}
               snap={snap}
+              gridSize={gridSize}
+              worldWidth={worldWidth}
+              worldHeight={worldHeight}
               onDragMove={onDragMove}
               onDragEnd={onDragEnd}
               onSelect={onSelect}

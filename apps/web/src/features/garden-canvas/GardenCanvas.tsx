@@ -156,6 +156,7 @@ export function GardenCanvas() {
               gridLines={gridLines}
               worldWidth={WORLD_WIDTH}
               worldHeight={WORLD_HEIGHT}
+              gridSize={GRID_SIZE}
               items={sortedItems}
               selectedId={selectedId}
               snap={snap}

@@ -9,17 +9,35 @@ type Props = {
   selected: boolean;
   images: SpriteImages;
   snap: (value: number) => number;
+  gridSize: number;
+  worldWidth: number;
+  worldHeight: number;
   onDragMove: (id: string, x: number, y: number) => void;
   onDragEnd: (id: string, x: number, y: number) => void;
   onSelect: (id: string) => void;
   onRotate: (id: string) => void;
 };
 
+function clamp(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function snapDown(value: number, gridSize: number) {
+  return Math.floor(value / gridSize) * gridSize;
+}
+
+function snapUp(value: number, gridSize: number) {
+  return Math.ceil(value / gridSize) * gridSize;
+}
+
 export function GardenObject({
   item,
   selected,
   images,
   snap,
+  gridSize,
+  worldWidth,
+  worldHeight,
   onDragMove,
   onDragEnd,
   onSelect,
@@ -34,6 +52,14 @@ export function GardenObject({
   const groupX = item.x;
   const groupY = item.y - sprite.baselineY;
 
+  const minX = 0;
+  const maxX = snapDown(Math.max(0, worldWidth - renderWidth), gridSize);
+  const minBaselineY = snapUp(sprite.baselineY, gridSize);
+  const maxBaselineY = snapDown(
+    Math.max(minBaselineY, worldHeight - renderHeight + sprite.baselineY),
+    gridSize,
+  );
+
   return (
     <Group
       x={groupX}
@@ -44,14 +70,22 @@ export function GardenObject({
         onSelect(item.id);
       }}
       onDragMove={(e) => {
-        const nx = snap(e.target.x());
-        const baselineY = snap(e.target.y() + sprite.baselineY);
+        const nx = clamp(snap(e.target.x()), minX, maxX);
+        const baselineY = clamp(
+          snap(e.target.y() + sprite.baselineY),
+          minBaselineY,
+          maxBaselineY,
+        );
         e.target.position({ x: nx, y: baselineY - sprite.baselineY });
         onDragMove(item.id, nx, baselineY);
       }}
       onDragEnd={(e) => {
-        const nx = snap(e.target.x());
-        const baselineY = snap(e.target.y() + sprite.baselineY);
+        const nx = clamp(snap(e.target.x()), minX, maxX);
+        const baselineY = clamp(
+          snap(e.target.y() + sprite.baselineY),
+          minBaselineY,
+          maxBaselineY,
+        );
         e.target.position({ x: nx, y: baselineY - sprite.baselineY });
         onDragEnd(item.id, nx, baselineY);
       }}
