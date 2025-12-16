@@ -86,9 +86,8 @@ export function MainLayout() {
   const auth = useAuth();
 
   return (
-    <>
-      {/* Desktop Header */}
-      <div className="hidden md:block">
+    <div className="app-shell w-full flex flex-col overflow-hidden">
+      <div className="shrink-0 hidden md:block">
         <Header>
           <HeaderContainer>
             <HeaderBrand>
@@ -130,8 +129,7 @@ export function MainLayout() {
         </Header>
       </div>
 
-      {/* Mobile Header */}
-      <div className="md:hidden">
+      <div className="shrink-0 md:hidden">
         <Header>
           <HeaderContainer>
             <HeaderBrand>
@@ -160,13 +158,12 @@ export function MainLayout() {
         </Header>
       </div>
 
-      <main className={auth.isAuthenticated ? "pb-16 md:pb-0" : ""}>
+      <main className="flex-1 min-h-0 overflow-y-auto">
         <Outlet />
       </main>
 
-      {/* Mobile Bottom Navigation */}
       {auth.isAuthenticated && (
-        <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-nav border-t border-border shadow-nav-up">
+        <nav className="md:hidden shrink-0 bg-nav border-t border-border shadow-nav-up pb-[env(safe-area-inset-bottom)]">
           <div className="flex justify-around items-center max-w-7xl mx-auto">
             <MobileNavLink to={ROUTES.HOME} icon={House}>
               Home
@@ -180,6 +177,6 @@ export function MainLayout() {
           </div>
         </nav>
       )}
-    </>
+    </div>
   );
 }
