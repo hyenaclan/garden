@@ -2,11 +2,13 @@ import { Group, Layer, Rect } from "react-konva";
 import type { GardenObject as GardenObjectModel } from "@garden/api-contract";
 import { GardenObject } from "./GardenObject";
 import type { CameraTransform } from "./useCanvasCamera";
+import type { GardenCanvasPalette } from "./useGardenCanvasPalette";
 
 type SpriteImages = Record<0 | 90, HTMLImageElement | null>;
 
 type Props = {
   cameraTransform: CameraTransform;
+  palette: GardenCanvasPalette;
   gridLines: Array<{ x?: number; y?: number }>;
   worldWidth: number;
   worldHeight: number;
@@ -23,6 +25,7 @@ type Props = {
 
 export function GardenWorld({
   cameraTransform,
+  palette,
   gridLines,
   worldWidth,
   worldHeight,
@@ -39,7 +42,7 @@ export function GardenWorld({
   return (
     <>
       <Layer listening={false}>
-        <Group {...cameraTransform}>
+        <Group {...cameraTransform} opacity={palette.gridLineOpacity}>
           {gridLines.map((line, idx) =>
             line.x !== undefined ? (
               <Rect
@@ -48,7 +51,7 @@ export function GardenWorld({
                 y={0}
                 width={1}
                 height={worldHeight}
-                fill="#e2e8e2"
+                fill={palette.gridLine}
               />
             ) : (
               <Rect
@@ -57,7 +60,7 @@ export function GardenWorld({
                 y={line.y!}
                 width={worldWidth}
                 height={1}
-                fill="#e2e8e2"
+                fill={palette.gridLine}
               />
             ),
           )}
@@ -71,6 +74,7 @@ export function GardenWorld({
               key={item.id}
               item={item}
               selected={item.id === selectedId}
+              palette={palette}
               snap={snap}
               gridSize={gridSize}
               worldWidth={worldWidth}

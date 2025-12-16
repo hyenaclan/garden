@@ -1,6 +1,7 @@
 import { Group, Rect, Text, Image as KonvaImage } from "react-konva";
 import type { GardenObject as GardenObjectModel } from "@garden/api-contract";
 import { getBedSprite } from "./sprites";
+import type { GardenCanvasPalette } from "./useGardenCanvasPalette";
 
 type SpriteImages = Record<0 | 90, HTMLImageElement | null>;
 
@@ -8,6 +9,7 @@ type Props = {
   item: GardenObjectModel;
   selected: boolean;
   images: SpriteImages;
+  palette: GardenCanvasPalette;
   snap: (value: number) => number;
   gridSize: number;
   worldWidth: number;
@@ -34,6 +36,7 @@ export function GardenObject({
   item,
   selected,
   images,
+  palette,
   snap,
   gridSize,
   worldWidth,
@@ -96,7 +99,7 @@ export function GardenObject({
         <Rect
           width={renderWidth}
           height={renderHeight}
-          fill="#d7e3d8"
+          fill={palette.bedPlaceholderFill}
           cornerRadius={4}
         />
       )}
@@ -105,7 +108,7 @@ export function GardenObject({
         <Rect
           width={renderWidth}
           height={renderHeight}
-          stroke="#2e7d32"
+          stroke={palette.selectionStroke}
           strokeWidth={2}
           dash={[8, 4]}
           listening={false}
@@ -122,19 +125,19 @@ export function GardenObject({
           }}
         >
           <Rect
-            width={32}
-            height={24}
-            fill="#ffffff"
-            stroke="#2e7d32"
+            width={40}
+            height={36}
+            fill={palette.rotateButtonFill}
+            stroke={palette.rotateButtonStroke}
             cornerRadius={6}
           />
           <Text
             text="↻"
             x={9}
-            y={4}
-            fontSize={14}
+            y={0}
+            fontSize={36}
             fontStyle="bold"
-            fill="#2e7d32"
+            fill={palette.rotateIconFill}
             listening={false}
           />
         </Group>

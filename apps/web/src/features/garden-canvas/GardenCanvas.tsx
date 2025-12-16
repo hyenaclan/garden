@@ -6,6 +6,7 @@ import { BED_SPRITES, getBedSprite, useBedImages } from "./sprites";
 import { GardenCanvasOverlayControls } from "./GardenCanvasOverlayControls";
 import { useCanvasCamera } from "./useCanvasCamera";
 import { GardenWorld } from "./GardenWorld";
+import { useGardenCanvasPalette } from "./useGardenCanvasPalette";
 
 const GRID_SIZE = 40;
 const WORLD_WIDTH = 6000;
@@ -26,6 +27,7 @@ export function GardenCanvas() {
   const [items, setItems] = useState<GardenObjectModel[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const bedImages = useBedImages();
+  const palette = useGardenCanvasPalette();
 
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [viewport, setViewport] = useState({ width: 0, height: 0 });
@@ -90,13 +92,15 @@ export function GardenCanvas() {
 
   const addBox = () => {
     if (!garden) return;
+    const new_bed_x = 360;
+    const new_bed_y = 360;
     const bedSprite = BED_SPRITES[0];
     const newBox: GardenObjectModel = {
       id: `bed-${Date.now()}`,
       name: "Bed",
       type: "GardenBox",
-      x: snap(60),
-      y: snap(60),
+      x: snap(new_bed_x),
+      y: snap(new_bed_y),
       width: bedSprite.renderWidth,
       height: bedSprite.renderHeight,
       rotation: 0,
@@ -155,11 +159,12 @@ export function GardenCanvas() {
           <Stage
             width={stageWidth}
             height={stageHeight}
-            style={{ background: "#f8faf8", touchAction: "none" }}
+            style={{ background: palette.stageBackground, touchAction: "none" }}
             {...stageHandlers}
           >
             <GardenWorld
               cameraTransform={cameraTransform}
+              palette={palette}
               gridLines={gridLines}
               worldWidth={WORLD_WIDTH}
               worldHeight={WORLD_HEIGHT}
