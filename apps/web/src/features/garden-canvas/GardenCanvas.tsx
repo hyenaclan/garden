@@ -8,6 +8,7 @@ import { useCanvasCamera } from "./useCanvasCamera";
 import { GardenWorld } from "./GardenWorld";
 import { useGardenCanvasPalette } from "./useGardenCanvasPalette";
 import { PlantStudioOverlay } from "../plant-studio/PlantStudioOverlay";
+import { v4 as uuidv4 } from "uuid";
 
 const GRID_SIZE = 40;
 const WORLD_WIDTH = 6000;
@@ -20,10 +21,13 @@ const CAMERA_BOUNDS = {
 
 export function GardenCanvas() {
   const garden = useGardenStore((s) => s.garden);
+  const optimisticGardenObjects = useGardenStore(
+    (s) => s.optimisticGardenObjects,
+  );
   const status = useGardenStore((s) => s.status);
   const errorMessage = useGardenStore((s) => s.errorMessage);
   const loadGarden = useGardenStore((s) => s.loadGarden);
-  const replaceGarden = useGardenStore((s) => s.replaceGarden);
+  const upsertObject = useGardenStore((s) => s.upsertObject);
 
   const [items, setItems] = useState<GardenObjectModel[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -42,8 +46,8 @@ export function GardenCanvas() {
   }, [loadGarden]);
 
   useEffect(() => {
-    if (garden) setItems(garden.gardenObjects);
-  }, [garden]);
+    if (garden) setItems(optimisticGardenObjects);
+  }, [garden, optimisticGardenObjects]);
 
   useEffect(() => {
     const el = containerRef.current;
@@ -75,15 +79,6 @@ export function GardenCanvas() {
     return Math.round(value / GRID_SIZE) * GRID_SIZE;
   }
 
-  const sync = (next: GardenObjectModel[]) => {
-    if (!garden) return;
-    replaceGarden({
-      ...garden,
-      gardenObjects: next,
-      version: garden.version + 1,
-    });
-  };
-
   const handleMove = (id: string, x: number, y: number) => {
     setItems((prev) =>
       prev.map((obj) => (obj.id === id ? { ...obj, x, y } : obj)),
@@ -91,18 +86,20 @@ export function GardenCanvas() {
   };
 
   const handleMoveEnd = (id: string, x: number, y: number) => {
-    const next = items.map((obj) => (obj.id === id ? { ...obj, x, y } : obj));
-    setItems(next);
-    sync(next);
+    setItems((prev) =>
+      prev.map((obj) => (obj.id === id ? { ...obj, x, y } : obj)),
+    );
+    upsertObject({ id, x, y });
   };
 
   const addBox = () => {
     if (!garden) return;
+    // TODO: enhance this? perhaps by allowing drag-drop from the OverlayControls.
     const new_bed_x = 360;
     const new_bed_y = 360;
     const bedSprite = BED_SPRITES[0];
     const newBox: GardenObjectModel = {
-      id: `bed-${Date.now()}`,
+      id: uuidv4(),
       name: "Bed",
       type: "GardenBox",
       x: snap(new_bed_x),
@@ -114,24 +111,27 @@ export function GardenCanvas() {
     };
     const next = [...items, newBox];
     setItems(next);
-    sync(next);
+    upsertObject(newBox);
     setSelectedId(newBox.id);
   };
 
   const rotateItem = (id: string) => {
-    const next = items.map((obj) => {
-      if (obj.id !== id) return obj;
+    const selected = items.find((obj) => obj.id === id);
+    if (!selected) return;
 
-      const prevSprite = getBedSprite(obj);
-      const nextRotation = (obj.rotation ?? 0) === 90 ? 0 : 90;
-      const nextSprite = getBedSprite({ ...obj, rotation: nextRotation });
-      const deltaBaseline = nextSprite.baselineY - prevSprite.baselineY;
+    const prevSprite = getBedSprite(selected);
+    const nextRotation = (selected.rotation ?? 0) === 90 ? 0 : 90;
+    const nextSprite = getBedSprite({ ...selected, rotation: nextRotation });
+    const deltaBaseline = nextSprite.baselineY - prevSprite.baselineY;
 
-      return { ...obj, rotation: nextRotation, y: obj.y + deltaBaseline };
-    });
+    const nextY = selected.y + deltaBaseline;
+
+    const next = items.map((obj) =>
+      obj.id === id ? { ...obj, rotation: nextRotation, y: nextY } : obj,
+    );
 
     setItems(next);
-    sync(next);
+    upsertObject({ id, rotation: nextRotation, y: nextY });
   };
 
   const gridLines = useMemo(() => {
@@ -202,7 +202,11 @@ export function GardenCanvas() {
         {selectedItem ? (
           <PlantStudioOverlay
             selectedObject={selectedItem}
-            onClose={() => setSelectedId(null)}
+            onClose={(closingObjectId) =>
+              setSelectedId((current) =>
+                current === closingObjectId ? null : current,
+              )
+            }
           />
         ) : (
           <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex justify-center px-4 pb-4">

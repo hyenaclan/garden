@@ -28,7 +28,7 @@ export async function registerGardenRoutes(app: FastifyInstance) {
         name: "My Garden",
         unit: "ft" as const,
         gardenObjects: [],
-        version: 1,
+        version: 0,
       };
 
       return reply.send({ garden });

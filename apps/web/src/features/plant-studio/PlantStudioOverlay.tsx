@@ -4,7 +4,7 @@ import { PlantStudioPanel } from "./PlantStudioPanel";
 
 type Props = {
   selectedObject: GardenObjectModel;
-  onClose: () => void;
+  onClose: (objectId: string) => void;
 };
 
 export function PlantStudioOverlay({ selectedObject, onClose }: Props) {

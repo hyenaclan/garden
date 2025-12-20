@@ -10,7 +10,7 @@ import { APP_SHELL_MOBILE_ONLY } from "@/core/ui/breakpoints";
 
 type Props = {
   selectedObject: GardenObjectModel;
-  onClose: () => void;
+  onClose: (objectId: string) => void;
 };
 
 const PEEK_HEIGHT_PX = 160;
@@ -75,7 +75,7 @@ export function PlantStudioBottomSheet({ selectedObject, onClose }: Props) {
     const y = translateYRef.current;
 
     if (height > 0 && y > height * CLOSE_THRESHOLD) {
-      onClose();
+      onClose(selectedObject.id);
       return;
     }
 
@@ -85,7 +85,7 @@ export function PlantStudioBottomSheet({ selectedObject, onClose }: Props) {
     }
 
     setTranslateY(peekTranslateY);
-  }, [onClose, peekTranslateY, sheetHeight]);
+  }, [onClose, peekTranslateY, selectedObject.id, sheetHeight]);
 
   const handleHeaderPointerDown = useCallback(
     (e: React.PointerEvent<HTMLDivElement>) => {

@@ -2,7 +2,7 @@ import { Type, type Static } from "@sinclair/typebox";
 
 export const GardenObjectSchema = Type.Strict(
   Type.Object({
-    id: Type.String(),
+    id: Type.String({ format: "uuid" }),
     name: Type.String(),
     x: Type.Number(),
     y: Type.Number(),
@@ -17,12 +17,9 @@ export type GardenObject = Static<typeof GardenObjectSchema>;
 
 export const GardenEventSchema = Type.Strict(
   Type.Object({
+    id: Type.String({ format: "uuid" }),
     version: Type.Integer(),
-    eventType: Type.Union([
-      Type.Literal("create"),
-      Type.Literal("update"),
-      Type.Literal("delete"),
-    ]),
+    eventType: Type.Union([Type.Literal("upsert"), Type.Literal("delete")]),
     payload: Type.Optional(Type.Partial(GardenObjectSchema)),
   }),
 );
