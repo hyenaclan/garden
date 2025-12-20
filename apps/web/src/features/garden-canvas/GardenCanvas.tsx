@@ -7,6 +7,7 @@ import { GardenCanvasOverlayControls } from "./GardenCanvasOverlayControls";
 import { useCanvasCamera } from "./useCanvasCamera";
 import { GardenWorld } from "./GardenWorld";
 import { useGardenCanvasPalette } from "./useGardenCanvasPalette";
+import { PlantStudioOverlay } from "../plant-studio/PlantStudioOverlay";
 
 const GRID_SIZE = 40;
 const WORLD_WIDTH = 6000;
@@ -63,6 +64,11 @@ export function GardenCanvas() {
   const sortedItems = useMemo(
     () => [...items].sort((a, b) => a.y - b.y),
     [items],
+  );
+
+  const selectedItem = useMemo(
+    () => items.find((obj) => obj.id === selectedId) ?? null,
+    [items, selectedId],
   );
 
   function snap(value: number) {
@@ -161,6 +167,18 @@ export function GardenCanvas() {
             height={stageHeight}
             style={{ background: palette.stageBackground, touchAction: "none" }}
             {...stageHandlers}
+            onClick={(e) => {
+              const stage = e.target.getStage();
+              if (!stage) return;
+              if (e.target !== stage) return;
+              setSelectedId(null);
+            }}
+            onTap={(e) => {
+              const stage = e.target.getStage();
+              if (!stage) return;
+              if (e.target !== stage) return;
+              setSelectedId(null);
+            }}
           >
             <GardenWorld
               cameraTransform={cameraTransform}
@@ -181,14 +199,21 @@ export function GardenCanvas() {
           </Stage>
         )}
 
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex justify-center px-4 pb-4">
-          <div className="pointer-events-auto w-full max-w-sm">
-            <GardenCanvasOverlayControls
-              onAddBed={addBox}
-              disabled={status === "loading"}
-            />
+        {selectedItem ? (
+          <PlantStudioOverlay
+            selectedObject={selectedItem}
+            onClose={() => setSelectedId(null)}
+          />
+        ) : (
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex justify-center px-4 pb-4">
+            <div className="pointer-events-auto w-full max-w-sm">
+              <GardenCanvasOverlayControls
+                onAddBed={addBox}
+                disabled={status === "loading"}
+              />
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

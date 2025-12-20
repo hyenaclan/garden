@@ -11,6 +11,7 @@ import {
 import { Button } from "@garden/ui/components/button";
 import { UserMenu } from "./UserMenu";
 import { APP_NAME, ROUTES } from "../config";
+import { APP_SHELL_DESKTOP_ONLY, APP_SHELL_MOBILE_ONLY } from "./breakpoints";
 
 function NavLink({
   to,
@@ -87,7 +88,7 @@ export function MainLayout() {
 
   return (
     <div className="app-shell w-full flex flex-col overflow-hidden">
-      <div className="shrink-0 hidden md:block">
+      <div className={`shrink-0 ${APP_SHELL_DESKTOP_ONLY}`}>
         <Header>
           <HeaderContainer>
             <HeaderBrand>
@@ -129,7 +130,7 @@ export function MainLayout() {
         </Header>
       </div>
 
-      <div className="shrink-0 md:hidden">
+      <div className={`shrink-0 ${APP_SHELL_MOBILE_ONLY}`}>
         <Header>
           <HeaderContainer>
             <HeaderBrand>
@@ -163,7 +164,9 @@ export function MainLayout() {
       </main>
 
       {auth.isAuthenticated && (
-        <nav className="md:hidden shrink-0 bg-nav border-t border-border shadow-nav-up pb-[env(safe-area-inset-bottom)]">
+        <nav
+          className={`${APP_SHELL_MOBILE_ONLY} shrink-0 bg-nav border-t border-border shadow-nav-up pb-[env(safe-area-inset-bottom)]`}
+        >
           <div className="flex justify-around items-center max-w-7xl mx-auto">
             <MobileNavLink to={ROUTES.HOME} icon={House}>
               Home
