@@ -202,7 +202,11 @@ export function GardenCanvas() {
         {selectedItem ? (
           <PlantStudioOverlay
             selectedObject={selectedItem}
-            onClose={() => setSelectedId(null)}
+            onClose={(closingObjectId) =>
+              setSelectedId((current) =>
+                current === closingObjectId ? null : current,
+              )
+            }
           />
         ) : (
           <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex justify-center px-4 pb-4">

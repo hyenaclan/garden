@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from "react";
 
 type Props = {
   selectedObject: GardenObjectModel;
-  onClose: () => void;
+  onClose: (objectId: string) => void;
 };
 
 const CLOSE_ANIMATION_MS = 200;
@@ -16,9 +16,13 @@ export function PlantStudioPanel({ selectedObject, onClose }: Props) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    const raf = window.requestAnimationFrame(() => setOpen(true));
-    return () => window.cancelAnimationFrame(raf);
-  }, []);
+    if (closeTimeoutRef.current !== null) {
+      window.clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
+    }
+
+    setOpen(true);
+  }, [selectedObject.id]);
 
   useEffect(() => {
     return () => {
@@ -31,8 +35,14 @@ export function PlantStudioPanel({ selectedObject, onClose }: Props) {
   const requestClose = () => {
     setOpen(false);
 
+    const closingObjectId = selectedObject.id;
+
+    if (closeTimeoutRef.current !== null) {
+      window.clearTimeout(closeTimeoutRef.current);
+    }
+
     closeTimeoutRef.current = window.setTimeout(() => {
-      onClose();
+      onClose(closingObjectId);
     }, CLOSE_ANIMATION_MS);
   };
 
