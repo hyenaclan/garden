@@ -7,25 +7,17 @@ Provide a clear summary of the changes in this PR and the reason behind them.
 - Summarize the key code changes
 - Call out any non-obvious decisions
 
-## Related Tickets / Issues
-
-- Link to GitHub issues or product requirements if applicable
-
 ## Testing
 
 Describe how you tested the changes:
 
-- Unit tests
-- Integration tests
-- Manual testing
+- Unit tests / Integration tests / Manual testing
 
 ## Deployment
 
 - [ ] Deploy to **dev** environment
 - [ ] Ensure deployment succeeds
 - [ ] List verification steps performed in dev:
-  - Example: hit `/health` and confirm 200
-  - Example: complete flow X and verify expected behavior
 
 ## Checklist
 
