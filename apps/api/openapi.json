@@ -64,6 +64,7 @@
                             "type": "object",
                             "properties": {
                               "id": {
+                                "format": "uuid",
                                 "type": "string"
                               },
                               "name": {
@@ -144,6 +145,10 @@
                     "items": {
                       "type": "object",
                       "properties": {
+                        "id": {
+                          "format": "uuid",
+                          "type": "string"
+                        },
                         "version": {
                           "type": "integer"
                         },
@@ -152,13 +157,7 @@
                             {
                               "type": "string",
                               "enum": [
-                                "create"
-                              ]
-                            },
-                            {
-                              "type": "string",
-                              "enum": [
-                                "update"
+                                "upsert"
                               ]
                             },
                             {
@@ -173,6 +172,7 @@
                           "type": "object",
                           "properties": {
                             "id": {
+                              "format": "uuid",
                               "type": "string"
                             },
                             "name": {
@@ -203,6 +203,7 @@
                         }
                       },
                       "required": [
+                        "id",
                         "version",
                         "eventType"
                       ]

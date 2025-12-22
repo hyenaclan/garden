@@ -121,6 +121,13 @@ export function GardenObject({
           y={-28}
           onPointerDown={(e) => {
             e.cancelBubble = true;
+          }}
+          onClick={(e) => {
+            e.cancelBubble = true;
+            onRotate(item.id);
+          }}
+          onTap={(e) => {
+            e.cancelBubble = true;
             onRotate(item.id);
           }}
         >

@@ -2,12 +2,7 @@ import { QueryClient } from "@tanstack/react-query";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { createGardenStore } from "../src/features/garden-canvas/store";
-import {
-  GardenObject,
-  Garden,
-  GardenEvent,
-  AppendGardenEventsError,
-} from "@garden/api-contract";
+import { GardenObject, Garden } from "@garden/api-contract";
 
 const baseObject: GardenObject = {
   id: "obj-1",
@@ -45,7 +40,7 @@ const buildGarden = (
   version,
 });
 
-const setupStore = (garden: Garden, pendingEvents: GardenEvent[]) => {
+const setupStore = (garden: Garden) => {
   const queryClient = new QueryClient();
   const authRequest = vi.fn();
   const store = createGardenStore(garden.id, { queryClient, authRequest });
@@ -53,8 +48,9 @@ const setupStore = (garden: Garden, pendingEvents: GardenEvent[]) => {
   store.setState((state) => ({
     ...state,
     garden,
-    currentVersion: garden.version,
-    pendingEvents,
+    nextEventVersion: garden.version + 1,
+    optimisticGardenObjects: garden.gardenObjects,
+    pendingEventsByObjectId: {},
     status: "idle",
     errorMessage: undefined,
   }));
@@ -67,102 +63,120 @@ afterEach(() => {
 });
 
 describe("garden canvas store", () => {
-  it("surfaces insertFailed and then succeeds on retry", async () => {
+  it("merges multiple updates by object id and preserves latest version", () => {
+    const garden = buildGarden([baseObject], 1);
+    const { store } = setupStore(garden);
+
+    store.getState().upsertObject({ id: baseObject.id, x: 10 });
+    store.getState().upsertObject({ id: baseObject.id, y: 20 });
+
+    const state = store.getState();
+    const pendingEvent = state.pendingEventsByObjectId[baseObject.id];
+
+    expect(pendingEvent).toBeDefined();
+    expect(pendingEvent.eventType).toBe("upsert");
+    expect(pendingEvent.version).toBe(3);
+    expect(pendingEvent.payload).toMatchObject({
+      id: baseObject.id,
+      x: 10,
+      y: 20,
+    });
+
+    const optimisticObject = state.optimisticGardenObjects.find(
+      (obj) => obj.id === baseObject.id,
+    );
+    expect(optimisticObject?.x).toBe(10);
+    expect(optimisticObject?.y).toBe(20);
+  });
+
+  it("merges subsequent patches into a pending create", () => {
+    const garden = buildGarden([baseObject], 1);
+    const { store } = setupStore(garden);
+
     const createdObject: GardenObject = {
       ...secondObject,
       id: "obj-3",
       name: "New Bed",
     };
 
-    const pendingEvents: GardenEvent[] = [
-      { version: 1, eventType: "create", payload: createdObject },
-    ];
+    store.getState().upsertObject(createdObject);
+    store.getState().upsertObject({ id: createdObject.id, x: 40 });
 
-    // ReplaceGarden already merged the created object into state.
-    const garden = buildGarden([baseObject, createdObject], 1);
-    const { store, authRequest } = setupStore(garden, pendingEvents);
+    const state = store.getState();
+    const pendingEvent = state.pendingEventsByObjectId[createdObject.id];
 
-    const insertFailed: AppendGardenEventsError = {
-      code: "insertFailed",
-      untracked_events: [],
-      retry_hint: "Retry save",
-    };
+    expect(pendingEvent).toBeDefined();
+    expect(pendingEvent.eventType).toBe("upsert");
+    expect(pendingEvent.version).toBe(3);
+    expect(pendingEvent.payload).toMatchObject({
+      id: createdObject.id,
+      x: 40,
+    });
 
-    authRequest.mockRejectedValueOnce(insertFailed);
-    authRequest.mockResolvedValueOnce({ next_version: 2 });
-
-    await store.getState().flushEvents();
-
-    let state = store.getState();
-    expect(state.status).toBe("error");
-    expect(state.errorMessage).toBe("Retry save");
-    expect(state.pendingEvents).toHaveLength(1);
-
-    await store.getState().flushEvents();
-    state = store.getState();
-
-    expect(state.status).toBe("saved");
-    expect(state.currentVersion).toBe(2);
-    expect(state.pendingEvents).toHaveLength(0);
-    const createdCount =
-      state.garden?.gardenObjects.filter((obj) => obj.id === createdObject.id)
-        .length ?? 0;
-    expect(createdCount).toBe(1);
+    const optimisticObject = state.optimisticGardenObjects.find(
+      (obj) => obj.id === createdObject.id,
+    );
+    expect(optimisticObject?.x).toBe(40);
   });
 
-  it("handles untrackedEvents conflicts", async () => {
-    const pendingEvents: GardenEvent[] = [
-      {
-        version: 3,
-        eventType: "update",
-        payload: { id: baseObject.id, x: 10 },
-      },
-      {
-        version: 4,
-        eventType: "delete",
-        payload: { id: secondObject.id },
-      },
-    ];
+  it("sorts by version and renumbers contiguously on flush", async () => {
+    const garden = buildGarden([baseObject, secondObject], 5);
+    const { store, authRequest } = setupStore(garden);
 
-    const garden = buildGarden([baseObject, secondObject], 3);
-    const { store, authRequest } = setupStore(garden, pendingEvents);
+    store.setState((state) => ({
+      ...state,
+      pendingEventsByObjectId: {
+        [baseObject.id]: {
+          id: "00000000-0000-4000-8000-000000000001",
+          version: 10,
+          eventType: "upsert",
+          payload: { id: baseObject.id, x: 99 },
+        },
+        [secondObject.id]: {
+          id: "00000000-0000-4000-8000-000000000002",
+          version: 7,
+          eventType: "delete",
+          payload: { id: secondObject.id },
+        },
+      },
+    }));
 
-    const untrackedError: AppendGardenEventsError = {
-      code: "untrackedEvents",
-      untracked_events: [0],
-      retry_hint: "Please refresh before retrying",
+    authRequest.mockResolvedValueOnce({ next_version: 8 });
+
+    await store.getState().flushEvents();
+
+    const request = authRequest.mock.calls[0]?.[0] as { body: string };
+    const body = JSON.parse(request.body) as {
+      new_events: Array<{
+        version: number;
+        eventType: string;
+        payload: Record<string, unknown>;
+      }>;
     };
 
-    authRequest.mockRejectedValue(untrackedError);
+    expect(body.new_events).toHaveLength(2);
+    expect(body.new_events[0]).toMatchObject({
+      version: 6,
+      eventType: "delete",
+      payload: { id: secondObject.id },
+    });
+    expect(body.new_events[1]).toMatchObject({
+      version: 7,
+      eventType: "upsert",
+      payload: { id: baseObject.id, x: 99 },
+    });
 
-    await store.getState().flushEvents();
     const state = store.getState();
+    expect(state.status).toBe("idle");
+    expect(state.garden?.version).toBe(7);
+    expect(state.nextEventVersion).toBe(8);
+    expect(Object.keys(state.pendingEventsByObjectId)).toHaveLength(0);
 
-    expect(authRequest).toHaveBeenCalledTimes(1);
-    expect(state.status).toBe("error");
-    expect(state.errorMessage).toBe("Please refresh before retrying");
-    expect(state.pendingEvents).toEqual([pendingEvents[1]]);
-  });
-
-  it("handles generic network errors", async () => {
-    const pendingEvents: GardenEvent[] = [
-      {
-        version: 5,
-        eventType: "update",
-        payload: { id: baseObject.id, name: "Renamed Bed" },
-      },
-    ];
-
-    const garden = buildGarden([baseObject], 5);
-    const { store, authRequest } = setupStore(garden, pendingEvents);
-
-    authRequest.mockRejectedValue(new Error("Network down"));
-
-    await store.getState().flushEvents();
-    const state = store.getState();
-
-    expect(state.status).toBe("error");
-    expect(state.errorMessage).toBe("Network down");
-    expect(state.pendingEvents).toHaveLength(1);
+    expect(
+      state.garden?.gardenObjects.some((obj) => obj.id === secondObject.id),
+    ).toBe(false);
+    expect(
+      state.garden?.gardenObjects.find((obj) => obj.id === baseObject.id)?.x,
+    ).toBe(99);
   });
 });

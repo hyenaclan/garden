@@ -4,11 +4,12 @@ import type { QueryClient } from "@tanstack/react-query";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuthRequest, type AuthRequest } from "../../core/api/auth";
 import { GardenState, GardenStore } from "./types";
+import { v4 as uuidv4 } from "uuid";
+
 import {
   GardenObject,
   AppendGardenEventsRequest,
   AppendGardenEventsSuccess,
-  AppendGardenEventsError,
   Garden,
   GardenEvent,
   API_ROUTES,
@@ -17,24 +18,51 @@ import {
 const initialState = (gardenId: string): GardenState => ({
   gardenId,
   garden: null,
-  currentVersion: 0,
-  pendingEvents: [],
+  nextEventVersion: 1,
+  optimisticGardenObjects: [],
+  pendingEventsByObjectId: {},
   status: "idle",
   errorMessage: undefined,
 });
 
-const objectChanged = (prev: GardenObject, next: GardenObject) => {
-  return (
-    prev.x !== next.x ||
-    prev.y !== next.y ||
-    prev.width !== next.width ||
-    prev.height !== next.height ||
-    prev.rotation !== next.rotation ||
-    prev.name !== next.name ||
-    prev.type !== next.type ||
-    prev.plantable !== next.plantable
-  );
-};
+function renumberGardenEvents(
+  events: GardenEvent[],
+  version: number,
+): GardenEvent[] {
+  const sortedEvents = [...events].sort((a, b) => a.version - b.version);
+  return sortedEvents.map((event, index) => ({
+    ...event,
+    version: version + 1 + index,
+  }));
+}
+
+function applyGardenEvents(
+  baseObjects: GardenObject[],
+  events: GardenEvent[],
+): GardenObject[] {
+  const objectsById = new Map(baseObjects.map((obj) => [obj.id, obj]));
+  const sortedEvents = [...events].sort((a, b) => a.version - b.version);
+
+  for (const event of sortedEvents) {
+    const payload = event.payload;
+    const objectId = payload?.id;
+
+    if (!objectId) continue;
+
+    if (event.eventType === "delete") {
+      objectsById.delete(objectId);
+      continue;
+    } else if (event.eventType === "upsert") {
+      const existing = objectsById.get(objectId) ?? {};
+      objectsById.set(objectId, { ...existing, ...payload } as GardenObject);
+      continue;
+    }
+
+    throw new Error(`Unknown event type: ${event.eventType}`);
+  }
+
+  return Array.from(objectsById.values());
+}
 
 export function createGardenStore(
   gardenId: string,
@@ -55,15 +83,6 @@ export function createGardenStore(
     });
   };
 
-  const isAppendError = (error: unknown): error is AppendGardenEventsError => {
-    return (
-      typeof error === "object" &&
-      error !== null &&
-      "code" in error &&
-      typeof (error as { code?: unknown }).code === "string"
-    );
-  };
-
   return createStore<GardenStore>((set, get) => ({
     ...initialState(gardenId),
     loadGarden: async () => {
@@ -81,8 +100,9 @@ export function createGardenStore(
 
         set({
           garden,
-          currentVersion: garden.version,
-          pendingEvents: [],
+          nextEventVersion: garden.version + 1,
+          optimisticGardenObjects: garden.gardenObjects,
+          pendingEventsByObjectId: {},
           status: "idle",
           errorMessage: undefined,
         });
@@ -93,164 +113,144 @@ export function createGardenStore(
         });
       }
     },
-    replaceGarden: (nextGarden) => {
+    upsertObject: (patch) => {
       set((state) => {
-        if (!state.garden) {
-          return {
-            ...state,
-            garden: nextGarden,
-            currentVersion: nextGarden.version,
-            status: "idle",
-            errorMessage: undefined,
-          };
-        }
+        const garden = state.garden;
+        if (!garden) return state;
 
-        const events: GardenEvent[] = [];
-        const previousObjects = new Map(
-          state.garden.gardenObjects.map((obj) => [obj.id, obj]),
+        const { id } = patch;
+        if (!id) return state;
+
+        const gardenObjects = [...state.optimisticGardenObjects];
+
+        const existing = gardenObjects.find((obj) => obj.id === id) ?? {};
+
+        const pendingEvent: GardenEvent = {
+          id: uuidv4(),
+          version: state.nextEventVersion,
+          eventType: "upsert",
+          payload: { ...existing, ...patch },
+        };
+
+        const updatedObjects = applyGardenEvents(gardenObjects, [pendingEvent]);
+
+        return {
+          ...state,
+          pendingEventsByObjectId: {
+            ...state.pendingEventsByObjectId,
+            [id]: pendingEvent,
+          },
+          optimisticGardenObjects: updatedObjects,
+          nextEventVersion: state.nextEventVersion + 1,
+        };
+      });
+    },
+    deleteObject: (id) => {
+      set((state) => {
+        const garden = state.garden;
+        if (!garden) return state;
+
+        const exists = state.optimisticGardenObjects.some(
+          (obj) => obj.id === id,
         );
+        if (!exists) return state;
 
-        nextGarden.gardenObjects.forEach((obj) => {
-          const prev = previousObjects.get(obj.id);
-          if (!prev) {
-            events.push({
-              version: state.currentVersion,
-              eventType: "create",
-              payload: obj,
-            });
-            return;
-          }
+        const existsOnServer = garden.gardenObjects.some(
+          (obj) => obj.id === id,
+        );
+        const pendingEventsMap = { ...state.pendingEventsByObjectId };
 
-          if (objectChanged(prev, obj)) {
-            events.push({
-              version: state.currentVersion,
-              eventType: "update",
-              payload: {
-                id: obj.id,
-                x: obj.x,
-                y: obj.y,
-                width: obj.width,
-                height: obj.height,
-                rotation: obj.rotation,
-                name: obj.name,
-              },
-            });
-          }
-
-          previousObjects.delete(obj.id);
-        });
-
-        previousObjects.forEach((prevObj) => {
-          events.push({
-            version: state.currentVersion,
+        if (!existsOnServer) {
+          delete pendingEventsMap[id];
+        } else {
+          const event: GardenEvent = {
+            id: uuidv4(),
+            version: state.nextEventVersion,
             eventType: "delete",
-            payload: { id: prevObj.id },
-          });
-        });
-
-        if (events.length === 0) {
-          return {
-            ...state,
-            garden: nextGarden,
-            currentVersion: nextGarden.version,
-            status: "idle",
-            errorMessage: undefined,
+            payload: { id },
           };
+          pendingEventsMap[id] = event;
         }
 
         return {
           ...state,
-          garden: nextGarden,
-          currentVersion: nextGarden.version,
-          pendingEvents: [...state.pendingEvents, ...events],
-          status: "idle",
-          errorMessage: undefined,
+          pendingEventsByObjectId: pendingEventsMap,
+          optimisticGardenObjects: state.optimisticGardenObjects.filter(
+            (obj) => obj.id !== id,
+          ),
+          nextEventVersion: state.nextEventVersion + 1,
         };
       });
     },
     flushEvents: async () => {
-      const { pendingEvents, garden } = get();
+      const { status } = get();
+      if (status === "saving") return;
+
+      const { garden, pendingEventsByObjectId } = get();
+      const pendingEvents = Object.values(pendingEventsByObjectId);
       if (!garden || pendingEvents.length === 0) {
         return;
       }
 
       set({ status: "saving", errorMessage: undefined });
 
+      const pendingSnapshot = { ...pendingEventsByObjectId };
+      const gardenVersionAtFlushStart = garden.version;
+
       try {
+        const eventsToFlush = renumberGardenEvents(
+          pendingEvents,
+          gardenVersionAtFlushStart,
+        );
         const result = await appendGardenEvents({
-          new_events: pendingEvents,
+          new_events: eventsToFlush,
         });
 
-        const updatedObjects = pendingEvents.reduce((objects, event) => {
-          const payload = event.payload ?? {};
-          const id = payload.id;
+        set((state) => {
+          const garden = state.garden;
+          if (!garden) return state;
 
-          if (event.eventType === "create" && payload.id) {
-            const exists = objects.some((obj) => obj.id === payload.id);
-            return exists ? objects : [...objects, payload as GardenObject];
+          const committedObjects = applyGardenEvents(
+            garden.gardenObjects,
+            eventsToFlush,
+          );
+
+          const remainingPendingEvents: Record<string, GardenEvent> = {};
+          for (const [objectId, currentEvent] of Object.entries(
+            state.pendingEventsByObjectId,
+          )) {
+            const flushedEvent = pendingSnapshot[objectId];
+            if (!flushedEvent || flushedEvent.id !== currentEvent.id) {
+              remainingPendingEvents[objectId] = currentEvent;
+            }
           }
 
-          if (event.eventType === "update" && id) {
-            return objects.map((obj) =>
-              obj.id === id ? { ...obj, ...payload } : obj,
-            );
-          }
+          const optimisticGardenObjectsNext = applyGardenEvents(
+            committedObjects,
+            Object.values(remainingPendingEvents),
+          );
 
-          if (event.eventType === "delete" && id) {
-            return objects.filter((obj) => obj.id !== id);
-          }
-
-          return objects;
-        }, garden.gardenObjects);
-
-        set((state) => ({
-          ...state,
-          garden: state.garden
-            ? {
-                ...state.garden,
-                gardenObjects: updatedObjects,
-                version: result.next_version,
-              }
-            : state.garden,
-          currentVersion: result.next_version,
-          pendingEvents: [],
-          status: "saved",
-          errorMessage: undefined,
-        }));
+          return {
+            garden: {
+              ...garden,
+              gardenObjects: committedObjects,
+              version: result.next_version - 1,
+            },
+            nextEventVersion: Math.max(
+              result.next_version,
+              state.nextEventVersion,
+            ),
+            optimisticGardenObjects: optimisticGardenObjectsNext,
+            pendingEventsByObjectId: remainingPendingEvents,
+            status: "idle",
+            errorMessage: undefined,
+          };
+        });
       } catch (error) {
-        if (isAppendError(error)) {
-          if (error.code === "untrackedEvents") {
-            const remainingEvents = pendingEvents.filter(
-              (_event, index) => !error.untracked_events.includes(index),
-            );
-
-            set((state) => ({
-              ...state,
-              pendingEvents: remainingEvents,
-              status: "error",
-              errorMessage:
-                error.retry_hint ??
-                "Some updates were out of date. Please retry.",
-            }));
-            return;
-          }
-
-          if (error.code === "insertFailed") {
-            set((state) => ({
-              ...state,
-              status: "error",
-              errorMessage:
-                error.retry_hint ?? "Unable to save changes. Please retry.",
-            }));
-            return;
-          }
-        }
-
         set((state) => ({
           ...state,
           status: "error",
-          errorMessage:
-            error instanceof Error ? error.message : "Failed to save events",
+          errorMessage: "Failed to save events",
         }));
       }
     },
