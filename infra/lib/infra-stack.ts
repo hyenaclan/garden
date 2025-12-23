@@ -83,6 +83,7 @@ export class InfraStack extends cdk.Stack {
       entry: join(__dirname, "..", "..", "apps", "api", "src", "lambda.ts"),
       handler: "handler",
       runtime: lambda.Runtime.NODEJS_LATEST,
+      memorySize: 1024,
       vpc,
       vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_ISOLATED },
       securityGroups: [lambdaSg],

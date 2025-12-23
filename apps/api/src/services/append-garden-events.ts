@@ -5,9 +5,7 @@ export type AppendGardenEventsResult =
   | { success: true; next_version: number }
   | {
       success: false;
-      code: "untrackedEvents" | "insertFailed";
-      untrackedEvents: number[];
-      retry_hint: string;
+      code: "invalidRequest" | "invalidState" | "unknownError";
     };
 
 export async function appendGardenEvents(
@@ -15,10 +13,12 @@ export async function appendGardenEvents(
   gardenId: string,
   newEvents: GardenEvent[],
 ): Promise<AppendGardenEventsResult> {
+  if (newEvents.length === 0) {
+    return { success: false, code: "invalidRequest" };
+  }
+  const sorted = newEvents.sort((a, b) => a.version - b.version);
   return {
-    success: false,
-    code: "insertFailed",
-    untrackedEvents: [],
-    retry_hint: "Not implemented",
+    success: true,
+    next_version: sorted[sorted.length - 1].version + 1,
   };
 }

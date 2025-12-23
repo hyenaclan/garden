@@ -131,6 +131,9 @@ jobs:
           echo "VITE_COGNITO_USER_POOL_CLIENT_ID=${COGNITO_USER_POOL_CLIENT_ID}" >> apps/web/.env
           echo "VITE_COGNITO_DOMAIN=${COGNITO_DOMAIN}" >> apps/web/.env
           echo "VITE_COGNITO_USER_POOL_ID=${COGNITO_USER_POOL_ID}" >> apps/web/.env
+          if [ "${{ inputs.environment }}" = "dev" ]; then
+            echo "VITE_DEV_TOOLS_ENABLED=true" >> apps/web/.env
+          fi
 
       - name: Install web build dependencies
         run: npm install @rollup/rollup-linux-x64-gnu --workspace apps/web --no-save

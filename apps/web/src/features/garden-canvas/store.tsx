@@ -4,10 +4,15 @@ import type { QueryClient } from "@tanstack/react-query";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuthRequest, type AuthRequest } from "../../core/api/auth";
 import { GardenState, GardenStore } from "./types";
+import {
+  applyGardenEvents,
+  renumberGardenEvents,
+  getTransitionStatus,
+  isInvalidState,
+} from "./store-utilities";
 import { v4 as uuidv4 } from "uuid";
 
 import {
-  GardenObject,
   AppendGardenEventsRequest,
   AppendGardenEventsSuccess,
   Garden,
@@ -22,47 +27,7 @@ const initialState = (gardenId: string): GardenState => ({
   optimisticGardenObjects: [],
   pendingEventsByObjectId: {},
   status: "idle",
-  errorMessage: undefined,
 });
-
-function renumberGardenEvents(
-  events: GardenEvent[],
-  version: number,
-): GardenEvent[] {
-  const sortedEvents = [...events].sort((a, b) => a.version - b.version);
-  return sortedEvents.map((event, index) => ({
-    ...event,
-    version: version + 1 + index,
-  }));
-}
-
-function applyGardenEvents(
-  baseObjects: GardenObject[],
-  events: GardenEvent[],
-): GardenObject[] {
-  const objectsById = new Map(baseObjects.map((obj) => [obj.id, obj]));
-  const sortedEvents = [...events].sort((a, b) => a.version - b.version);
-
-  for (const event of sortedEvents) {
-    const payload = event.payload;
-    const objectId = payload?.id;
-
-    if (!objectId) continue;
-
-    if (event.eventType === "delete") {
-      objectsById.delete(objectId);
-      continue;
-    } else if (event.eventType === "upsert") {
-      const existing = objectsById.get(objectId) ?? {};
-      objectsById.set(objectId, { ...existing, ...payload } as GardenObject);
-      continue;
-    }
-
-    throw new Error(`Unknown event type: ${event.eventType}`);
-  }
-
-  return Array.from(objectsById.values());
-}
 
 export function createGardenStore(
   gardenId: string,
@@ -83,10 +48,16 @@ export function createGardenStore(
     });
   };
 
-  return createStore<GardenStore>((set, get) => ({
+  return createStore<GardenStore>((set) => ({
     ...initialState(gardenId),
     loadGarden: async () => {
-      set({ status: "loading", errorMessage: undefined });
+      const loadingStatus = "loading";
+      set((state) => ({
+        ...state,
+        status: getTransitionStatus(state.status, loadingStatus),
+      }));
+      const errorStatus = getTransitionStatus(loadingStatus, "error");
+      const idleStatus = getTransitionStatus(loadingStatus, "idle");
 
       try {
         const { garden } = await queryClient.fetchQuery({
@@ -100,23 +71,24 @@ export function createGardenStore(
 
         set({
           garden,
+          status: idleStatus,
           nextEventVersion: garden.version + 1,
           optimisticGardenObjects: garden.gardenObjects,
           pendingEventsByObjectId: {},
-          status: "idle",
-          errorMessage: undefined,
         });
       } catch (error) {
-        set({
-          status: "error",
-          errorMessage: error instanceof Error ? error.message : "Load failed",
-        });
+        set((state) => ({
+          ...state,
+          status: getTransitionStatus(state.status, errorStatus),
+        }));
       }
     },
     upsertObject: (patch) => {
       set((state) => {
         const garden = state.garden;
         if (!garden) return state;
+
+        const nextStatus = getTransitionStatus(state.status, "flushable");
 
         const { id } = patch;
         if (!id) return state;
@@ -136,6 +108,7 @@ export function createGardenStore(
 
         return {
           ...state,
+          status: nextStatus,
           pendingEventsByObjectId: {
             ...state.pendingEventsByObjectId,
             [id]: pendingEvent,
@@ -149,6 +122,7 @@ export function createGardenStore(
       set((state) => {
         const garden = state.garden;
         if (!garden) return state;
+        const nextStatus = getTransitionStatus(state.status, "flushable");
 
         const exists = state.optimisticGardenObjects.some(
           (obj) => obj.id === id,
@@ -174,6 +148,7 @@ export function createGardenStore(
 
         return {
           ...state,
+          status: nextStatus,
           pendingEventsByObjectId: pendingEventsMap,
           optimisticGardenObjects: state.optimisticGardenObjects.filter(
             (obj) => obj.id !== id,
@@ -183,51 +158,76 @@ export function createGardenStore(
       });
     },
     flushEvents: async () => {
-      const { status } = get();
-      if (status === "saving") return;
+      type FlushStart = {
+        garden: Garden;
+        pendingEvents: GardenEvent[];
+        pendingSnapshot: Record<string, GardenEvent>;
+        gardenVersionAtFlushStart: number;
+      };
 
-      const { garden, pendingEventsByObjectId } = get();
-      const pendingEvents = Object.values(pendingEventsByObjectId);
-      if (!garden || pendingEvents.length === 0) {
-        return;
-      }
+      const start: { value: FlushStart | null } = { value: null };
 
-      set({ status: "saving", errorMessage: undefined });
+      set((state) => {
+        if (state.status === "saving") return state;
+        const nextStatus = getTransitionStatus(state.status, "saving");
 
-      const pendingSnapshot = { ...pendingEventsByObjectId };
-      const gardenVersionAtFlushStart = garden.version;
+        const garden = state.garden;
+        const pendingEventsByObjectId = state.pendingEventsByObjectId;
+        const pendingEvents = Object.values(pendingEventsByObjectId);
+        if (!garden || pendingEvents.length === 0) return state;
+
+        start.value = {
+          garden,
+          pendingEvents,
+          pendingSnapshot: { ...pendingEventsByObjectId },
+          gardenVersionAtFlushStart: garden.version,
+        };
+
+        return { ...state, status: nextStatus };
+      });
+
+      const snapshot = start.value;
+      if (!snapshot) return;
 
       try {
         const eventsToFlush = renumberGardenEvents(
-          pendingEvents,
-          gardenVersionAtFlushStart,
+          snapshot.pendingEvents,
+          snapshot.gardenVersionAtFlushStart,
         );
         const result = await appendGardenEvents({
           new_events: eventsToFlush,
         });
 
         set((state) => {
+          const idleStatus = getTransitionStatus(state.status, "idle", false);
+          const flushableStatus = getTransitionStatus(
+            state.status,
+            "flushable",
+            false,
+          );
+
           const garden = state.garden;
-          if (!garden) return state;
+          if (!garden) return { ...state, status: idleStatus };
 
           const committedObjects = applyGardenEvents(
             garden.gardenObjects,
             eventsToFlush,
           );
 
-          const remainingPendingEvents: Record<string, GardenEvent> = {};
+          const unflushedEventsMap: Record<string, GardenEvent> = {};
           for (const [objectId, currentEvent] of Object.entries(
             state.pendingEventsByObjectId,
           )) {
-            const flushedEvent = pendingSnapshot[objectId];
+            const flushedEvent = snapshot.pendingSnapshot[objectId];
             if (!flushedEvent || flushedEvent.id !== currentEvent.id) {
-              remainingPendingEvents[objectId] = currentEvent;
+              unflushedEventsMap[objectId] = currentEvent;
             }
           }
 
+          const unflushedEvents = Object.values(unflushedEventsMap);
           const optimisticGardenObjectsNext = applyGardenEvents(
             committedObjects,
-            Object.values(remainingPendingEvents),
+            unflushedEvents,
           );
 
           return {
@@ -241,17 +241,28 @@ export function createGardenStore(
               state.nextEventVersion,
             ),
             optimisticGardenObjects: optimisticGardenObjectsNext,
-            pendingEventsByObjectId: remainingPendingEvents,
-            status: "idle",
+            pendingEventsByObjectId: unflushedEventsMap,
+            status: unflushedEvents.length > 0 ? flushableStatus : idleStatus,
+            errorCode: undefined,
             errorMessage: undefined,
           };
         });
       } catch (error) {
-        set((state) => ({
-          ...state,
-          status: "error",
-          errorMessage: "Failed to save events",
-        }));
+        if (isInvalidState(error)) {
+          set((state) => {
+            return {
+              ...state,
+              status: getTransitionStatus(state.status, "flushableError"),
+            };
+          });
+        } else {
+          set((state) => {
+            return {
+              ...state,
+              status: getTransitionStatus(state.status, "error"),
+            };
+          });
+        }
       }
     },
   }));

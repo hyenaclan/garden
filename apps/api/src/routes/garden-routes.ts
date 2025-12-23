@@ -28,7 +28,7 @@ export async function registerGardenRoutes(app: FastifyInstance) {
         name: "My Garden",
         unit: "ft" as const,
         gardenObjects: [],
-        version: 0,
+        version: 1,
       };
 
       return reply.send({ garden });
@@ -52,10 +52,13 @@ export async function registerGardenRoutes(app: FastifyInstance) {
       const result = await appendGardenEvents(db, gardenId, newEvents);
 
       if (!result.success) {
-        return reply.status(400).send({
+        let statusCode = 400;
+        if (result.code === "invalidRequest") statusCode = 400;
+        else if (result.code === "invalidState") statusCode = 409;
+        else statusCode = 500;
+
+        return reply.status(statusCode).send({
           code: result.code,
-          untracked_events: result.untrackedEvents,
-          retry_hint: result.retry_hint,
         });
       }
 

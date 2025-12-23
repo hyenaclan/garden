@@ -45,12 +45,10 @@ export type PostGardenEventsSuccess = Static<
 export const PostGardenEventsErrorSchema = Type.Strict(
   Type.Object({
     code: Type.Union([
-      Type.Literal("invalidEvents"),
-      Type.Literal("untrackedEvents"),
-      Type.Literal("insertFailed"),
+      Type.Literal("invalidRequest"),
+      Type.Literal("invalidState"),
+      Type.Literal("unknownError"),
     ]),
-    untracked_events: Type.Array(Type.Integer()),
-    retry_hint: Type.String(),
   }),
 );
 export type PostGardenEventsError = Static<typeof PostGardenEventsErrorSchema>;

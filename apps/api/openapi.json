@@ -259,37 +259,26 @@
                         {
                           "type": "string",
                           "enum": [
-                            "invalidEvents"
+                            "invalidRequest"
                           ]
                         },
                         {
                           "type": "string",
                           "enum": [
-                            "untrackedEvents"
+                            "invalidState"
                           ]
                         },
                         {
                           "type": "string",
                           "enum": [
-                            "insertFailed"
+                            "unknownError"
                           ]
                         }
                       ]
-                    },
-                    "untracked_events": {
-                      "type": "array",
-                      "items": {
-                        "type": "integer"
-                      }
-                    },
-                    "retry_hint": {
-                      "type": "string"
                     }
                   },
                   "required": [
-                    "code",
-                    "untracked_events",
-                    "retry_hint"
+                    "code"
                   ]
                 }
               }
