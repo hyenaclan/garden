@@ -9,6 +9,8 @@ import { GardenWorld } from "./GardenWorld";
 import { useGardenCanvasPalette } from "./useGardenCanvasPalette";
 import { PlantStudioOverlay } from "../plant-studio/PlantStudioOverlay";
 import { v4 as uuidv4 } from "uuid";
+import { GardenDevTools } from "./GardenDevTools";
+import { useGardenAutoFlush } from "./useGardenAutoFlush";
 
 const GRID_SIZE = 40;
 const WORLD_WIDTH = 6000;
@@ -25,7 +27,12 @@ export function GardenCanvas() {
     (s) => s.optimisticGardenObjects,
   );
   const status = useGardenStore((s) => s.status);
-  const errorMessage = useGardenStore((s) => s.errorMessage);
+  const errorMessage = useMemo(() => {
+    if (status === "error") {
+      return "Unable to save changes. Please try again later.";
+    }
+    return undefined;
+  }, [status]);
   const loadGarden = useGardenStore((s) => s.loadGarden);
   const upsertObject = useGardenStore((s) => s.upsertObject);
 
@@ -141,6 +148,8 @@ export function GardenCanvas() {
     return lines;
   }, []);
 
+  const { autoFlushAt, forceFlushAt } = useGardenAutoFlush();
+
   const stageWidth = viewport.width;
   const stageHeight = viewport.height;
 
@@ -218,6 +227,8 @@ export function GardenCanvas() {
             </div>
           </div>
         )}
+
+        <GardenDevTools autoFlushAt={autoFlushAt} forceFlushAt={forceFlushAt} />
       </div>
     </div>
   );

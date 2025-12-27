@@ -29,6 +29,8 @@ interface ImportMetaEnv {
   readonly VITE_COGNITO_DOMAIN: string;
   readonly VITE_COGNITO_USER_POOL_ID: string;
   readonly VITE_COGNITO_USER_POOL_CLIENT_ID: string;
+
+  readonly VITE_DEV_TOOLS_ENABLED: boolean;
 }
 
 interface ImportMeta {

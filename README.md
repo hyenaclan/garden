@@ -54,6 +54,7 @@ VITE_AWS_REGION
 VITE_COGNITO_DOMAIN
 VITE_COGNITO_USER_POOL_ID
 VITE_COGNITO_USER_POOL_CLIENT_ID
+VITE_DEV_TOOLS_ENABLED
 ```
 
 ### 4. Use Drizzle to view database (you can also use your preferred db viewer like Beekeeper)

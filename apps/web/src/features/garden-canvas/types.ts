@@ -1,6 +1,12 @@
 import type { Garden, GardenEvent } from "@garden/api-contract";
 
-type GardenStatus = "idle" | "loading" | "saving" | "saved" | "error";
+export type GardenStatus =
+  | "loading"
+  | "idle"
+  | "flushable"
+  | "saving"
+  | "error"
+  | "flushableError";
 
 export interface GardenState {
   gardenId: string;
@@ -17,18 +23,17 @@ export interface GardenState {
   optimisticGardenObjects: Garden["gardenObjects"];
   pendingEventsByObjectId: Record<string, GardenEvent>;
   status: GardenStatus;
-  errorMessage?: string;
 }
 
 interface GardenActions {
-  loadGarden: () => Promise<void>;
+  loadGarden: (status?: GardenStatus) => Promise<void>;
   upsertObject: (
     patch: { id: string } & Partial<
       Omit<Garden["gardenObjects"][number], "id">
     >,
   ) => void;
   deleteObject: (id: string) => void;
-  flushEvents: () => Promise<void>;
+  flushEvents: (allowRetry?: boolean) => Promise<void>;
 }
 
 export type GardenStore = GardenState & GardenActions;
