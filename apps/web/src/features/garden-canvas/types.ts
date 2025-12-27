@@ -34,6 +34,10 @@ interface GardenActions {
   ) => void;
   deleteObject: (id: string) => void;
   flushEvents: (allowRetry?: boolean) => Promise<void>;
+  /**
+   * Dev-only override for toggling UI error states.
+   */
+  setStatusForDev: (status: GardenStatus) => void;
 }
 
 export type GardenStore = GardenState & GardenActions;

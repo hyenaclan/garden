@@ -50,6 +50,11 @@ export function createGardenStore(
 
   return createStore<GardenStore>((set) => ({
     ...initialState(gardenId),
+    setStatusForDev: (status) =>
+      set((state) => ({
+        ...state,
+        status,
+      })),
     loadGarden: async () => {
       const loadingStatus = "loading";
       set((state) => ({
@@ -85,6 +90,7 @@ export function createGardenStore(
     },
     upsertObject: (patch) => {
       set((state) => {
+        if (state.status === "error") return state;
         const garden = state.garden;
         if (!garden) return state;
 
@@ -120,6 +126,7 @@ export function createGardenStore(
     },
     deleteObject: (id) => {
       set((state) => {
+        if (state.status === "error") return state;
         const garden = state.garden;
         if (!garden) return state;
         const nextStatus = getTransitionStatus(state.status, "flushable");

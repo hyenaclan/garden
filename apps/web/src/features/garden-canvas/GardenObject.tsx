@@ -18,6 +18,7 @@ type Props = {
   onDragEnd: (id: string, x: number, y: number) => void;
   onSelect: (id: string) => void;
   onRotate: (id: string) => void;
+  isEditable: boolean;
 };
 
 function clamp(value: number, min: number, max: number) {
@@ -45,6 +46,7 @@ export function GardenObject({
   onDragEnd,
   onSelect,
   onRotate,
+  isEditable,
 }: Props) {
   const sprite = getBedSprite(item);
   const image = (item.rotation ?? 0) === 90 ? images[90] : images[0];
@@ -67,12 +69,13 @@ export function GardenObject({
     <Group
       x={groupX}
       y={groupY}
-      draggable
+      draggable={isEditable}
       onPointerDown={(e) => {
         e.cancelBubble = true;
         onSelect(item.id);
       }}
       onDragMove={(e) => {
+        if (!isEditable) return;
         const nx = clamp(snap(e.target.x()), minX, maxX);
         const baselineY = clamp(
           snap(e.target.y() + sprite.baselineY),
@@ -83,6 +86,7 @@ export function GardenObject({
         onDragMove(item.id, nx, baselineY);
       }}
       onDragEnd={(e) => {
+        if (!isEditable) return;
         const nx = clamp(snap(e.target.x()), minX, maxX);
         const baselineY = clamp(
           snap(e.target.y() + sprite.baselineY),
@@ -115,7 +119,7 @@ export function GardenObject({
         />
       )}
 
-      {selected && (
+      {selected && isEditable && (
         <Group
           x={renderWidth + 8}
           y={-28}
@@ -124,11 +128,11 @@ export function GardenObject({
           }}
           onClick={(e) => {
             e.cancelBubble = true;
-            onRotate(item.id);
+            if (isEditable) onRotate(item.id);
           }}
           onTap={(e) => {
             e.cancelBubble = true;
-            onRotate(item.id);
+            if (isEditable) onRotate(item.id);
           }}
         >
           <Rect

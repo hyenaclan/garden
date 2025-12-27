@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useGardenStore } from "./store";
+import type { GardenStatus } from "./types";
 
 const STORAGE_KEY = "garden-devtools";
 const devToolsEnabled = import.meta.env.VITE_DEV_TOOLS_ENABLED;
@@ -28,6 +29,28 @@ export function GardenDevTools({
     (s) => s.optimisticGardenObjects,
   );
   const flushEvents = useGardenStore((s) => s.flushEvents);
+  const setStatusForDev = useGardenStore((s) => s.setStatusForDev);
+
+  const [errorPinned, setErrorPinned] = useState(false);
+  const prevStatusRef = useRef<GardenStatus | null>(null);
+
+  const toggleErrorStatus = () => {
+    if (!errorPinned) {
+      prevStatusRef.current = status;
+      setStatusForDev("error");
+      setErrorPinned(true);
+    } else {
+      const previous = prevStatusRef.current ?? "idle";
+      setStatusForDev(previous);
+      setErrorPinned(false);
+    }
+  };
+
+  const forceFlushableError = () => {
+    prevStatusRef.current = status;
+    setErrorPinned(false);
+    setStatusForDev("flushableError");
+  };
   const formatCountdown = (target: number | null) => {
     if (!target) return "—";
     const delta = Math.max(0, target - now);
@@ -119,6 +142,27 @@ export function GardenDevTools({
               className="flex-1 rounded border border-slate-300 bg-white px-2 py-1 text-[11px] font-semibold text-slate-800 shadow disabled:cursor-not-allowed disabled:opacity-50"
             >
               Flush events
+            </button>
+          </div>
+
+          <div className="mt-2 flex gap-2">
+            <button
+              type="button"
+              onClick={toggleErrorStatus}
+              className={`flex-1 rounded border px-2 py-1 text-[11px] font-semibold shadow ${
+                errorPinned
+                  ? "border-red-500 bg-red-50 text-red-700"
+                  : "border-slate-300 bg-white text-slate-800"
+              }`}
+            >
+              {errorPinned ? "Unset error" : "Force error"}
+            </button>
+            <button
+              type="button"
+              onClick={forceFlushableError}
+              className="flex-1 rounded border border-orange-300 bg-orange-50 px-2 py-1 text-[11px] font-semibold text-orange-800 shadow"
+            >
+              Force flushableError
             </button>
           </div>
 

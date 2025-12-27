@@ -20,6 +20,7 @@ type Props = {
   onDragEnd: (id: string, x: number, y: number) => void;
   onSelect: (id: string) => void;
   onRotate: (id: string) => void;
+  isEditable: boolean;
   images: SpriteImages;
 };
 
@@ -37,6 +38,7 @@ export function GardenWorld({
   onDragEnd,
   onSelect,
   onRotate,
+  isEditable,
   images,
 }: Props) {
   return (
@@ -83,6 +85,7 @@ export function GardenWorld({
               onDragEnd={onDragEnd}
               onSelect={onSelect}
               onRotate={onRotate}
+              isEditable={isEditable}
               images={images}
             />
           ))}

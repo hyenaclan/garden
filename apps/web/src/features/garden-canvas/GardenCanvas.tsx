@@ -27,6 +27,7 @@ export function GardenCanvas() {
     (s) => s.optimisticGardenObjects,
   );
   const status = useGardenStore((s) => s.status);
+  const isEditable = status !== "error";
   const errorMessage = useMemo(() => {
     if (status === "error") {
       return "Unable to save changes. Please try again later.";
@@ -87,12 +88,14 @@ export function GardenCanvas() {
   }
 
   const handleMove = (id: string, x: number, y: number) => {
+    if (!isEditable) return;
     setItems((prev) =>
       prev.map((obj) => (obj.id === id ? { ...obj, x, y } : obj)),
     );
   };
 
   const handleMoveEnd = (id: string, x: number, y: number) => {
+    if (!isEditable) return;
     setItems((prev) =>
       prev.map((obj) => (obj.id === id ? { ...obj, x, y } : obj)),
     );
@@ -100,7 +103,7 @@ export function GardenCanvas() {
   };
 
   const addBox = () => {
-    if (!garden) return;
+    if (!garden || !isEditable) return;
     // TODO: enhance this? perhaps by allowing drag-drop from the OverlayControls.
     const new_bed_x = 360;
     const new_bed_y = 360;
@@ -123,6 +126,7 @@ export function GardenCanvas() {
   };
 
   const rotateItem = (id: string) => {
+    if (!isEditable) return;
     const selected = items.find((obj) => obj.id === id);
     if (!selected) return;
 
@@ -203,6 +207,7 @@ export function GardenCanvas() {
               onDragEnd={handleMoveEnd}
               onSelect={setSelectedId}
               onRotate={rotateItem}
+              isEditable={isEditable}
               images={bedImages}
             />
           </Stage>
@@ -222,7 +227,7 @@ export function GardenCanvas() {
             <div className="pointer-events-auto w-full max-w-sm">
               <GardenCanvasOverlayControls
                 onAddBed={addBox}
-                disabled={status === "loading"}
+                disabled={status === "loading" || !isEditable}
               />
             </div>
           </div>
