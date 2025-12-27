@@ -78,10 +78,10 @@ export function getTransitionStatus(
 
   const ALLOWED: Record<GardenStatus, ReadonlySet<GardenStatus>> = {
     idle: new Set(["loading", "flushable"]),
-    loading: new Set(["loading", "idle", "error"]),
+    loading: new Set(["loading", "idle", "flushable", "error"]),
     flushable: new Set(["saving", "flushable"]),
     saving: new Set(["flushable", "idle", "flushableError", "error"]),
-    flushableError: new Set(["saving"]),
+    flushableError: new Set(["loading"]),
     error: new Set(),
   };
 

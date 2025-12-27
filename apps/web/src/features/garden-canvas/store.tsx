@@ -50,6 +50,11 @@ export function createGardenStore(
 
   return createStore<GardenStore>((set) => ({
     ...initialState(gardenId),
+    setStatusForDev: (status) =>
+      set((state) => ({
+        ...state,
+        status,
+      })),
     loadGarden: async () => {
       const loadingStatus = "loading";
       set((state) => ({
@@ -69,12 +74,34 @@ export function createGardenStore(
             }),
         });
 
-        set({
-          garden,
-          status: idleStatus,
-          nextEventVersion: garden.version + 1,
-          optimisticGardenObjects: garden.gardenObjects,
-          pendingEventsByObjectId: {},
+        set((state) => {
+          const pendingEventsByObjectId = state.pendingEventsByObjectId;
+          const pendingEvents = Object.values(pendingEventsByObjectId);
+          const optimisticGardenObjects = applyGardenEvents(
+            garden.gardenObjects,
+            pendingEvents,
+          );
+          const maxPendingVersion = pendingEvents.reduce(
+            (max, evt) => Math.max(max, evt.version),
+            garden.version,
+          );
+          const nextEventVersion = Math.max(
+            garden.version + 1,
+            maxPendingVersion + 1,
+          );
+          const nextStatus =
+            pendingEvents.length > 0
+              ? getTransitionStatus(loadingStatus, "flushable", false)
+              : idleStatus;
+
+          return {
+            ...state,
+            garden,
+            status: nextStatus,
+            nextEventVersion,
+            optimisticGardenObjects,
+            pendingEventsByObjectId,
+          };
         });
       } catch (error) {
         set((state) => ({
@@ -85,6 +112,7 @@ export function createGardenStore(
     },
     upsertObject: (patch) => {
       set((state) => {
+        if (state.status === "error") return state;
         const garden = state.garden;
         if (!garden) return state;
 
@@ -120,6 +148,7 @@ export function createGardenStore(
     },
     deleteObject: (id) => {
       set((state) => {
+        if (state.status === "error") return state;
         const garden = state.garden;
         if (!garden) return state;
         const nextStatus = getTransitionStatus(state.status, "flushable");
