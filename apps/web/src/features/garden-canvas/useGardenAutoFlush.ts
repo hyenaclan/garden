@@ -8,9 +8,11 @@ type AutoFlushTimes = {
 
 const FIVE_SECONDS = 5_000;
 const THIRTY_SECONDS = 30_000;
+const MAX_FLUSHABLE_ERROR_REFRESH = 10;
 
 export function useGardenAutoFlush(): AutoFlushTimes {
   const flushEvents = useGardenStore((s) => s.flushEvents);
+  const loadGarden = useGardenStore((s) => s.loadGarden);
   const status = useGardenStore((s) => s.status);
   const pendingObjects = useGardenStore((s) => s.pendingEventsByObjectId);
 
@@ -25,6 +27,7 @@ export function useGardenAutoFlush(): AutoFlushTimes {
   const shouldRun =
     status === "flushable" && Object.values(pendingObjects).length > 0;
 
+  // AUTO FLUSH EFFECT
   useEffect(() => {
     const clearAll = () => {
       if (autoTimer.current !== null) {
@@ -69,5 +72,30 @@ export function useGardenAutoFlush(): AutoFlushTimes {
     return () => {};
   }, [flushEvents, pendingObjects, shouldRun]);
 
+  // FLUSHABLE ERROR CLEANUP EFFECT
+  const refreshCountRef = useRef(0);
+  const refreshInFlightRef = useRef(false);
+
+  useEffect(() => {
+    if (status !== "flushableError") {
+      refreshCountRef.current = 0;
+      refreshInFlightRef.current = false;
+      return;
+    }
+
+    if (refreshInFlightRef.current) return;
+    if (refreshCountRef.current >= MAX_FLUSHABLE_ERROR_REFRESH) return;
+
+    refreshInFlightRef.current = true;
+    refreshCountRef.current += 1;
+
+    (async () => {
+      try {
+        await loadGarden();
+      } finally {
+        refreshInFlightRef.current = false;
+      }
+    })();
+  }, [loadGarden, status]);
   return times;
 }

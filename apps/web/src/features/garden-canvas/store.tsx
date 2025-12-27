@@ -74,12 +74,34 @@ export function createGardenStore(
             }),
         });
 
-        set({
-          garden,
-          status: idleStatus,
-          nextEventVersion: garden.version + 1,
-          optimisticGardenObjects: garden.gardenObjects,
-          pendingEventsByObjectId: {},
+        set((state) => {
+          const pendingEventsByObjectId = state.pendingEventsByObjectId;
+          const pendingEvents = Object.values(pendingEventsByObjectId);
+          const optimisticGardenObjects = applyGardenEvents(
+            garden.gardenObjects,
+            pendingEvents,
+          );
+          const maxPendingVersion = pendingEvents.reduce(
+            (max, evt) => Math.max(max, evt.version),
+            garden.version,
+          );
+          const nextEventVersion = Math.max(
+            garden.version + 1,
+            maxPendingVersion + 1,
+          );
+          const nextStatus =
+            pendingEvents.length > 0
+              ? getTransitionStatus(loadingStatus, "flushable", false)
+              : idleStatus;
+
+          return {
+            ...state,
+            garden,
+            status: nextStatus,
+            nextEventVersion,
+            optimisticGardenObjects,
+            pendingEventsByObjectId,
+          };
         });
       } catch (error) {
         set((state) => ({
